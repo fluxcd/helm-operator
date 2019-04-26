@@ -7,6 +7,4 @@ Guides
 .. toctree::
    :maxdepth: 1
 
-   provide-own-ssh-key
-   use-private-git-host
-   upgrading-to-1.0
+   upgrading-to-beta

@@ -8,5 +8,3 @@ Tutorials
    :maxdepth: 1
 
    get-started
-   get-started-helm
-   driving-flux
