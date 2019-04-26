@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Flux'
+project = 'Flux Helm Operator'
 copyright = '2019, Flux development team'
 author = 'Flux development team'
 
@@ -102,7 +102,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Fluxdoc'
+htmlhelp_basename = 'HelmOperatordoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -129,7 +129,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Flux.tex', 'Flux Documentation',
+    (master_doc, 'flux-helm-operator.tex', 'Flux Helm Operator Documentation',
      'Flux development team', 'manual'),
 ]
 
@@ -139,7 +139,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'flux', 'Flux Documentation',
+    (master_doc, 'flux helm operator', 'Flux Helm Operator Documentation',
      [author], 1)
 ]
 
@@ -150,8 +150,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Flux', 'Flux Documentation',
-     author, 'Flux', 'One line description of project.',
+    (master_doc, 'Flux Helm Operator', 'Flux Helm Operator Documentation',
+     author, 'Flux Helm Operator', 'One line description of project.',
      'Miscellaneous'),
 ]
 

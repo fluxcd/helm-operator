@@ -7,11 +7,5 @@ References
 .. toctree::
    :maxdepth: 1
 
-   blueprint
-   daemon
-   fluxctl
-   fluxyaml-config-files
-   garbagecollection
-   git-gpg
-   helm-operator-integration
-   monitoring
+   operator
+   helmrelease-custom-resource
