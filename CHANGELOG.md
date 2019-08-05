@@ -335,7 +335,7 @@ WARNING: this release of the Helm operator is not backward-compatible:
  - It uses a new custom resource `HelmRelease`, and will ignore
    `FluxHelmRelease` resources
  - Some command-line arguments have changed, so the [deployment
-   manifests](./deploy-helm/) must also be updated
+   manifests](deploy/) must also be updated
 
 To use it, you will need to migrate custom resources to the new format
 supported by this version. See the [upgrade
