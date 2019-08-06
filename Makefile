@@ -85,7 +85,13 @@ cache/%/helm-$(HELM_VERSION): docker/helm.version
 $(GOBIN)/bin/helm-operator: $(HELM_OPERATOR_DEPS)
 	GO111MODULE=on go install ./cmd/helm-operator
 
-check-generated:
+pkg/install/generated_templates.gogen.go: pkg/install/templates/*
+	cd pkg/install && go run generate.go embedded-templates
+
+generate-deploy: pkg/install/generated_templates.gogen.go
+	cd deploy && go run ../pkg/install/generate.go deploy
+
+check-generated: generate-deploy pkg/install/generated_templates.gogen.go
 	GO111MODULE=on ./hack/update_codegen.sh
 	git diff --exit-code -- pkg/apis pkg/client
 
