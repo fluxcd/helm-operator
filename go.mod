@@ -10,7 +10,7 @@ require (
 	github.com/googleapis/gnostic v0.3.0 // indirect
 	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
-	github.com/instrumenta/kubeval v0.0.0-20190720105720-70e32d660927
+	github.com/instrumenta/kubeval v0.0.0-20190804145309-805845b47dfc
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/ncabatoff/go-seq v0.0.0-20180805175032-b08ef85ed833
 	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829

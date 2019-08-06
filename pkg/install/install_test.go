@@ -11,8 +11,14 @@ func testFillInTemplates(t *testing.T, params TemplateParameters) {
 	manifests, err := FillInTemplates(params)
 	assert.NoError(t, err)
 	assert.Len(t, manifests, 3)
+
+	config := &kubeval.Config{
+		IgnoreMissingSchemas: true,
+		KubernetesVersion:    "master",
+	}
 	for fileName, contents := range manifests {
-		validationResults, err := kubeval.Validate(contents, fileName)
+		config.FileName = fileName
+		validationResults, err := kubeval.Validate(contents, config)
 		assert.NoError(t, err)
 		for _, result := range validationResults {
 			if len(result.Errors) > 0 {
@@ -26,9 +32,9 @@ func testFillInTemplates(t *testing.T, params TemplateParameters) {
 	}
 }
 
-func TestFillInTemplates(t *testing.T) { 
+func TestFillInTemplates(t *testing.T) {
 	testFillInTemplates(t, TemplateParameters{
-		Namespace:          "flux",
+		Namespace: "flux",
 	})
 
 }
