@@ -17,7 +17,7 @@ spec:
       annotations:
         prometheus.io/scrape: "true"
     spec:
-      serviceAccountName: flux
+      serviceAccountName: flux-helm-operator
       volumes:
       # The following volume is for using a customised known_hosts file,
       # which you will need to do if you host your own git repo rather
