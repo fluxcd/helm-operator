@@ -51,6 +51,7 @@ jobs:
       - run: make test TEST_FLAGS="-race -timeout 60s"
       - run: make all
       - run: make test-docs
+      - run: make e2e
       - save_cache:
           key: cache-{{ checksum "Makefile" }}
           paths:
