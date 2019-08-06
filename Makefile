@@ -84,5 +84,5 @@ $(GOBIN)/bin/helm-operator: $(HELM_OPERATOR_DEPS)
 	GO111MODULE=on go install ./cmd/helm-operator
 
 check-generated:
-	./bin/helm/update_codegen.sh
+	GO111MODULE=on ./hack/update_codegen.sh
 	git diff --exit-code -- pkg/apis pkg/client
