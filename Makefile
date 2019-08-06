@@ -30,7 +30,7 @@ DOCS_PORT:=8000
 all: $(GOBIN)/bin/helm-operator build/.helm-operator.done
 
 clean:
-	go clean
+	go clean ./cmd/helm-operator
 	rm -rf ./build
 	rm -f test/bin/kubectl test/bin/helm test/bin/kind
 
