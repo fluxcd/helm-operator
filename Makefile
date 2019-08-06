@@ -30,12 +30,16 @@ all: $(GOBIN)/bin/helm-operator build/.helm-operator.done
 clean:
 	go clean
 	rm -rf ./build
+	rm -f test/bin/kubectl test/bin/helm test/bin/kind
 
 realclean: clean
 	rm -rf ./cache
 
 test: test/bin/helm
 	PATH="${PWD}/bin:${PWD}/test/bin:${PATH}" GO111MODULES=on go test ${TEST_FLAGS} $(shell go list ./... | grep -v "^github.com/weaveworks/flux/vendor" | sort -u)
+
+e2e: test/bin/helm test/bin/kubectl build/.helm-operator.done
+	PATH="${PWD}/test/bin:${PATH}" CURRENT_OS_ARCH=$(CURRENT_OS_ARCH) test/e2e/run.sh
 
 build/.%.done: docker/Dockerfile.%
 	mkdir -p ./build/docker/$*
@@ -53,10 +57,10 @@ build/helm-operator: cmd/helm-operator/*.go
 	GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} go build -o $@ $(LDFLAGS) -ldflags "-X main.version=$(shell ./docker/image-tag)" ./cmd/helm-operator
 
 build/kubectl: cache/linux-$(ARCH)/kubectl-$(KUBECTL_VERSION)
-
+test/bin/kubectl: cache/$(CURRENT_OS_ARCH)/kubectl-$(KUBECTL_VERSION)
 build/helm: cache/linux-$(ARCH)/helm-$(HELM_VERSION)
 test/bin/helm: cache/$(CURRENT_OS_ARCH)/helm-$(HELM_VERSION)
-build/kubectl build/helm test/bin/helm:
+build/kubectl test/bin/kubectl build/helm test/bin/helm:
 	mkdir -p build
 	cp $< $@
 	if [ `basename $@` = "build" -a $(CURRENT_OS_ARCH) = "linux-$(ARCH)" ]; then strip $@; fi
