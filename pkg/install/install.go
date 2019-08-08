@@ -2,6 +2,7 @@ package install
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,7 +14,12 @@ import (
 )
 
 type TemplateParameters struct {
-	Namespace          string
+	Namespace               string
+	TillerNamespace         string
+	SSHSecretName           string
+	EnableTillerTLS         bool
+	TillerTLSCACertContent  []byte
+	TillerTLSCertSecretName string
 }
 
 func FillInTemplates(params TemplateParameters) (map[string][]byte, error) {
@@ -29,8 +35,9 @@ func FillInTemplates(params TemplateParameters) (map[string][]byte, error) {
 		if err != nil {
 			return fmt.Errorf("cannot read embedded file %q: %s", info.Name(), err)
 		}
+
 		manifestTemplate, err := template.New(info.Name()).
-			Funcs(template.FuncMap{"StringsJoin": strings.Join}).
+			Funcs(template.FuncMap{"Base64Encode": base64.StdEncoding.EncodeToString}).
 			Parse(string(manifestTemplateBytes))
 		if err != nil {
 			return fmt.Errorf("cannot parse embedded file %q: %s", info.Name(), err)
@@ -38,6 +45,9 @@ func FillInTemplates(params TemplateParameters) (map[string][]byte, error) {
 		out := bytes.NewBuffer(nil)
 		if err := manifestTemplate.Execute(out, params); err != nil {
 			return fmt.Errorf("cannot execute template for embedded file %q: %s", info.Name(), err)
+		}
+		if len(out.Bytes()) == 0 {
+			return nil
 		}
 		result[strings.TrimSuffix(info.Name(), ".tmpl")] = out.Bytes()
 		return nil
