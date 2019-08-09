@@ -57,15 +57,15 @@ configureRepositories:
 git:
   pollInterval: "5m"
   timeout: "20s"
-  # Generate a SSH key named identity: ssh-keygen -q -N "" -f ./identity
-  # create a Kubernetes secret: kubectl -n flux create secret generic helm-ssh --from-file=./identity
-  # delete the private key: rm ./identity
-  # add ./identity.pub as a read-only deployment key in your Git repo where the charts are
-  # set the secret name (helm-ssh) below
-  secretName: ""
   # Overrides for git over SSH. If you use your own git server, you
   # will likely need to provide a host key for it in this field.
   ssh:
+    # Generate a SSH key named identity: ssh-keygen -q -N "" -f ./identity
+    # create a Kubernetes secret: kubectl -n flux create secret generic helm-ssh --from-file=./identity
+    # delete the private key: rm ./identity
+    # add ./identity.pub as a read-only deployment key in your Git repo where the charts are
+    # set the secret name (helm-ssh) below
+    secretName: ""
     known_hosts: ""
   # Global Git configuration See https://git-scm.com/docs/git-config for more details.
   config:

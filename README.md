@@ -22,9 +22,9 @@ and the Helm Operator makes sure Helm charts are released as specified in the re
 * automatic purging on chart install failures
 * automatic rollback on chart upgrade failures
 
-## Get started with the Helm operator
+## Get started with the Helm Operator
 
-Get started [installing the Helm operator](https://docs.fluxcd.io/en/latest/helm-operator/tutorials/get-started.html)
+Get started [installing the Helm operator](/chart/helm-operator/README.md)
 or just [browse through the documentation](https://docs.fluxcd.io/en/latest/helm-operator/).
 
 ### Integrations
@@ -58,7 +58,7 @@ be interested in the following:
 
 If you have any questions about Helm Operator and continuous delivery:
 
-- Read [the Flux docs](https://github.com/fluxcd/flux/tree/master/docs).
+- Read [the Helm Operator docs](https://github.com/fluxcd/flux/tree/master/docs).
 - Invite yourself to the <a href="https://slack.cncf.io" target="_blank">CNCF community</a>
   slack and ask a question on the [#flux](https://cloud-native.slack.com/messages/flux/)
   channel.
