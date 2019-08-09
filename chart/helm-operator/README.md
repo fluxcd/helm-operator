@@ -22,66 +22,24 @@ Install the HelmRelease CRD:
 kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/prepare-helm-op/deploy/flux-helm-release-crd.yaml
 ```
 
-Install the chart with the release name `helm-operator`:
+Install Helm Operator`in the fluxcd namespace:
 
 ```sh
 helm install --wait --name helm-operator \
---namespace flux \
+--namespace fluxcd \
 fluxcd/helm-operator
 ```
 
-### Use a private Git server
-
-When using a private Git server to host your charts, setting the `git.ssh.known_hosts` variable
-is required for enabling successful key matches because `StrictHostKeyChecking` is enabled during git pull operations.
-
-By setting the `git.ssh.known_hosts` variable, a configmap will be created
-called `helm-operator-ssh-config` which in turn will be mounted into a volume named
-`sshdir` at `/root/.ssh/known_hosts`.
-
-* Get the known hosts keys by running the following command:
-
-```sh
-ssh-keyscan <your_git_host_domain>
-```
-
-* Copy the known hosts keys into a temporary file `/tmp/flux_known_hosts` and install Helm Operator:
-
-```sh
-helm install --name helm-operator \
---set-file git.ssh.known_hosts=/tmp/flux_known_hosts \
---namespace flux \
-chart/helm-operator
-```
-
-You can refer to a chart from your private Git with:
-
-```yaml
-apiVersion: flux.weave.works/v1beta1
-kind: HelmRelease
-metadata:
-  name: some-app
-  namespace: default
-spec:
-  releaseName: some-app
-  chart:
-    git: git@your_git_host_domain:org/repo
-    ref: master
-    path: charts/some-app
-  values:
-    replicaCount: 1
-```
-
-### Use a custom Helm repository
+## Use a custom Helm repository
 
 You can add Helm repositories using the `configureRepositories` settings:
 
 ```sh
 helm upgrade -i helm-operator fluxcd/helm-operator \
---namespace flux \
+--namespace fluxcd \
 --set configureRepositories.enable=true \
 --set configureRepositories.repositories[0].name=stable \
---set configureRepositories.repositories[0].url=ttps://kubernetes-charts.storage.googleapis.com
+--set configureRepositories.repositories[0].url=ttps://kubernetes-charts.storage.googleapis.com \
 --set configureRepositories.repositories[1].name=podinfo \
 --set configureRepositories.repositories[1].url=https://stefanprodan.github.io/podinfo
 ```
@@ -125,6 +83,57 @@ Delete the release with:
 kubectl delete hr/podinfo
 ```
 
+## Use a private Git server
+
+When using a private Git server to host your charts, setting the `git.ssh.known_hosts` variable
+is required for enabling successful key matches because `StrictHostKeyChecking` is enabled during git pull operations.
+
+By setting the `git.ssh.known_hosts` variable, a configmap will be created
+called `helm-operator-ssh-config` which in turn will be mounted into a volume named
+`sshdir` at `/root/.ssh/known_hosts`.
+
+* Get the known hosts keys by running the following command:
+
+```sh
+ssh-keyscan <your_git_host_domain>
+```
+
+* Copy the known hosts keys into a temporary file `/tmp/flux_known_hosts`.
+
+* Generate a SSH key named `identity` and create a secret with it:
+
+```sh
+ssh-keygen -q -N "" -f /tmp/identity
+kubectl -n fluxcd create secret generic helm-operator-ssh --from-file=/tmp/identity
+```
+
+Add `identity.pub` as a read-only deployment key in your Git repo and install Helm Operator:
+
+```sh
+helm -i helm-operator fluxcd/helm-operator \
+--namespace fluxcd \
+--set git.ssh.secret=helm-operator-ssh \
+--set-file git.ssh.known_hosts=/tmp/flux_known_hosts
+```
+
+You can refer to a chart from your private Git with:
+
+```yaml
+apiVersion: flux.weave.works/v1beta1
+kind: HelmRelease
+metadata:
+  name: some-app
+  namespace: default
+spec:
+  releaseName: some-app
+  chart:
+    git: git@your_git_host_domain:org/repo
+    ref: master
+    path: charts/some-app
+  values:
+    replicaCount: 1
+```
+
 ## Uninstall
 
 To uninstall/delete the `helm-operator` deployment:
@@ -162,7 +171,7 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `updateChartDeps`                                 | `true`                                               | Update dependencies for charts
 | `git.pollInterval`                                | `git.pollInterval`                                   | Period on which to poll git chart sources for changes
 | `git.timeout`                                     | `git.timeout`                                        | Duration after which git operations time out
-| `git.secretName`                                  | `None`                                               | The name of the kubernetes secret with the SSH private key, supercedes `git.secretName`
+| `git.ssh.secretName`                              | `None`                                               | The name of the kubernetes secret with the SSH private key, supercedes `git.secretName`
 | `git.ssh.known_hosts`                             | `None`                                               | The contents of an SSH `known_hosts` file, if you need to supply host key(s)
 | `chartsSyncInterval`                              | `3m`                                                 | Interval at which to check for changed charts
 | `workers`                                         | `None`                                               | (Experimental) amount of workers processing releases
