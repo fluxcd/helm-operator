@@ -30,7 +30,7 @@ helm install --wait --name helm-operator \
 fluxcd/helm-operator
 ```
 
-#### To install with a private git host:
+### Use a private Git server
 
 When using a private Git server to host your charts, setting the `git.ssh.known_hosts` variable
 is required for enabling successful key matches because `StrictHostKeyChecking` is enabled during git pull operations.
@@ -54,7 +54,76 @@ helm install --name helm-operator \
 chart/helm-operator
 ```
 
-The [configuration](#configuration) section lists all the parameters that can be configured during installation.
+You can refer to a chart from your private Git with:
+
+```yaml
+apiVersion: flux.weave.works/v1beta1
+kind: HelmRelease
+metadata:
+  name: some-app
+  namespace: default
+spec:
+  releaseName: some-app
+  chart:
+    git: git@your_git_host_domain:org/repo
+    ref: master
+    path: charts/some-app
+  values:
+    replicaCount: 1
+```
+
+### Use a custom Helm repository
+
+You can add Helm repositories using the `configureRepositories` settings:
+
+```sh
+helm upgrade -i helm-operator fluxcd/helm-operator \
+--namespace flux \
+--set configureRepositories.enable=true \
+--set configureRepositories.repositories[0].name=stable \
+--set configureRepositories.repositories[0].url=ttps://kubernetes-charts.storage.googleapis.com
+--set configureRepositories.repositories[1].name=podinfo \
+--set configureRepositories.repositories[1].url=https://stefanprodan.github.io/podinfo
+```
+
+Install podinfo by referring to its Helm repository:
+
+```sh
+cat <<EOF | kubectl apply -f -
+apiVersion: flux.weave.works/v1beta1
+kind: HelmRelease
+metadata:
+  name: podinfo
+  namespace: default
+spec:
+  releaseName: podinfo
+  chart:
+    repository: https://stefanprodan.github.io/podinfo
+    version: 2.1.0
+    name: podinfo
+  values:
+    replicaCount: 1
+EOF
+```
+
+Verify that the Helm Operator has installed the release:
+
+```sh
+kubectl describe hr/podinfo
+
+Status:
+  Conditions:
+    Message:               helm install succeeded
+    Reason:                HelmSuccess
+    Status:                True
+    Type:                  Released
+```
+
+Delete the release with:
+
+```sh
+kubectl delete hr/podinfo
+```
 
 ## Uninstall
 
@@ -116,12 +185,3 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `kube.config`                                     | `None`                                               | Override for kubectl default config in the Helm Operator pod(s).
 | `prometheus.enabled`                              | `false`                                              | If enabled, adds prometheus annotations to Helm Operator pod(s)
 
-## Upgrade
-
-Update Helm Operator version with:
-
-```sh
-helm upgrade --reuse-values helm-operator \
---set image.tag=0.10.1 \
-fluxcd/helm-operator
-```
