@@ -1,0 +1,135 @@
+# Default values for helm-operator
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: docker.io/fluxcd/helm-operator
+  tag: 0.10.1
+  pullPolicy: IfNotPresent
+  pullSecret:
+
+# Include the HelmRelease definition on install
+createCRD: false
+# Limit the operator scope to a single namespace
+allowNamespace:
+# Update dependencies for charts
+updateChartDeps: true
+# Log format can be fmt or json
+logFormat: fmt
+# Log the diff when a chart release diverges
+logReleaseDiffs: false
+# Interval at which to check for changed charts
+chartsSyncInterval: "3m"
+# Amount of workers processing releases
+workers: 2
+
+# Tiller settings
+# If a hostname or IP is given here, that will be combined with the
+# tillerPort and used for connecting to Tiller. Otherwise, the
+# cluster-ip of the `tiller-deploy` service in .tillerNamespace is looked up.
+tillerHost:
+tillerPort: 44134
+tillerNamespace: kube-system
+tls:
+  secretName: "helm-client-certs"
+  verify: false
+  enable: false
+  keyFile: "tls.key"
+  certFile: "tls.crt"
+  caContent: ""
+  hostname: ""
+
+# For charts stored in Helm repositories other than stable
+# mount repositories.yaml configuration in a volume
+configureRepositories:
+  enable: false
+  volumeName: repositories-yaml
+  secretName: flux-helm-repositories
+  cacheVolumeName: repositories-cache
+  repositories:
+    # - name: bitnami
+    #   url: https://charts.bitnami.com
+    #   username:
+    #   password:
+
+# For charts stored in Git repos set the SSH private key secret
+git:
+  pollInterval: "5m"
+  timeout: "20s"
+  # Generate a SSH key named identity: ssh-keygen -q -N "" -f ./identity
+  # create a Kubernetes secret: kubectl -n flux create secret generic helm-ssh --from-file=./identity
+  # delete the private key: rm ./identity
+  # add ./identity.pub as a read-only deployment key in your Git repo where the charts are
+  # set the secret name (helm-ssh) below
+  secretName: ""
+  # Overrides for git over SSH. If you use your own git server, you
+  # will likely need to provide a host key for it in this field.
+  ssh:
+    known_hosts: ""
+  # Global Git configuration See https://git-scm.com/docs/git-config for more details.
+  config:
+    enabled: false
+    secretName: ""
+    data: ""
+    # data: |
+    #   [credential "https://github.com"]
+    #           username = foo
+
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+  # Specifies whether PSP resources should be created
+  pspEnabled: false
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+# If create is `false` and no name is given, the Helm
+# Operator will be restricted to the namespace where it is
+# deployed, and the kubeconfig default context will be set to that
+# namespace.
+clusterRole:
+  create: true
+  # The name of a cluster role to bind to; if not set and create is
+  # true, a name based on fullname is generated
+  name:
+
+kube:
+  # Override for kubectl default config
+  config: |
+    apiVersion: v1
+    clusters: []
+    contexts:
+    - context:
+        cluster: ""
+        namespace: default
+        user: ""
+      name: default
+    current-context: default
+    kind: Config
+    preferences: {}
+    users: []
+
+prometheus:
+  enabled: false
+
+# Additional environment variables to set
+extraEnvs: []
+# extraEnvs:
+#   - name: FOO
+#     value: bar
+
+replicaCount: 1
+nodeSelector: {}
+annotations: {}
+tolerations: []
+affinity: {}
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
