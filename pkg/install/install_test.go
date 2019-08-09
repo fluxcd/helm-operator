@@ -7,13 +7,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testFillInTemplates(t *testing.T, params TemplateParameters) {
+func testFillInTemplates(t *testing.T, params TemplateParameters, expectedManifestNum int) {
 	manifests, err := FillInTemplates(params)
 	assert.NoError(t, err)
-	assert.Len(t, manifests, 3)
+	assert.Len(t, manifests, expectedManifestNum)
+
+	config := &kubeval.Config{
+		IgnoreMissingSchemas: true,
+		KubernetesVersion:    "master",
+	}
 	for fileName, contents := range manifests {
-		validationResults, err := kubeval.Validate(contents, fileName)
-		assert.NoError(t, err)
+		config.FileName = fileName
+		validationResults, err := kubeval.Validate(contents, config)
+		assert.NoError(t, err, "contents: %s", string(contents))
 		for _, result := range validationResults {
 			if len(result.Errors) > 0 {
 				t.Errorf("found problems with manifest %s (Kind %s):\ncontent:\n%s\nerrors: %s",
@@ -26,15 +32,17 @@ func testFillInTemplates(t *testing.T, params TemplateParameters) {
 	}
 }
 
-func TestFillInTemplates(t *testing.T) { 
+func TestFillInTemplates(t *testing.T) {
 	testFillInTemplates(t, TemplateParameters{
-		Namespace:          "flux",
-	})
-
+		Namespace:               "flux",
+		TillerNamespace:         "tiller",
+		SSHSecretName:           "mysshsecretname",
+		EnableTillerTLS:         true,
+		TillerTLSCACertContent:  []byte("foo bar"),
+		TillerTLSCertSecretName: "mytlssecretname",
+	}, 4)
 }
 
-func TestFillInTemplatesNoNamespace(t *testing.T) {
-	testFillInTemplates(t, TemplateParameters{
-		Namespace: "",
-	})
+func TestFillInTemplatesEmpty(t *testing.T) {
+	testFillInTemplates(t, TemplateParameters{}, 3)
 }

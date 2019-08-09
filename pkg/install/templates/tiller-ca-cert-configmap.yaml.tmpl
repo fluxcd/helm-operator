@@ -1,0 +1,11 @@
+{{ if .EnableTillerTLS }}---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flux-helm-tls-ca-config
+  {{ if .Namespace }}
+  namespace: {{ .Namespace }}{{ end }}
+data:
+  ca.crt: |
+    {{ Base64Encode .TillerTLSCACertContent }}
+{{- end -}}

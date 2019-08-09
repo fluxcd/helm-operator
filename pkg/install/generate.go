@@ -11,7 +11,7 @@ import (
 
 	"github.com/shurcooL/vfsgen"
 
-	"github.com/weaveworks/flux/install"
+	"github.com/fluxcd/helm-operator/pkg/install"
 )
 
 func main() {
@@ -34,11 +34,7 @@ func main() {
 			log.Fatalln(err)
 		}
 	case "deploy":
-		params := install.TemplateParameters{
-			GitURL:    "git@github.com:weaveworks/flux-get-started",
-			GitBranch: "master",
-		}
-		manifests, err := install.FillInTemplates(params)
+		manifests, err := install.FillInTemplates(install.TemplateParameters{})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: failed to fill in templates: %s\n", err)
 			os.Exit(1)
