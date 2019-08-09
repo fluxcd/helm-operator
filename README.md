@@ -1,14 +1,16 @@
 # Helm Operator
 
+[![CircleCI](https://circleci.com/gh/fluxcd/helm-operator.svg?style=svg)](https://circleci.com/gh/fluxcd/helm-operator)
+[![GoDoc](https://godoc.org/github.com/fluxcd/helm-operator?status.svg)](https://godoc.org/github.com/fluxcd/flux)
+[![Documentation](https://img.shields.io/badge/latest-documentation-informational)](https://docs.fluxcd.io/en/latest/)
+
 The Helm Operator provides an extension to [Flux](https://github.com/fluxcd/flux)
 that automates Helm Chart releases in a GitOps manner.
 A Chart release is described through a Kubernetes custom resource named HelmRelease. 
 The Flux daemon synchronizes these resources from git to the cluster, 
 and the Helm Operator makes sure Helm charts are released as specified in the resources.
 
-[![CircleCI](https://circleci.com/gh/fluxcd/helm-operator.svg?style=svg)](https://circleci.com/gh/fluxcd/helm-operator)
-[![GoDoc](https://godoc.org/github.com/fluxcd/helm-operator?status.svg)](https://godoc.org/github.com/fluxcd/flux)
-[![Documentation](https://img.shields.io/badge/latest-documentation-informational)](https://docs.fluxcd.io/en/latest/)
+![GitOps Helm Operator](docs/_files/fluxcd-helm-operator-diagram.png)
 
 ## Helm Operator features
 
