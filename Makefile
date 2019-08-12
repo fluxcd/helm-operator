@@ -92,8 +92,8 @@ generate-deploy: pkg/install/generated_templates.gogen.go
 	cd deploy && go run ../pkg/install/generate.go deploy
 
 check-generated: generate-deploy pkg/install/generated_templates.gogen.go
-	GO111MODULE=on ./hack/update_codegen.sh
-	git diff --exit-code -- pkg/apis pkg/client
+	git diff --exit-code -- pkg/install/generated_templates.gogen.go
+	GO111MODULE=on ./hack/verify-codegen.sh
 
 build-docs:
 	@cd docs && docker build -t flux-docs .
