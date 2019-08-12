@@ -36,6 +36,8 @@ stage
 
 
 # Specific to this project
+bin/
+_tmp/
 vendor/*
 !vendor/manifest
 build/
