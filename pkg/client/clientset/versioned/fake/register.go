@@ -20,7 +20,6 @@ package fake
 
 import (
 	fluxv1beta1 "github.com/fluxcd/helm-operator/pkg/apis/flux.weave.works/v1beta1"
-	helmv1alpha2 "github.com/fluxcd/helm-operator/pkg/apis/helm.integrations.flux.weave.works/v1alpha2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -33,7 +32,6 @@ var codecs = serializer.NewCodecFactory(scheme)
 var parameterCodec = runtime.NewParameterCodec(scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
 	fluxv1beta1.AddToScheme,
-	helmv1alpha2.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition

@@ -20,7 +20,6 @@ package versioned
 
 import (
 	fluxv1beta1 "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/flux.weave.works/v1beta1"
-	helmv1alpha2 "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.integrations.flux.weave.works/v1alpha2"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -29,25 +28,18 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	FluxV1beta1() fluxv1beta1.FluxV1beta1Interface
-	HelmV1alpha2() helmv1alpha2.HelmV1alpha2Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	fluxV1beta1  *fluxv1beta1.FluxV1beta1Client
-	helmV1alpha2 *helmv1alpha2.HelmV1alpha2Client
+	fluxV1beta1 *fluxv1beta1.FluxV1beta1Client
 }
 
 // FluxV1beta1 retrieves the FluxV1beta1Client
 func (c *Clientset) FluxV1beta1() fluxv1beta1.FluxV1beta1Interface {
 	return c.fluxV1beta1
-}
-
-// HelmV1alpha2 retrieves the HelmV1alpha2Client
-func (c *Clientset) HelmV1alpha2() helmv1alpha2.HelmV1alpha2Interface {
-	return c.helmV1alpha2
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -70,10 +62,6 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	cs.helmV1alpha2, err = helmv1alpha2.NewForConfig(&configShallowCopy)
-	if err != nil {
-		return nil, err
-	}
 
 	cs.DiscoveryClient, err = discovery.NewDiscoveryClientForConfig(&configShallowCopy)
 	if err != nil {
@@ -87,7 +75,6 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
 	cs.fluxV1beta1 = fluxv1beta1.NewForConfigOrDie(c)
-	cs.helmV1alpha2 = helmv1alpha2.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -97,7 +84,6 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.fluxV1beta1 = fluxv1beta1.New(c)
-	cs.helmV1alpha2 = helmv1alpha2.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs
