@@ -1,10 +1,9 @@
-# How to release Flux and the Helm operator
+# How to release the Helm operator
 
 The release process needs to do these things:
 
  - create a new release on GitHub, with a tag
  - push Docker image(s) to Docker Hub
- - possibly upload the [`fluxctl` binaries](/docs/references/fluxctl.md#binary-releases) to the GitHub release
  - make sure the version is entered into the checkpoint database so that up-to-date checks report back accurate information
  - close out the GitHub milestone that was used to track the release
 
@@ -12,15 +11,11 @@ Much of this is automated, but it needs a human to turn the wheel.
 
 ## Overview
 
-The Flux daemon and the Helm operator have separate releases, and use different branches and tags. Flux daemon releases use just a semver version, like `1.8.1`, and the Helm operator uses the prefix "helm", e.g., `helm-0.5.0`.
+The Helm operator releases use branches and tags with semver versions, like `1.2.3`.
 
-Each minor version has its own "release series" branch, from which patch releases will be put together, called e.g., `release/1.8.x`, or for the Helm operator, `release/helm-0.5.x`.
+Each minor version has its own "release series" branch, from which patch releases will be put together, called e.g., `release/1.2.x`.
 
-The CircleCI script runs builds for tags, which push Docker images and upload binaries. This is triggered by creating a release in GitHub, which will create the tag.
-
-## Requirements
-
-- CircleCI must have a secret environmental variable called `GITHUB_TOKEN` which is a personal access token. (This is almost certainly already set up, but mentioned here in case it needs to be reinstated.)
+The CircleCI script runs builds for tags, which push Docker images. This is triggered by creating a release in GitHub, which will create the tag.
 
 ## Release process
 
@@ -35,9 +30,9 @@ The CircleCI script runs builds for tags, which push Docker images and upload bi
     For example,
 
     ```sh
-    git checkout release/1.8.x
+    git checkout release/1.2.x
     git pull origin
-    git checkout -b release/1.8.1
+    git checkout -b release/1.2.1
     ```
 
 3. Put the commits you want in the release, into your branch
@@ -48,32 +43,32 @@ The CircleCI script runs builds for tags, which push Docker images and upload bi
 
 4. Put an entry into the changelog
 
-    For the Flux daemon, it's `CHANGELOG.md`; for the Helm operator, it's `CHANGELOG-helmop.md`. Follow the format established, and commit your
+    The changelog is in `CHANGELOG.md` in the root of the project. Follow the format established, and commit your
 change.
 
     If you cherry-picked commits, remember to only mention those changes.
 
     To compile a list of people (GitHub usernames) to thank, you can use a script (if you have access to weaveworks/dx) or peruse the commits/PRs merged/issues since the last release. There's no exact way to do it. Be generous.
 
-5. Consider updating the deploy manifest examples and the Helm chart.
+5. Update the versions in the deploy manifest examples and the Helm chart.
 
-    The example manifests are in [deploy](./deploy/) and [deploy-helm](./deploy-helm/). Check the changes included in the release, to see if arguments, volume mounts, etc., have changed.
+    The example manifests templates are in [`pkg/install/templates`](./../pkg/install/templates/), the Helm chart is in [`chart/helm-operator`](./../chart/helm-operator). Check the changes included in the release, to see if arguments, volume mounts, etc., have changed.
 
     Read on, for how to publish a new Helm chart version.
 
 6. Post the branch as a PR to the release series
 
-    Push the patch release branch -- e.g., `release/1.8.1` -- to GitHub, and create a PR from it.
+    Push the patch release branch -- e.g., `release/1.2.1` -- to GitHub, and create a PR from it.
 
-    > **Note:** You will need to change the branch the PR targets, from `master` to the release series, e.g., `release/1.8.x`, while creating the PR.
+    > **Note:** You will need to change the branch the PR targets, from `master` to the release series, e.g., `release/1.2.x`, while creating the PR.
 
 7. Get the PR reviewed, and merge it.
 
 **Creating the release**
 
-8. [Create a release in GitHub](https://github.com/weaveworks/flux/releases/new)
+8. [Create a release in GitHub](https://github.com/fluxcd/helm-operator/releases/new)
 
-    Use a tag name as explained above; semver for the Flux daemon, `helm-` then the semver for the Helm operator.
+    Use a tag name as explained above; semver (`1.2.3`).
 
     Copy and paste the changelog entry. You may need to remove newlines that have been inserted by your editor, so that it wraps nicely.
 
@@ -97,12 +92,10 @@ change.
 
 ## Helm chart release process
 
-1. Create a new branch as in `chart-bump`
-2. Update `appVersion` with the new Flux version in `chart/flux/Chart.yaml`
-3. Bump the chart version in `chart/flux/Chart.yaml`
-4. Update `image.tag` with the new Flux version in `chart/flux/values.yaml`
-5. For Flux Helm Operator update `helmOperator.tag` in `chart/flux/values.yaml`
-6. Create a PR from `chart-bump`
-7. After the PR is merged, tag the master with the chart version `git tag chart-0.2.2` and push it upstream
-8. Checkout the `gh-pages` branch and run `./bin/update-chart.sh chart-0.2.2`, this will generate a new chart release package
-9. Add all files generated by `update-chart.sh` and push those changes to `gh-pages`
+1. Create a new branch (i.e. `release/chart-1.0.0`)
+2. Update `appVersion` with the new Flux Helm operator version in `chart/helm-operator/Chart.yaml`
+3. Bump the chart version in `chart/helm-operator/Chart.yaml`
+4. (Maybe) update `image.tag` with the new version in `chart/helm-operator/values.yaml`
+6. Create a PR
+7. After the PR is merged, tag the master with the chart version `git tag chart-1.0.0` and push it upstream
+8. CI will build and publish the chart to `fluxcd/charts`

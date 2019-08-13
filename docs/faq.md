@@ -1,9 +1,9 @@
 # Frequently asked questions
 
-### I'm using SSL between Helm and Tiller. How can I configure Flux to use the certificate?
+### I'm using SSL between Helm and Tiller. How can I configure the operator to use the certificate?
 
 When installing Flux, you can supply the CA and client-side certificate using the `helmOperator.tls` options,
-more details [here](https://github.com/fluxcd/flux/blob/master/chart/flux/README.md#installing-weave-flux-helm-operator-and-helm-with-tls-enabled).
+more details [here](./tutorials/get-started.md).
 
 ### I've deleted a HelmRelease file from Git. Why is the Helm release still running on my cluster?
 

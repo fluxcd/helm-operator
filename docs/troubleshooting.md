@@ -1,7 +1,7 @@
 # Troubleshooting
 
 Also see the [issues labeled with
-`FAQ`](https://github.com/fluxcd/flux/labels/FAQ), which often
+`question`](https://github.com/fluxcd/helm-operator/labels/question), which often
 explain workarounds.
 
 ## Error creating helm client: failed to append certificates from file: /etc/fluxd/helm-ca/ca.crt
