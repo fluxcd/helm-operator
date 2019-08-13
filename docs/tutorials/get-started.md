@@ -162,7 +162,7 @@ helm upgrade --install \
     --set helmOperator.tls.secretName=helm-client \
     --set helmOperator.tls.caContent="$(cat ./tls/ca.pem)" \
     flux \
-    fluxcd/flux
+    fluxcd/helm-operator
 ```
 
 > **Note:**

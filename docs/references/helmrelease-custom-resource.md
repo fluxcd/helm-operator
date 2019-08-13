@@ -2,7 +2,7 @@
 
 Each release of a chart is declared by a `HelmRelease`
 resource. The schema for these resources is given in [the custom
-resource definition](https://github.com/fluxcd/flux/blob/master/deploy-helm/flux-helm-release-crd.yaml). They
+resource definition](https://github.com/fluxcd/helm-operator/blob/master/deploy/flux-helm-release-crd.yaml). They
 look like this:
 
 ```yaml
@@ -263,7 +263,7 @@ As a workaround, you can mount a `repositories.yaml` file with
 authentication already configured, into the operator container.
 
 > **Note:** When using a custom `repositories.yaml` the
-[default](https://github.com/fluxcd/flux/blob/master/docker/helm-repositories.yaml)
+[default](https://github.com/fluxcd/helm-operator/blob/master/docker/helm-repositories.yaml)
 that ships with the operator is overwritten. This means that for any
 repository you want to make use of you should manually add an entry to
 your `repositories.yaml` file.
@@ -294,7 +294,7 @@ kubectl create secret generic flux-helm-repositories --from-file=./repositories.
 Lastly, mount that secret into the container. This can be done by
 setting `helmOperator.configureRepositories.enable` to `true` for the
 flux Helm release, or as shown in the commented-out sections of the
-[example deployment](https://github.com/fluxcd/flux/blob/master/deploy-helm/helm-operator-deployment.yaml).
+[example deployment](https://github.com/fluxcd/helm-operator/blob/master/deploy/helm-operator-deployment.yaml).
 
 #### Azure ACR repositories
 
@@ -323,7 +323,7 @@ access.
 
 To provide an SSH key, put the key in a secret under the entry
 `identity`, and mount it into the operator container as shown in the
-[example deployment](https://github.com/fluxcd/flux/blob/master/deploy-helm/helm-operator-deployment.yaml).
+[example deployment](https://github.com/fluxcd/helm-operator/blob/master/deploy/helm-operator-deployment.yaml).
 The default ssh_config expects an identity file at
 `/etc/fluxd/ssh/identity`, which is where it'll be if you just
 uncomment the blocks from the example.
