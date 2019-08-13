@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Weaveworks Ltd.
+Copyright 2018-2019 The Flux CD contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ package fake
 
 import (
 	clientset "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned"
-	fluxv1beta1 "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/flux.weave.works/v1beta1"
-	fakefluxv1beta1 "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/flux.weave.works/v1beta1/fake"
+	helmv1 "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
+	fakehelmv1 "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -71,7 +71,7 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 
 var _ clientset.Interface = &Clientset{}
 
-// FluxV1beta1 retrieves the FluxV1beta1Client
-func (c *Clientset) FluxV1beta1() fluxv1beta1.FluxV1beta1Interface {
-	return &fakefluxv1beta1.FakeFluxV1beta1{Fake: &c.Fake}
+// HelmV1 retrieves the HelmV1Client
+func (c *Clientset) HelmV1() helmv1.HelmV1Interface {
+	return &fakehelmv1.FakeHelmV1{Fake: &c.Fake}
 }

@@ -28,7 +28,7 @@ import (
 	hapi_release "k8s.io/helm/pkg/proto/hapi/release"
 	helmutil "k8s.io/helm/pkg/releaseutil"
 
-	flux_v1beta1 "github.com/fluxcd/helm-operator/pkg/apis/flux.weave.works/v1beta1"
+	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	fluxk8s "github.com/weaveworks/flux/cluster/kubernetes"
 	"github.com/weaveworks/flux/resource"
 )
@@ -48,7 +48,7 @@ type Release struct {
 
 type Releaser interface {
 	GetUpgradableRelease(name string) (*hapi_release.Release, error)
-	Install(dir string, releaseName string, fhr flux_v1beta1.HelmRelease, action Action, opts InstallOptions) (*hapi_release.Release, error)
+	Install(dir string, releaseName string, hr helmfluxv1.HelmRelease, action Action, opts InstallOptions) (*hapi_release.Release, error)
 }
 
 type DeployInfo struct {
@@ -157,20 +157,22 @@ func (r *Release) canDelete(name string) (bool, error) {
 // TODO(michael): cloneDir is only relevant if installing from git;
 // either split this procedure into two varieties, or make it more
 // general and calculate the path to the chart in the caller.
-func (r *Release) Install(chartPath, releaseName string, fhr flux_v1beta1.HelmRelease, action Action, opts InstallOptions, kubeClient *kubernetes.Clientset) (release *hapi_release.Release, checksum string, err error) {
+func (r *Release) Install(chartPath, releaseName string, hr helmfluxv1.HelmRelease, action Action, opts InstallOptions,
+	kubeClient *kubernetes.Clientset) (release *hapi_release.Release, checksum string, err error) {
+
 	defer func(start time.Time) {
 		ObserveRelease(
 			start,
 			action,
 			opts.DryRun,
 			err == nil,
-			fhr.Namespace,
-			fhr.ReleaseName(),
+			hr.Namespace,
+			hr.ReleaseName(),
 		)
 	}(time.Now())
 
 	if chartPath == "" {
-		return nil, "", fmt.Errorf("empty path to chart supplied for resource %q", fhr.ResourceID().String())
+		return nil, "", fmt.Errorf("empty path to chart supplied for resource %q", hr.ResourceID().String())
 	}
 	_, err = os.Stat(chartPath)
 	switch {
@@ -180,20 +182,20 @@ func (r *Release) Install(chartPath, releaseName string, fhr flux_v1beta1.HelmRe
 		return nil, "", fmt.Errorf("error statting path given for chart %s: %s", chartPath, err.Error())
 	}
 
-	r.logger.Log("info", fmt.Sprintf("processing release %s (as %s)", fhr.ReleaseName(), releaseName),
+	r.logger.Log("info", fmt.Sprintf("processing release %s (as %s)", hr.ReleaseName(), releaseName),
 		"action", fmt.Sprintf("%v", action),
 		"options", fmt.Sprintf("%+v", opts),
-		"timeout", fmt.Sprintf("%vs", fhr.GetTimeout()))
+		"timeout", fmt.Sprintf("%vs", hr.GetTimeout()))
 
-	vals, err := Values(kubeClient.CoreV1(), fhr.Namespace, chartPath, fhr.GetValuesFromSources(), fhr.Spec.Values)
+	vals, err := Values(kubeClient.CoreV1(), hr.Namespace, chartPath, hr.GetValuesFromSources(), hr.Spec.Values)
 	if err != nil {
-		r.logger.Log("error", fmt.Sprintf("Failed to compose values for Chart release [%s]: %v", fhr.Spec.ReleaseName, err))
+		r.logger.Log("error", fmt.Sprintf("Failed to compose values for Chart release [%s]: %v", hr.Spec.ReleaseName, err))
 		return nil, "", err
 	}
 
 	strVals, err := vals.YAML()
 	if err != nil {
-		r.logger.Log("error", fmt.Sprintf("Problem with supplied customizations for Chart release [%s]: %v", fhr.Spec.ReleaseName, err))
+		r.logger.Log("error", fmt.Sprintf("Problem with supplied customizations for Chart release [%s]: %v", hr.Spec.ReleaseName, err))
 		return nil, "", err
 	}
 	rawVals := []byte(strVals)
@@ -203,20 +205,20 @@ func (r *Release) Install(chartPath, releaseName string, fhr flux_v1beta1.HelmRe
 	case InstallAction:
 		res, err := r.HelmClient.InstallRelease(
 			chartPath,
-			fhr.GetTargetNamespace(),
+			hr.GetTargetNamespace(),
 			k8shelm.ValueOverrides(rawVals),
 			k8shelm.ReleaseName(releaseName),
 			k8shelm.InstallDryRun(opts.DryRun),
 			k8shelm.InstallReuseName(opts.ReuseName),
-			k8shelm.InstallTimeout(fhr.GetTimeout()),
+			k8shelm.InstallTimeout(hr.GetTimeout()),
 		)
 
 		if err != nil {
-			r.logger.Log("error", fmt.Sprintf("Chart release failed: %s: %#v", fhr.Spec.ReleaseName, err))
+			r.logger.Log("error", fmt.Sprintf("Chart release failed: %s: %#v", hr.Spec.ReleaseName, err))
 			// purge the release if the install failed but only if this is the first revision
 			history, err := r.HelmClient.ReleaseHistory(releaseName, k8shelm.WithMaxHistory(2))
 			if err == nil && len(history.Releases) == 1 && history.Releases[0].Info.Status.Code == hapi_release.Status_FAILED {
-				r.logger.Log("info", fmt.Sprintf("Deleting failed release: [%s]", fhr.Spec.ReleaseName))
+				r.logger.Log("info", fmt.Sprintf("Deleting failed release: [%s]", hr.Spec.ReleaseName))
 				_, err = r.HelmClient.DeleteRelease(releaseName, k8shelm.DeletePurge(true))
 				if err != nil {
 					r.logger.Log("error", fmt.Sprintf("Release deletion error: %#v", err))
@@ -226,7 +228,7 @@ func (r *Release) Install(chartPath, releaseName string, fhr flux_v1beta1.HelmRe
 			return nil, checksum, err
 		}
 		if !opts.DryRun {
-			r.annotateResources(res.Release, fhr)
+			r.annotateResources(res.Release, hr)
 		}
 		return res.Release, checksum, err
 	case UpgradeAction:
@@ -235,18 +237,18 @@ func (r *Release) Install(chartPath, releaseName string, fhr flux_v1beta1.HelmRe
 			chartPath,
 			k8shelm.UpdateValueOverrides(rawVals),
 			k8shelm.UpgradeDryRun(opts.DryRun),
-			k8shelm.UpgradeTimeout(fhr.GetTimeout()),
-			k8shelm.ResetValues(fhr.Spec.ResetValues),
-			k8shelm.UpgradeForce(fhr.Spec.ForceUpgrade),
-			k8shelm.UpgradeWait(fhr.Spec.Rollback.Enable),
+			k8shelm.UpgradeTimeout(hr.GetTimeout()),
+			k8shelm.ResetValues(hr.Spec.ResetValues),
+			k8shelm.UpgradeForce(hr.Spec.ForceUpgrade),
+			k8shelm.UpgradeWait(hr.Spec.Rollback.Enable),
 		)
 
 		if err != nil {
-			r.logger.Log("error", fmt.Sprintf("Chart upgrade release failed: %s: %#v", fhr.Spec.ReleaseName, err))
+			r.logger.Log("error", fmt.Sprintf("Chart upgrade release failed: %s: %#v", hr.Spec.ReleaseName, err))
 			return nil, checksum, err
 		}
 		if !opts.DryRun {
-			r.annotateResources(res.Release, fhr)
+			r.annotateResources(res.Release, hr)
 		}
 		return res.Release, checksum, err
 	default:
@@ -257,7 +259,7 @@ func (r *Release) Install(chartPath, releaseName string, fhr flux_v1beta1.HelmRe
 }
 
 // Rollback rolls back a Chart release if required
-func (r *Release) Rollback(releaseName string, fhr flux_v1beta1.HelmRelease) (*hapi_release.Release, error) {
+func (r *Release) Rollback(releaseName string, hr helmfluxv1.HelmRelease) (*hapi_release.Release, error) {
 	ok, err := r.shouldRollback(releaseName)
 	if !ok {
 		if err != nil {
@@ -269,11 +271,11 @@ func (r *Release) Rollback(releaseName string, fhr flux_v1beta1.HelmRelease) (*h
 	res, err := r.HelmClient.RollbackRelease(
 		releaseName,
 		k8shelm.RollbackVersion(0), // '0' makes Helm fetch the latest deployed release
-		k8shelm.RollbackTimeout(fhr.Spec.Rollback.GetTimeout()),
-		k8shelm.RollbackForce(fhr.Spec.Rollback.Force),
-		k8shelm.RollbackRecreate(fhr.Spec.Rollback.Recreate),
-		k8shelm.RollbackDisableHooks(fhr.Spec.Rollback.DisableHooks),
-		k8shelm.RollbackWait(fhr.Spec.Rollback.Wait),
+		k8shelm.RollbackTimeout(hr.Spec.Rollback.GetTimeout()),
+		k8shelm.RollbackForce(hr.Spec.Rollback.Force),
+		k8shelm.RollbackRecreate(hr.Spec.Rollback.Recreate),
+		k8shelm.RollbackDisableHooks(hr.Spec.Rollback.DisableHooks),
+		k8shelm.RollbackWait(hr.Spec.Rollback.Wait),
 		k8shelm.RollbackDescription("Automated rollback by Helm operator"),
 	)
 	if err != nil {
@@ -281,7 +283,7 @@ func (r *Release) Rollback(releaseName string, fhr flux_v1beta1.HelmRelease) (*h
 		return nil, err
 	}
 
-	r.annotateResources(res.Release, fhr)
+	r.annotateResources(res.Release, hr)
 	r.logger.Log("info", "rolled back release", "release", releaseName)
 
 	return res.Release, err
@@ -316,7 +318,7 @@ func (r *Release) Delete(name string) error {
 //
 // To be able to migrate existing releases to a HelmRelease, empty
 // (missing) annotations are handled as true / owned by.
-func (r *Release) OwnedByHelmRelease(release *hapi_release.Release, fhr flux_v1beta1.HelmRelease) bool {
+func (r *Release) OwnedByHelmRelease(release *hapi_release.Release, hr helmfluxv1.HelmRelease) bool {
 	objs := releaseManifestToUnstructured(release.Manifest, log.NewNopLogger())
 
 	escapedAnnotation := strings.ReplaceAll(fluxk8s.AntecedentAnnotation, ".", `\.`)
@@ -339,7 +341,7 @@ func (r *Release) OwnedByHelmRelease(release *hapi_release.Release, fhr flux_v1b
 			if v == "" {
 				return true
 			}
-			return v == fhr.ResourceID().String()
+			return v == hr.ResourceID().String()
 		}
 	}
 
@@ -348,13 +350,13 @@ func (r *Release) OwnedByHelmRelease(release *hapi_release.Release, fhr flux_v1b
 
 // annotateResources annotates each of the resources created (or updated)
 // by the release so that we can spot them.
-func (r *Release) annotateResources(release *hapi_release.Release, fhr flux_v1beta1.HelmRelease) {
+func (r *Release) annotateResources(release *hapi_release.Release, hr helmfluxv1.HelmRelease) {
 	objs := releaseManifestToUnstructured(release.Manifest, r.logger)
 	for namespace, res := range namespacedResourceMap(objs, release.Namespace) {
 		args := []string{"annotate", "--overwrite"}
 		args = append(args, "--namespace", namespace)
 		args = append(args, res...)
-		args = append(args, fluxk8s.AntecedentAnnotation+"="+fhr.ResourceID().String())
+		args = append(args, fluxk8s.AntecedentAnnotation+"="+hr.ResourceID().String())
 
 		// The timeout is set to a high value as it may take some time
 		// to annotate large umbrella charts.
@@ -371,7 +373,7 @@ func (r *Release) annotateResources(release *hapi_release.Release, fhr flux_v1be
 
 // Values tries to resolve all given value file sources and merges
 // them into one Values struct. It returns the merged Values.
-func Values(corev1 k8sclientv1.CoreV1Interface, ns string, chartPath string, valuesFromSource []flux_v1beta1.ValuesFromSource, values chartutil.Values) (chartutil.Values, error) {
+func Values(corev1 k8sclientv1.CoreV1Interface, ns string, chartPath string, valuesFromSource []helmfluxv1.ValuesFromSource, values chartutil.Values) (chartutil.Values, error) {
 	result := chartutil.Values{}
 
 	for _, v := range valuesFromSource {
@@ -481,6 +483,11 @@ func ValuesChecksum(rawValues []byte) string {
 	hasher := sha256.New()
 	hasher.Write(rawValues)
 	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+// hrResourceID constructs a resource.ID for a HelmRelease resource.
+func hrResourceID(hr helmfluxv1.HelmRelease) resource.ID {
+	return resource.MakeID(hr.Namespace, "HelmRelease", hr.Name)
 }
 
 // Merges source and destination map, preferring values from the source Values

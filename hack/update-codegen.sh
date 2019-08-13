@@ -31,7 +31,7 @@ chmod +x ${CODEGEN_PKG}/generate-groups.sh
 # :magic:
 ${CODEGEN_PKG}/generate-groups.sh all \
     github.com/fluxcd/helm-operator/pkg/client github.com/fluxcd/helm-operator/pkg/apis \
-    "flux.weave.works:v1beta1" \
+    "helm.fluxcd.io:v1" \
     --output-base "${TEMP_DIR}" \
     --go-header-file "${SCRIPT_ROOT}/hack/custom-boilerplate.go.txt"
 

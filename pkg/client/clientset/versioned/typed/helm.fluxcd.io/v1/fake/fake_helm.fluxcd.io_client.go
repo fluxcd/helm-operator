@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Weaveworks Ltd.
+Copyright 2018-2019 The Flux CD contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,22 +19,22 @@ limitations under the License.
 package fake
 
 import (
-	v1beta1 "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/flux.weave.works/v1beta1"
+	v1 "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )
 
-type FakeFluxV1beta1 struct {
+type FakeHelmV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeFluxV1beta1) HelmReleases(namespace string) v1beta1.HelmReleaseInterface {
+func (c *FakeHelmV1) HelmReleases(namespace string) v1.HelmReleaseInterface {
 	return &FakeHelmReleases{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeFluxV1beta1) RESTClient() rest.Interface {
+func (c *FakeHelmV1) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
 }

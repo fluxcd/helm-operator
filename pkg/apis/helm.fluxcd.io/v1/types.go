@@ -1,11 +1,11 @@
-package v1beta1
+package v1
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/ghodss/yaml"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/helm/pkg/chartutil"
 
@@ -27,8 +27,8 @@ type HelmRelease struct {
 // ResourceID returns an ID made from the identifying parts of the
 // resource, as a convenience for Flux, which uses them
 // everywhere.
-func (fhr HelmRelease) ResourceID() resource.ID {
-	return resource.MakeID(fhr.Namespace, "HelmRelease", fhr.Name)
+func (hr HelmRelease) ResourceID() resource.ID {
+	return resource.MakeID(hr.Namespace, "HelmRelease", hr.Name)
 }
 
 // ReleaseName returns the configured release name, or constructs and
@@ -36,37 +36,37 @@ func (fhr HelmRelease) ResourceID() resource.ID {
 // When the HelmRelease's metadata.namespace and spec.targetNamespace
 // differ, both are used in the generated name.
 // This name is used for naming and operating on the release in Helm.
-func (fhr HelmRelease) ReleaseName() string {
-	if fhr.Spec.ReleaseName == "" {
-		namespace := fhr.GetDefaultedNamespace()
-		targetNamespace := fhr.GetTargetNamespace()
+func (hr HelmRelease) ReleaseName() string {
+	if hr.Spec.ReleaseName == "" {
+		namespace := hr.GetDefaultedNamespace()
+		targetNamespace := hr.GetTargetNamespace()
 
 		if namespace != targetNamespace {
 			// prefix the releaseName with the administering HelmRelease namespace as well
-			return fmt.Sprintf("%s-%s-%s", namespace, targetNamespace, fhr.Name)
+			return fmt.Sprintf("%s-%s-%s", namespace, targetNamespace, hr.Name)
 		}
-		return fmt.Sprintf("%s-%s", targetNamespace, fhr.Name)
+		return fmt.Sprintf("%s-%s", targetNamespace, hr.Name)
 	}
 
-	return fhr.Spec.ReleaseName
+	return hr.Spec.ReleaseName
 }
 
 // GetDefaultedNamespace returns the HelmRelease's namespace
 // defaulting to the "default" if not set.
-func (fhr HelmRelease) GetDefaultedNamespace() string {
-	if fhr.GetNamespace() == "" {
+func (hr HelmRelease) GetDefaultedNamespace() string {
+	if hr.GetNamespace() == "" {
 		return "default"
 	}
-	return fhr.Namespace
+	return hr.Namespace
 }
 
 // GetTargetNamespace returns the configured release targetNamespace
 // defaulting to the namespace of the HelmRelease if not set.
-func (fhr HelmRelease) GetTargetNamespace() string {
-	if fhr.Spec.TargetNamespace == "" {
-		return fhr.GetDefaultedNamespace()
+func (hr HelmRelease) GetTargetNamespace() string {
+	if hr.Spec.TargetNamespace == "" {
+		return hr.GetDefaultedNamespace()
 	}
-	return fhr.Spec.TargetNamespace
+	return hr.Spec.TargetNamespace
 }
 
 // ValuesFromSource represents a source of values.
@@ -184,21 +184,21 @@ type HelmReleaseSpec struct {
 }
 
 // GetTimeout returns the install or upgrade timeout (defaults to 300s)
-func (r HelmRelease) GetTimeout() int64 {
-	if r.Spec.Timeout == nil {
+func (hr HelmRelease) GetTimeout() int64 {
+	if hr.Spec.Timeout == nil {
 		return 300
 	}
-	return *r.Spec.Timeout
+	return *hr.Spec.Timeout
 }
 
 // GetValuesFromSources maintains backwards compatibility with
 // ValueFileSecrets by merging them into the ValuesFrom array.
-func (r HelmRelease) GetValuesFromSources() []ValuesFromSource {
-	valuesFrom := r.Spec.ValuesFrom
+func (hr HelmRelease) GetValuesFromSources() []ValuesFromSource {
+	valuesFrom := hr.Spec.ValuesFrom
 	// Maintain backwards compatibility with ValueFileSecrets
-	if r.Spec.ValueFileSecrets != nil {
+	if hr.Spec.ValueFileSecrets != nil {
 		var secretKeyRefs []ValuesFromSource
-		for _, ref := range r.Spec.ValueFileSecrets {
+		for _, ref := range hr.Spec.ValueFileSecrets {
 			s := &v1.SecretKeySelector{LocalObjectReference: ref}
 			secretKeyRefs = append(secretKeyRefs, ValuesFromSource{SecretKeyRef: s})
 		}

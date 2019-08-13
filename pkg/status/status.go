@@ -24,10 +24,10 @@ import (
 	"k8s.io/helm/pkg/helm"
 	helmrelease "k8s.io/helm/pkg/proto/hapi/release"
 
-	"github.com/fluxcd/helm-operator/pkg/apis/flux.weave.works/v1beta1"
+	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	ifclientset "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned"
-	v1beta1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/flux.weave.works/v1beta1"
-	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/flux.weave.works/v1beta1"
+	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
+	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/helm.fluxcd.io/v1"
 )
 
 const period = 10 * time.Second
@@ -65,7 +65,7 @@ bail:
 			break bail
 		}
 		for _, hr := range list {
-			nsHrClient := u.hrClient.FluxV1beta1().HelmReleases(hr.Namespace)
+			nsHrClient := u.hrClient.HelmV1().HelmReleases(hr.Namespace)
 			releaseName := hr.ReleaseName()
 			releaseStatus, _ := u.helmClient.ReleaseStatus(releaseName)
 			// If we are unable to get the status, we do not care why
@@ -86,7 +86,9 @@ bail:
 
 // SetReleaseStatus updates the status of the HelmRelease to the given
 // release name and/or release status.
-func SetReleaseStatus(client v1beta1client.HelmReleaseInterface, hr v1beta1.HelmRelease, releaseName, releaseStatus string) error {
+func SetReleaseStatus(client v1client.HelmReleaseInterface, hr helmfluxv1.HelmRelease,
+	releaseName, releaseStatus string) error {
+
 	cHr, err := client.Get(hr.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -105,7 +107,7 @@ func SetReleaseStatus(client v1beta1client.HelmReleaseInterface, hr v1beta1.Helm
 
 // SetReleaseRevision updates the status of the HelmRelease to the
 // given revision.
-func SetReleaseRevision(client v1beta1client.HelmReleaseInterface, hr v1beta1.HelmRelease, revision string) error {
+func SetReleaseRevision(client v1client.HelmReleaseInterface, hr helmfluxv1.HelmRelease, revision string) error {
 	cHr, err := client.Get(hr.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -123,7 +125,7 @@ func SetReleaseRevision(client v1beta1client.HelmReleaseInterface, hr v1beta1.He
 
 // SetValuesChecksum updates the values checksum of the HelmRelease to
 // the given checksum.
-func SetValuesChecksum(client v1beta1client.HelmReleaseInterface, hr v1beta1.HelmRelease, valuesChecksum string) error {
+func SetValuesChecksum(client v1client.HelmReleaseInterface, hr helmfluxv1.HelmRelease, valuesChecksum string) error {
 	cHr, err := client.Get(hr.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -141,7 +143,7 @@ func SetValuesChecksum(client v1beta1client.HelmReleaseInterface, hr v1beta1.Hel
 
 // SetObservedGeneration updates the observed generation status of the
 // HelmRelease to the given generation.
-func SetObservedGeneration(client v1beta1client.HelmReleaseInterface, hr v1beta1.HelmRelease, generation int64) error {
+func SetObservedGeneration(client v1client.HelmReleaseInterface, hr helmfluxv1.HelmRelease, generation int64) error {
 	cHr, err := client.Get(hr.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -158,29 +160,29 @@ func SetObservedGeneration(client v1beta1client.HelmReleaseInterface, hr v1beta1
 }
 
 // ReleaseFailed returns if the roll-out of the HelmRelease failed.
-func ReleaseFailed(hr v1beta1.HelmRelease) bool {
+func ReleaseFailed(hr helmfluxv1.HelmRelease) bool {
 	return hr.Status.ReleaseStatus == helmrelease.Status_FAILED.String()
 }
 
 // HasSynced returns if the HelmRelease has been processed by the
 // controller.
-func HasSynced(hr v1beta1.HelmRelease) bool {
+func HasSynced(hr helmfluxv1.HelmRelease) bool {
 	return hr.Status.ObservedGeneration >= hr.Generation
 }
 
 // HasRolledBack returns if the current generation of the HelmRelease
 // has been rolled back.
-func HasRolledBack(hr v1beta1.HelmRelease) bool {
+func HasRolledBack(hr helmfluxv1.HelmRelease) bool {
 	if !HasSynced(hr) {
 		return false
 	}
 
-	rolledBack := GetCondition(hr.Status, v1beta1.HelmReleaseRolledBack)
+	rolledBack := GetCondition(hr.Status, helmfluxv1.HelmReleaseRolledBack)
 	if rolledBack == nil {
 		return false
 	}
 
-	chartFetched := GetCondition(hr.Status, v1beta1.HelmReleaseChartFetched)
+	chartFetched := GetCondition(hr.Status, helmfluxv1.HelmReleaseChartFetched)
 	if chartFetched != nil {
 		// NB: as two successful state updates can happen right after
 		// each other, on which we both want to act, we _must_ compare

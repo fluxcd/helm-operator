@@ -1,15 +1,17 @@
-package v1beta1
+package v1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	fluxintegrations "github.com/fluxcd/helm-operator/pkg/apis/flux.weave.works"
+	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io"
 )
 
+const Version = "v1"
+
 // SchemeGroupVersion is group version used to register these objects
-var SchemeGroupVersion = schema.GroupVersion{Group: fluxintegrations.GroupName, Version: "v1beta1"}
+var SchemeGroupVersion = schema.GroupVersion{Group: helm.GroupName, Version: Version}
 
 // Resource takes an unqualified resource and returns a Group qualified GroupResource
 func Resource(resource string) schema.GroupResource {
