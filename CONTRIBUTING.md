@@ -1,7 +1,7 @@
 # How to Contribute
 
-Flux is [Apache 2.0 licensed](LICENSE) and accepts contributions via GitHub
-pull requests. This document outlines some of the conventions on development
+The Flux Helm operator is [Apache 2.0 licensed](LICENSE) and accepts contributions
+via GitHub pull requests. This document outlines some of the conventions on development
 workflow, commit message formatting, contact points and other resources to make
 it easier to get your contribution accepted.
 
@@ -9,13 +9,12 @@ We gratefully welcome improvements to issues and documentation as well as to cod
 
 ## Working on issues
 
-If you like Flux and want to get involved in the project, a great way to get started
-is reviewing our [blocked-needs-validation](https://github.com/weaveworks/flux/issues?q=is%3Aissue+is%3Aopen+label%3Ablocked-needs-validation) issues.
+If you like the operator and want to get involved in the project, a great way
+to get started is reviewing our [needs validation](https://github.com/fluxcd/helm-operator/issues?q=is%3Aissue+is%3Aopen+label%3A"blocked+needs+validation") issues.
 
 The idea here is that new issues are confirmed, which might require asking
-for more information, testing with a fresh Flux environment. Once confirmed,
-the `blocked-needs-validation` label is removed, and the issue can be worked
-on.
+for more information, testing with a fresh environment. Once confirmed, the
+`blocked needs validation` label is removed, and the issue can be worked on.
 
 To set up Flux to test things, there's documentation about setting up a
 [standalone install](docs/tutorials/get-started.md) and a [Helm
@@ -47,13 +46,13 @@ meeting](https://docs.google.com/document/d/1l_M0om0qUEN_NNiGgpqJ2tvsF2iioHkaARD
 ## Getting Started
 
 - Fork the repository on GitHub
-- Read the [README](README.md#get-started-with-flux) for getting started as
+- Read the [README](README.md#get-started-with-the-helm-operator) for getting started as
   a user and learn how/where to ask for help
 - If you want to contribute as a developer, continue reading this document for further instructions
 - If you are a new contributor, the following two issue labels might be
   interesting to you:
-  - [size/small](https://github.com/weaveworks/flux/issues?q=is%3Aissue+is%3Aopen+label%3Asize%2Fsmall)
-  - [help wanted](https://github.com/weaveworks/flux/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+  - [size/small](https://github.com/fluxcd/helm-operator/issues?q=is%3Aissue+is%3Aopen+label%3Asize%2Fsmall)
+  - [help wanted](https://github.com/fluxcd/helm-operator/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 - If you have questions, concerns, get stuck or need a hand, let us know
   on the Slack channel. We are happy to help and look forward to having
   you part of the team. No matter in which capacity.
@@ -76,7 +75,8 @@ This is a rough outline of how to prepare a contribution:
 Refer to the [building doc](docs/contributing/building.md) to find out how to build from
 source.
 
-Refer to the [Get Started Developing](docs/contributing/get-started-developing.md) guide for a walkthrough on developing Flux locally.
+Refer to the [Get Started Developing](docs/contributing/get-started-developing.md) guide
+for a walkthrough on developing Flux locally.
 
 ### How to run the test suite
 
@@ -107,7 +107,7 @@ get asked to resubmit the PR or divide the changes into more than one PR.
 
 ### Format of the Commit Message
 
-For Flux we prefer the following rules for good commit messages:
+We prefer the following rules for good commit messages:
 
 - Limit the subject to 50 characters and write as the continuation
   of the sentence "If applied, this commit will ..."
