@@ -2,7 +2,6 @@ package install
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -18,7 +17,7 @@ type TemplateParameters struct {
 	TillerNamespace         string
 	SSHSecretName           string
 	EnableTillerTLS         bool
-	TillerTLSCACertContent  []byte
+	TillerTLSCACertContent  string
 	TillerTLSCertSecretName string
 }
 
@@ -35,9 +34,15 @@ func FillInTemplates(params TemplateParameters) (map[string][]byte, error) {
 		if err != nil {
 			return fmt.Errorf("cannot read embedded file %q: %s", info.Name(), err)
 		}
-
+		indent := func(n int, s string) string {
+			lines := strings.Split(s, "\n")
+			for i, l := range lines {
+				lines[i] = strings.Repeat(" ", n) + l
+			}
+			return strings.Join(lines, "\n")
+		}
 		manifestTemplate, err := template.New(info.Name()).
-			Funcs(template.FuncMap{"Base64Encode": base64.StdEncoding.EncodeToString}).
+			Funcs(template.FuncMap{"indent": indent}).
 			Parse(string(manifestTemplateBytes))
 		if err != nil {
 			return fmt.Errorf("cannot parse embedded file %q: %s", info.Name(), err)
