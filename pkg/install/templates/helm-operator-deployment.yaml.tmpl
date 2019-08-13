@@ -26,7 +26,7 @@ spec:
             defaultMode: 0600
         - name: helm-tls-certs
           secret:
-            secretName: {{ if .TillerTLSCertSecretName }}.TillerTLSCertSecretName{ else }}flux-helm-tls-cert{{ end }}
+            secretName: {{ if .TillerTLSCertSecretName }}.TillerTLSCertSecretName{{ else }}flux-helm-tls-cert{{ end }}
             defaultMode: 0400{{ else }}
       #
       # You will need these two volumes if you want to establish validated TLS
