@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: /home/circleci/go/src/github.com/weaveworks/flux
+    working_directory: /home/circleci/go/src/github.com/fluxcd/helm-operator
     machine:
       image: ubuntu-1604:201903-01
     environment:
@@ -20,6 +20,7 @@ jobs:
             sudo rm -rf /usr/local/go
             sudo mv go /usr/local
             mkdir -p "$HOME/go/bin"
+            rm -rf go${GO_VERSION}.linux-amd64.tar.gz
             go version
       - run:
           name: Update packages
@@ -68,13 +69,6 @@ jobs:
           name: Maybe push prerelease images
           command: |
             if [ -z "${CIRCLE_TAG}" -a "${CIRCLE_BRANCH}" == "master" ]; then
-              # Push to weaveworks org
-              echo "$DOCKER_REGISTRY_PASSWORD" | docker login --username "$DOCKER_REGISTRY_USER" --password-stdin
-
-              docker tag "docker.io/fluxcd/helm-operator:$(docker/image-tag)" "docker.io/weaveworks/helm-operator-prerelease:$(docker/image-tag)"
-              docker push "docker.io/weaveworks/helm-operator-prerelease:$(docker/image-tag)"
-
-              # Push to fluxcd org
               echo "$DOCKER_FLUXCD_PASSWORD" | docker login --username "$DOCKER_FLUXCD_USER" --password-stdin
 
               docker tag "docker.io/fluxcd/helm-operator:$(docker/image-tag)" "docker.io/fluxcd/helm-operator-prerelease:$(docker/image-tag)"
@@ -84,12 +78,6 @@ jobs:
           name: Maybe push release image
           command: |
             if echo "${CIRCLE_TAG}" | grep -Eq "^[0-9]+(\.[0-9]+)*(-[a-z]+)?$"; then
-              # Push to weaveworks org
-              echo "$DOCKER_REGISTRY_PASSWORD" | docker login --username "$DOCKER_REGISTRY_USER" --password-stdin
-              docker tag "docker.io/fluxcd/helm-operator:${CIRCLE_TAG}" "docker.io/weaveworks/helm-operator:${CIRCLE_TAG}"
-              docker push "docker.io/weaveworks/helm-operator:${CIRCLE_TAG}"
-
-              # Push to fluxcd org
               echo "$DOCKER_FLUXCD_PASSWORD" | docker login --username "$DOCKER_FLUXCD_USER" --password-stdin
               docker push "docker.io/fluxcd/helm-operator:${CIRCLE_TAG}"
             fi
