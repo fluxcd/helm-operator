@@ -1,7 +1,7 @@
 # Helm Operator
 
 [![CircleCI](https://circleci.com/gh/fluxcd/helm-operator.svg?style=svg)](https://circleci.com/gh/fluxcd/helm-operator)
-[![GoDoc](https://godoc.org/github.com/fluxcd/helm-operator?status.svg)](https://godoc.org/github.com/fluxcd/flux)
+[![GoDoc](https://godoc.org/github.com/fluxcd/helm-operator?status.svg)](https://godoc.org/github.com/fluxcd/helm-operator)
 [![Documentation](https://img.shields.io/badge/latest-documentation-informational)](https://docs.fluxcd.io/en/latest/)
 
 The Helm Operator provides an extension to [Flux](https://github.com/fluxcd/flux)
@@ -58,12 +58,12 @@ be interested in the following:
 
 If you have any questions about Helm Operator and continuous delivery:
 
-- Read [the Helm Operator docs](https://github.com/fluxcd/flux/tree/master/docs).
+- Read [the Helm Operator docs](https://docs.fluxcd.io/projects/helm-operator/).
 - Invite yourself to the <a href="https://slack.cncf.io" target="_blank">CNCF community</a>
   slack and ask a question on the [#flux](https://cloud-native.slack.com/messages/flux/)
   channel.
 - To be part of the conversation about Helm Operator's development, join the
   [flux-dev mailing list](https://lists.cncf.io/g/cncf-flux-dev).
-- [File an issue.](https://github.com/fluxcd/flux/issues/new)
+- [File an issue.](https://github.com/fluxcd/helm-operator/issues/new)
 
 Your feedback is always welcome!
