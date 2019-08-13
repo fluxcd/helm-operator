@@ -26,7 +26,7 @@ spec:
             defaultMode: 0600
         - name: helm-tls-certs
           secret:
-            secretName: {{ if .TillerTLSCertSecretName }}.TillerTLSCertSecretName{{ else }}flux-helm-tls-cert{{ end }}
+            secretName: {{ if .TillerTLSCertSecretName }}{{ .TillerTLSCertSecretName }}{{ else }}flux-helm-tls-cert{{ end }}
             defaultMode: 0400{{ else }}
       #
       # You will need these two volumes if you want to establish validated TLS
@@ -39,7 +39,7 @@ spec:
       # Secret type kubernetes.io/tls
       # - name: flux-helm-tls-cert
       #   secret:
-      #     secretName: {{ if .TillerTLSCertSecretName }}.TillerTLSCertSecretName{{ else }}flux-helm-tls-cert{{ end }}
+      #     secretName: {{ if .TillerTLSCertSecretName }}{{ .TillerTLSCertSecretName }}{{ else }}flux-helm-tls-cert{{ end }}
       #     defaultMode: 0400
       #{{end}}
       # The following volume is for using a customised known_hosts file,
@@ -133,7 +133,7 @@ spec:
         #   readOnly: true{{ end }}
         args:
         # How to find Tiller
-        - --tiller-namespace={{ if .TillerNamespace }}.TillerNamespace{{ else }}kube-system{{ end }}{{ if .EnableTillerTLS }}
+        - --tiller-namespace={{ if .TillerNamespace }}{{ .TillerNamespace }}{{ else }}kube-system{{ end }}{{ if .EnableTillerTLS }}
         # TLS configuration
         - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt
         - --tiller-tls-enable=true
