@@ -1,8 +1,8 @@
 ---
 name: Bug report
-about: Create a report to help us improve Flux
+about: Create a report to help us improve the Flux Helm operator
 title: ''
-labels: blocked-needs-validation, bug
+labels: blocked needs validation, bug
 assignees: ''
 
 ---
@@ -22,12 +22,11 @@ Steps to reproduce the behaviour:
 A clear and concise description of what you expected to happen.
 
 **Logs**
-If applicable, please provide logs of `fluxd` or the helm-operator. In a standard stand-alone installation of Flux, you'd get this by running `kubectl logs -n default deploy/flux`.
+If applicable, please provide logs. In a standard stand-alone installation, you'd get this by running `kubectl logs -n default deploy/flux-helm-operator`.
 
 **Additional context**
 Add any other context about the problem here, e.g 
-- Flux version: 
-- Helm Operator version: 
+- Helm operator version: 
 - Kubernetes version:
 - Git provider:
 - Container registry provider:

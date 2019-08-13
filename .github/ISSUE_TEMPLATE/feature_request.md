@@ -1,8 +1,8 @@
 ---
 name: Feature request
-about: Suggest a new feature for Flux
+about: Suggest a new feature for the Flux Helm operator
 title: ''
-labels: blocked-needs-validation, enhancement
+labels: blocked needs validation, enhancement
 assignees: ''
 
 ---
@@ -11,10 +11,10 @@ assignees: ''
 A clear and concise description of the feature.
 
 **What would the new user story look like?**
-How would the new interaction with Flux look like? E.g.
+How would the new interaction with the Flux Helm operator look like? E.g.
 0. What are the prerequisites for this?
-1. User starts up Flux using the --add-frobnication flag
-2. New commits in git branch happen
+1. User starts up the operator using the --add-frobnication flag
+2. A new `HelmRelease` is applied
 3. Deployments happen, which include frobnication
 
 Feel free to add a diagram if that helps explaining things.

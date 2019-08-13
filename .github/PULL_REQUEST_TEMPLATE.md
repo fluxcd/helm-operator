@@ -1,7 +1,7 @@
 <!--
 # General contribution criteria
 
-Please have a look at our contribution guidelines: https://github.com/fluxcd/flux/blob/master/CONTRIBUTING.md
+Please have a look at our contribution guidelines: https://github.com/fluxcd/helm-operator/blob/master/CONTRIBUTING.md
 Particularly the sections about the:
 
  - DCO;
@@ -10,8 +10,7 @@ Particularly the sections about the:
 
 To help the maintainers out when they're writing release notes, please
 try to include a sentence or two here describing your change for end
-users. See the CHANGELOG.md and CHANGELOG-helmop.md files in the
-top-level directory for examples.
+users. See the CHANGELOG.md file in the top-level directory for examples.
 
 Particularly for ground-breaking changes and new features, it's important to
 make users and developers aware of what's changing and where those changes
