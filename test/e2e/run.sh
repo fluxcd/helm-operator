@@ -83,7 +83,7 @@ echo '>>> Applying HelmRelease'
 kubectl create namespace "${DEMO_NAMESPACE}"
 defer kubectl delete namespace "${DEMO_NAMESPACE}"
 
-kubectl -n "${DEMO_NAMESPACE}" apply -f https://raw.githubusercontent.com/fluxcd/flux-get-started/master/releases/mongodb.yaml
+kubectl -n "${DEMO_NAMESPACE}" apply -f ${REPO_ROOT}/test/mongodb-hr.yaml
 
 echo '>>> Waiting for Helm release mongodb'
 retries=24
