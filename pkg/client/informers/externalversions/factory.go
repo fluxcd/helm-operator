@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Weaveworks Ltd.
+Copyright 2018-2019 The Flux CD contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@ import (
 	time "time"
 
 	versioned "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned"
-	fluxweaveworks "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/flux.weave.works"
-	helmintegrationsfluxweaveworks "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/helm.integrations.flux.weave.works"
+	helmfluxcdio "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/helm.fluxcd.io"
 	internalinterfaces "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/internalinterfaces"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -173,14 +172,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Flux() fluxweaveworks.Interface
-	Helm() helmintegrationsfluxweaveworks.Interface
+	Helm() helmfluxcdio.Interface
 }
 
-func (f *sharedInformerFactory) Flux() fluxweaveworks.Interface {
-	return fluxweaveworks.New(f, f.namespace, f.tweakListOptions)
-}
-
-func (f *sharedInformerFactory) Helm() helmintegrationsfluxweaveworks.Interface {
-	return helmintegrationsfluxweaveworks.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Helm() helmfluxcdio.Interface {
+	return helmfluxcdio.New(f, f.namespace, f.tweakListOptions)
 }

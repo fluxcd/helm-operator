@@ -48,7 +48,7 @@ Install podinfo by referring to its Helm repository:
 
 ```sh
 cat <<EOF | kubectl apply -f -
-apiVersion: flux.weave.works/v1beta1
+apiVersion: helm.fluxcd.io/v1
 kind: HelmRelease
 metadata:
   name: podinfo
@@ -119,7 +119,7 @@ helm -i helm-operator fluxcd/helm-operator \
 You can refer to a chart from your private Git with:
 
 ```yaml
-apiVersion: flux.weave.works/v1beta1
+apiVersion: helm.fluxcd.io
 kind: HelmRelease
 metadata:
   name: some-app

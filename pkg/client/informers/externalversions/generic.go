@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Weaveworks Ltd.
+Copyright 2018-2019 The Flux CD contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ package externalversions
 import (
 	"fmt"
 
-	v1beta1 "github.com/fluxcd/helm-operator/pkg/apis/flux.weave.works/v1beta1"
-	v1alpha2 "github.com/fluxcd/helm-operator/pkg/apis/helm.integrations.flux.weave.works/v1alpha2"
+	v1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -53,13 +52,9 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=flux.weave.works, Version=v1beta1
-	case v1beta1.SchemeGroupVersion.WithResource("helmreleases"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Flux().V1beta1().HelmReleases().Informer()}, nil
-
-		// Group=helm.integrations.flux.weave.works, Version=v1alpha2
-	case v1alpha2.SchemeGroupVersion.WithResource("fluxhelmreleases"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Helm().V1alpha2().FluxHelmReleases().Informer()}, nil
+	// Group=helm.fluxcd.io, Version=v1
+	case v1.SchemeGroupVersion.WithResource("helmreleases"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Helm().V1().HelmReleases().Informer()}, nil
 
 	}
 

@@ -1,15 +1,18 @@
 package status
 
 import (
-	"github.com/fluxcd/helm-operator/pkg/apis/flux.weave.works/v1beta1"
-	v1beta1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/flux.weave.works/v1beta1"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 )
 
 // NewCondition creates a new HelmReleaseCondition.
-func NewCondition(conditionType v1beta1.HelmReleaseConditionType, status v1.ConditionStatus, reason, message string) v1beta1.HelmReleaseCondition {
-	return v1beta1.HelmReleaseCondition{
+func NewCondition(conditionType helmfluxv1.HelmReleaseConditionType, status v1.ConditionStatus,
+	reason, message string) helmfluxv1.HelmReleaseCondition {
+
+	return helmfluxv1.HelmReleaseCondition{
 		Type:               conditionType,
 		Status:             status,
 		LastUpdateTime:     metav1.Now(),
@@ -20,8 +23,8 @@ func NewCondition(conditionType v1beta1.HelmReleaseConditionType, status v1.Cond
 }
 
 // SetCondition updates the HelmRelease to include the given condition.
-func SetCondition(client v1beta1client.HelmReleaseInterface, hr v1beta1.HelmRelease,
-	condition v1beta1.HelmReleaseCondition) error {
+func SetCondition(client v1client.HelmReleaseInterface, hr helmfluxv1.HelmRelease,
+	condition helmfluxv1.HelmReleaseCondition) error {
 
 	cHr, err := client.Get(hr.Name, metav1.GetOptions{})
 	if err != nil {
@@ -41,7 +44,9 @@ func SetCondition(client v1beta1client.HelmReleaseInterface, hr v1beta1.HelmRele
 }
 
 // GetCondition returns the condition with the given type.
-func GetCondition(status v1beta1.HelmReleaseStatus, conditionType v1beta1.HelmReleaseConditionType) *v1beta1.HelmReleaseCondition {
+func GetCondition(status helmfluxv1.HelmReleaseStatus,
+	conditionType helmfluxv1.HelmReleaseConditionType) *helmfluxv1.HelmReleaseCondition {
+
 	for i := range status.Conditions {
 		c := status.Conditions[i]
 		if c.Type == conditionType {
@@ -53,8 +58,10 @@ func GetCondition(status v1beta1.HelmReleaseStatus, conditionType v1beta1.HelmRe
 
 // filterOutCondition returns a new slice of conditions without the
 // conditions of the given type.
-func filterOutCondition(conditions []v1beta1.HelmReleaseCondition, conditionType v1beta1.HelmReleaseConditionType) []v1beta1.HelmReleaseCondition {
-	var newConditions []v1beta1.HelmReleaseCondition
+func filterOutCondition(conditions []helmfluxv1.HelmReleaseCondition,
+	conditionType helmfluxv1.HelmReleaseConditionType) []helmfluxv1.HelmReleaseCondition {
+
+	var newConditions []helmfluxv1.HelmReleaseCondition
 	for _, c := range conditions {
 		if c.Type == conditionType {
 			continue

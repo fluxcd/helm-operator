@@ -185,7 +185,7 @@ func main() {
 	// setup shared informer for HelmReleases
 	nsOpt := ifinformers.WithNamespace(*namespace)
 	ifInformerFactory := ifinformers.NewSharedInformerFactoryWithOptions(ifClient, *chartsSyncInterval, nsOpt)
-	fhrInformer := ifInformerFactory.Flux().V1beta1().HelmReleases()
+	hrInformer := ifInformerFactory.Helm().V1().HelmReleases()
 
 	// setup workqueue for HelmReleases
 	queue := workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "ChartRelease")
@@ -195,7 +195,7 @@ func main() {
 	rel := release.New(log.With(logger, "component", "release"), helmClient)
 	chartSync := chartsync.New(
 		log.With(logger, "component", "chartsync"),
-		chartsync.Clients{KubeClient: *kubeClient, IfClient: *ifClient, FhrLister: fhrInformer.Lister()},
+		chartsync.Clients{KubeClient: *kubeClient, IfClient: *ifClient, HrLister: hrInformer.Lister()},
 		rel,
 		queue,
 		chartsync.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval},
@@ -206,12 +206,12 @@ func main() {
 	// NB: the operator needs to do its magic with the informer
 	// _before_ starting it or else the cache sync seems to hang at
 	// random
-	opr := operator.New(log.With(logger, "component", "operator"), *logReleaseDiffs, kubeClient, fhrInformer, queue, chartSync)
+	opr := operator.New(log.With(logger, "component", "operator"), *logReleaseDiffs, kubeClient, hrInformer, queue, chartSync)
 	go ifInformerFactory.Start(shutdown)
 
 	// wait for the caches to be synced before starting _any_ workers
 	mainLogger.Log("info", "waiting for informer caches to sync")
-	if ok := cache.WaitForCacheSync(shutdown, fhrInformer.Informer().HasSynced); !ok {
+	if ok := cache.WaitForCacheSync(shutdown, hrInformer.Informer().HasSynced); !ok {
 		mainLogger.Log("error", "failed to wait for caches to sync")
 		os.Exit(1)
 	}
@@ -225,7 +225,7 @@ func main() {
 
 	// the status updater, to keep track of the release status for
 	// every HelmRelease
-	statusUpdater := status.New(ifClient, fhrInformer.Lister(), helmClient)
+	statusUpdater := status.New(ifClient, hrInformer.Lister(), helmClient)
 	go statusUpdater.Loop(shutdown, log.With(logger, "component", "statusupdater"))
 
 	// start HTTP server

@@ -15,12 +15,12 @@ import (
 	helmenv "k8s.io/helm/pkg/helm/environment"
 	"k8s.io/helm/pkg/repo"
 
-	flux_v1beta1 "github.com/fluxcd/helm-operator/pkg/apis/flux.weave.works/v1beta1"
+	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 )
 
 // makeChartPath gives the expected filesystem location for a chart,
 // without testing whether the file exists or not.
-func makeChartPath(base string, source *flux_v1beta1.RepoChartSource) string {
+func makeChartPath(base string, source *helmfluxv1.RepoChartSource) string {
 	// We don't need to obscure the location of the charts in the
 	// filesystem; but we do need a stable, filesystem-friendly path
 	// to them that is based on the URL.
@@ -35,7 +35,7 @@ func makeChartPath(base string, source *flux_v1beta1.RepoChartSource) string {
 // ensureChartFetched returns the path to a downloaded chart, fetching
 // it first if necessary. It always returns the expected path to the
 // chart, and either an error or nil.
-func ensureChartFetched(base string, source *flux_v1beta1.RepoChartSource) (string, error) {
+func ensureChartFetched(base string, source *helmfluxv1.RepoChartSource) (string, error) {
 	chartPath := makeChartPath(base, source)
 	stat, err := os.Stat(chartPath)
 	switch {
@@ -52,7 +52,7 @@ func ensureChartFetched(base string, source *flux_v1beta1.RepoChartSource) (stri
 // downloadChart attempts to fetch a chart tarball, given the name,
 // version and repo URL in `source`, and the path to write the file
 // to in `destFile`.
-func downloadChart(destFile string, source *flux_v1beta1.RepoChartSource) error {
+func downloadChart(destFile string, source *helmfluxv1.RepoChartSource) error {
 	// Helm's support libs are designed to be driven by the
 	// command-line client, so there are some inevitable CLI-isms,
 	// like getting values from flags and the environment. None of

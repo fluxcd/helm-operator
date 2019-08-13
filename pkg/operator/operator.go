@@ -18,11 +18,11 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
-	flux_v1beta1 "github.com/fluxcd/helm-operator/pkg/apis/flux.weave.works/v1beta1"
+	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/chartsync"
 	ifscheme "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/scheme"
-	fhrv1 "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/flux.weave.works/v1beta1"
-	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/flux.weave.works/v1beta1"
+	hrv1 "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/helm.fluxcd.io/v1"
+	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/status"
 )
 
@@ -49,8 +49,8 @@ type Controller struct {
 	logger   log.Logger
 	logDiffs bool
 
-	fhrLister iflister.HelmReleaseLister
-	fhrSynced cache.InformerSynced
+	hrLister iflister.HelmReleaseLister
+	hrSynced cache.InformerSynced
 
 	sync *chartsync.ChartChangeSync
 
@@ -71,7 +71,7 @@ func New(
 	logger log.Logger,
 	logReleaseDiffs bool,
 	kubeclientset kubernetes.Interface,
-	fhrInformer fhrv1.HelmReleaseInformer,
+	hrInformer hrv1.HelmReleaseInformer,
 	releaseWorkqueue workqueue.RateLimitingInterface,
 	sync *chartsync.ChartChangeSync) *Controller {
 
@@ -85,8 +85,8 @@ func New(
 	controller := &Controller{
 		logger:           logger,
 		logDiffs:         logReleaseDiffs,
-		fhrLister:        fhrInformer.Lister(),
-		fhrSynced:        fhrInformer.Informer().HasSynced,
+		hrLister:         hrInformer.Lister(),
+		hrSynced:         hrInformer.Informer().HasSynced,
 		releaseWorkqueue: releaseWorkqueue,
 		recorder:         recorder,
 		sync:             sync,
@@ -95,10 +95,10 @@ func New(
 	controller.logger.Log("info", "setting up event handlers")
 
 	// ----- EVENT HANDLERS for HelmRelease resources change ---------
-	fhrInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	hrInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(new interface{}) {
-			fhr, ok := checkCustomResourceType(controller.logger, new)
-			if ok && !status.HasRolledBack(fhr) {
+			hr, ok := checkCustomResourceType(controller.logger, new)
+			if ok && !status.HasRolledBack(hr) {
 				controller.enqueueJob(new)
 			}
 		},
@@ -106,9 +106,9 @@ func New(
 			controller.enqueueUpdateJob(old, new)
 		},
 		DeleteFunc: func(old interface{}) {
-			fhr, ok := checkCustomResourceType(controller.logger, old)
+			hr, ok := checkCustomResourceType(controller.logger, old)
 			if ok {
-				controller.deleteRelease(fhr)
+				controller.deleteRelease(hr)
 			}
 		},
 	})
@@ -169,11 +169,11 @@ func (c *Controller) processNextWorkItem() bool {
 
 		var key string
 		var ok bool
-		// We expect strings to come off the workqueue. These are of the
-		// form "namespace/fhr(custom resource) name". We do this as the delayed nature of the
-		// workqueue means the items in the informer cache may actually be
-		// more up to date than when the item was initially put onto the
-		// workqueue.
+		// We expect strings to come off the workqueue. These are of
+		// the form "namespace/hr(custom resource) name". We do this
+		// as the delayed nature of the workqueue means the items in
+		// the informer cache may actually be more up to date than
+		// when the item was initially put onto the workqueue.
 		if key, ok = obj.(string); !ok {
 			// As the item in the workqueue is actually invalid, we call
 			// Forget not to get into a loop of attempting to
@@ -213,8 +213,8 @@ func (c *Controller) syncHandler(key string) error {
 		return nil
 	}
 
-	// Custom Resource fhr contains all information we need to know about the Chart release
-	fhr, err := c.fhrLister.HelmReleases(namespace).Get(name)
+	// Custom Resource hr contains all information we need to know about the Chart release
+	hr, err := c.hrLister.HelmReleases(namespace).Get(name)
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
 			c.logger.Log("info", fmt.Sprintf("HelmRelease '%s' referred to in work queue no longer exists", key))
@@ -225,19 +225,19 @@ func (c *Controller) syncHandler(key string) error {
 		return err
 	}
 
-	c.sync.ReconcileReleaseDef(*fhr)
-	c.recorder.Event(fhr, corev1.EventTypeNormal, ChartSynced, MessageChartSynced)
+	c.sync.ReconcileReleaseDef(*hr)
+	c.recorder.Event(hr, corev1.EventTypeNormal, ChartSynced, MessageChartSynced)
 	return nil
 }
 
-func checkCustomResourceType(logger log.Logger, obj interface{}) (flux_v1beta1.HelmRelease, bool) {
-	var fhr *flux_v1beta1.HelmRelease
+func checkCustomResourceType(logger log.Logger, obj interface{}) (helmfluxv1.HelmRelease, bool) {
+	var hr *helmfluxv1.HelmRelease
 	var ok bool
-	if fhr, ok = obj.(*flux_v1beta1.HelmRelease); !ok {
+	if hr, ok = obj.(*helmfluxv1.HelmRelease); !ok {
 		logger.Log("error", fmt.Sprintf("HelmRelease Event Watch received an invalid object: %#v", obj))
-		return flux_v1beta1.HelmRelease{}, false
+		return helmfluxv1.HelmRelease{}, false
 	}
-	return *fhr, true
+	return *hr, true
 }
 
 func getCacheKey(obj interface{}) (string, error) {
@@ -266,23 +266,23 @@ func (c *Controller) enqueueJob(obj interface{}) {
 
 // enqueueUpdateJob decides if there is a genuine resource update
 func (c *Controller) enqueueUpdateJob(old, new interface{}) {
-	oldFhr, ok := checkCustomResourceType(c.logger, old)
+	oldHr, ok := checkCustomResourceType(c.logger, old)
 	if !ok {
 		return
 	}
-	newFhr, ok := checkCustomResourceType(c.logger, new)
+	newHr, ok := checkCustomResourceType(c.logger, new)
 	if !ok {
 		return
 	}
 
-	diff := cmp.Diff(oldFhr.Spec, newFhr.Spec)
+	diff := cmp.Diff(oldHr.Spec, newHr.Spec)
 
 	// Filter out any update notifications that are due to status
 	// updates, as the dry-run that determines if we should upgrade
 	// is expensive, but _without_ filtering out updates that are
 	// from the periodic refresh, as we still want to detect (and
 	// undo) mutations to Helm charts.
-	if sDiff := cmp.Diff(oldFhr.Status, newFhr.Status); diff == "" && sDiff != "" {
+	if sDiff := cmp.Diff(oldHr.Status, newHr.Status); diff == "" && sDiff != "" {
 		return
 	}
 
@@ -290,8 +290,8 @@ func (c *Controller) enqueueUpdateJob(old, new interface{}) {
 	// back, as otherwise we will end up in a loop of failure, but
 	// continue if the checksum of the values differs, as the failure
 	// may have been the result of the values contents.
-	if newFhr.Spec.Rollback.Enable && status.HasRolledBack(newFhr) && c.sync.CompareValuesChecksum(newFhr) {
-		c.logger.Log("warning", "release has been rolled back, skipping", "resource", newFhr.ResourceID().String())
+	if newHr.Spec.Rollback.Enable && status.HasRolledBack(newHr) && c.sync.CompareValuesChecksum(newHr) {
+		c.logger.Log("warning", "release has been rolled back, skipping", "resource", newHr.ResourceID().String())
 		return
 	}
 
@@ -299,7 +299,7 @@ func (c *Controller) enqueueUpdateJob(old, new interface{}) {
 	if diff != "" && c.logDiffs {
 		log = append(log, "diff", diff)
 	}
-	log = append(log, "resource", newFhr.ResourceID().String())
+	log = append(log, "resource", newHr.ResourceID().String())
 
 	l := make([]interface{}, len(log))
 	for i, v := range log {
@@ -311,7 +311,7 @@ func (c *Controller) enqueueUpdateJob(old, new interface{}) {
 	c.enqueueJob(new)
 }
 
-func (c *Controller) deleteRelease(fhr flux_v1beta1.HelmRelease) {
-	c.logger.Log("info", "deleting release", "resource", fhr.ResourceID().String())
-	c.sync.DeleteRelease(fhr)
+func (c *Controller) deleteRelease(hr helmfluxv1.HelmRelease) {
+	c.logger.Log("info", "deleting release", "resource", hr.ResourceID().String())
+	c.sync.DeleteRelease(hr)
 }

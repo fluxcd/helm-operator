@@ -6,7 +6,7 @@ resource definition](https://github.com/fluxcd/flux/blob/master/deploy-helm/flux
 look like this:
 
 ```yaml
-apiVersion: flux.weave.works/v1beta1
+apiVersion: helm.fluxcd.io/v1
 kind: HelmRelease
 metadata:
   name: rabbit
@@ -103,7 +103,7 @@ values.yaml`, but inlined into the `HelmRelease` manifest. For
 example,
 
 ```yaml
-apiVersion: flux.weave.works/v1beta1
+apiVersion: helm.fluxcd.io/v1
 kind: HelmRelease
 # metadata: ...
 spec:
@@ -211,7 +211,7 @@ detects a change in values and/or the chart.
 ### Configuration
 
 ```yaml
-apiVersion: flux.weave.works/v1beta1
+apiVersion: helm.fluxcd.io/v1
 kind: HelmRelease
 # metadata: ...
 spec:

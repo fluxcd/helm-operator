@@ -3,12 +3,13 @@ package release
 import (
 	"testing"
 
-	flux_v1beta1 "github.com/fluxcd/helm-operator/pkg/apis/flux.weave.works/v1beta1"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/helm/pkg/chartutil"
+
+	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 )
 
 func TestValues(t *testing.T) {
@@ -42,8 +43,8 @@ valuesDict:
 		},
 	)
 
-	valuesFromSource := []flux_v1beta1.ValuesFromSource{
-		flux_v1beta1.ValuesFromSource{
+	valuesFromSource := []helmfluxv1.ValuesFromSource{
+		{
 			ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
 				LocalObjectReference: corev1.LocalObjectReference{
 					Name: "release-configmap",
@@ -55,7 +56,7 @@ valuesDict:
 			ExternalSourceRef: nil,
 			ChartFileRef:      nil,
 		},
-		flux_v1beta1.ValuesFromSource{
+		{
 			ConfigMapKeyRef: nil,
 			SecretKeyRef: &corev1.SecretKeySelector{
 				LocalObjectReference: corev1.LocalObjectReference{
