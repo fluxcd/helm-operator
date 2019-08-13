@@ -38,7 +38,7 @@ func TestFillInTemplates(t *testing.T) {
 		TillerNamespace:         "tiller",
 		SSHSecretName:           "mysshsecretname",
 		EnableTillerTLS:         true,
-		TillerTLSCACertContent:  []byte("foo bar"),
+		TillerTLSCACertContent:  "foo\nbar\n",
 		TillerTLSCertSecretName: "mytlssecretname",
 	}, 4)
 }
