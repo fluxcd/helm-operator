@@ -112,7 +112,7 @@ jobs:
             git config --global user.name fluxcdbot
 
             # Push to fluxcd/charts gh-pages branch
-            if echo "${CIRCLE_TAG}" | grep -Eq "[0-9]+(\.[0-9]+)*(-[a-z]+)?$"; then
+            if echo "${CIRCLE_TAG}" | grep -Eq "^chart.*"; then
               REPOSITORY="https://fluxcdbot:${GITHUB_TOKEN}@github.com/fluxcd/charts.git"
               mkdir $HOME/fluxcd-charts
               cd $HOME/fluxcd-charts && git clone ${REPOSITORY}
@@ -133,7 +133,7 @@ workflows:
       - build:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)*(-[a-z]+)?/
+              only: /[0-9]+(\.[0-9]+)*(-[a-z0-9]+)?/
   release-helm:
     jobs:
       - helm:
