@@ -7,4 +7,5 @@ Guides
 .. toctree::
    :maxdepth: 1
 
+   upgrading-to-ga
    upgrading-to-beta
