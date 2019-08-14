@@ -69,15 +69,26 @@ if [ "${USING_KIND}" = 'true' ]; then
     kind --name "${KIND_CLUSTER}" load docker-image 'docker.io/fluxcd/helm-operator:latest'
 fi
 
-# TODO(hidde): replace this with a Helm install once the chart has been split out, to get rid of the `sed` trickery.
-echo '>>> Installing Helm operator'
-kubectl apply -f ${REPO_ROOT}/deploy/flux-helm-release-crd.yaml
-# Replace 'default' namespace with $HELM_OP_NAMESPACE
-sed -E "s/namespace: default/namespace: ${HELM_OP_NAMESPACE}/g" ${REPO_ROOT}/deploy/flux-helm-operator-account.yaml | kubectl -n "${HELM_OP_NAMESPACE}" apply -f -
-# Replace semver tag with 'latest'
-sed -E 's/(fluxcd\/helm-operator:)([0-9.]+)/fluxcd\/helm-operator:latest/g' ${REPO_ROOT}/deploy/helm-operator-deployment.yaml | kubectl -n "${HELM_OP_NAMESPACE}" apply -f -
+echo '>>> Installing the Flux Helm Operator with Helm'
 
-kubectl -n "${HELM_OP_NAMESPACE}" rollout status deployment/flux-helm-operator
+CREATE_CRDS='true'
+if kubectl get crd fluxhelmreleases.helm.fluxcd.io > /dev/null 2>&1; then
+  # CRDs existed, don't try to create them
+  echo 'CRDs exists, setting createCRD=false'
+  CREATE_CRDS='false'
+else
+  # Schedule CRD deletion before calling helm, since it may fail and create them anyways
+  defer kubectl delete crd fluxhelmreleases.helm.fluxcd.io > /dev/null 2>&1
+fi
+
+defer helm delete --purge flux > /dev/null 2>&1
+
+helm install --name flux-helm-operator --wait \
+--namespace "${HELM_OP_NAMESPACE}" \
+--set image.repository=docker.io/fluxcd/helm-operator \
+--set image.tag=latest \
+--set createCRD="${CREATE_CRDS}" \
+"${REPO_ROOT}/chart/helm-operator"
 
 echo '>>> Applying HelmRelease'
 kubectl create namespace "${DEMO_NAMESPACE}"
