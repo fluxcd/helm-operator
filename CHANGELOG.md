@@ -1,3 +1,60 @@
+## 1.0.0-rc1 (2019-08-14)
+
+> **Notice:** upgrading to this version by just updating your Helm
+> Operator image tag is not possible as the CRD domain and version
+> have changed. An upgrade guide can be found [here](./docs/guides/upgrading-to-ga.md).
+
+This is the first `1.0.0` release candidate, there is no rule about
+the amount of published release candidates before it is officially
+promoted to GA `1.0.0`, except for 'when it is considered stable'.
+
+### Improvements
+
+ - Support releasing to a different namespace than the CR is in, by
+   configuring a `targetNamespace` in the `HelmRelease`
+   [fluxcd/flux#2334][#2334]
+ - Deployment in `deploy/` examples are now generated from templates
+   fluxcd/helm-operator{[#2][#2], [#4][#4], [#19][#19]}
+ - Display the release name, status, and message on `kubectl get hr`
+   [fluxcd/helm-operator#23][#23]
+ - Added descriptions for the CRD fields
+   [fluxcd/helm-operator#24][#24]
+
+### Maintenance and documentation
+
+ - Project has been moved to a dedicated repository
+   [fluxcd/helm-operator][helm-op-repo]
+ - Support code generation from a non `$GOPATH/src` location
+   [fluxcd/helm-operator#6][#6]
+ - `HelmRelease` API version has been bumped to `v1` and group domain has changed to
+   `helm.fluxcd.io`
+   [fluxcd/helm-operator#7][#7]
+ - Deprecated `FluxHelmRelease` resource and `helm.integratations.flux.weave.works`
+   group domain have been removed
+   [fluxcd/helm-operator#7][#7]   
+ - Various updates to the documentation and a dedicated
+   directory for Helm Operator related docs
+   fluxcd/helm-operator{[#20][#20], [#22][#22], [#24][#24]}
+ - Update Docker labels to reflect move to dedicated
+   repository
+   [fluxcd/helm-operator#21][#21]
+ - Use Helm chart in e2e tests
+   [fluxcd/helm-operator#26][#26]
+
+[#2]: https://github.com/fluxcd/helm-operator/pull/2
+[#4]: https://github.com/fluxcd/helm-operator/pull/4
+[#6]: https://github.com/fluxcd/helm-operator/pull/6
+[#7]: https://github.com/fluxcd/helm-operator/pull/7
+[#19]: https://github.com/fluxcd/helm-operator/pull/19
+[#20]: https://github.com/fluxcd/helm-operator/pull/20
+[#21]: https://github.com/fluxcd/helm-operator/pull/21
+[#22]: https://github.com/fluxcd/helm-operator/pull/22
+[#23]: https://github.com/fluxcd/helm-operator/pull/23
+[#24]: https://github.com/fluxcd/helm-operator/pull/24
+[#26]: https://github.com/fluxcd/helm-operator/pull/26
+[#2334]: https://github.com/fluxcd/flux/pull/2334
+[helm-op-repo]: https://github.com/fluxcd/helm-operator
+
 ## 0.10.1 (2019-08-07)
 
 > **Notice:** this release contains a `HelmRelease`
