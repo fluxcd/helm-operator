@@ -16,6 +16,7 @@ spec:
   template:
     metadata:
       annotations:
+        checksum/repositories: {{ include (print $.Template.BasePath "/helm-repositories.yaml") . | sha256sum | quote }}
       {{- if .Values.prometheus.enabled }}
         prometheus.io/scrape: "true"
       {{- end }}
