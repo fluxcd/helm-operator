@@ -79,6 +79,18 @@ spec:
         ports:
         - name: http
           containerPort: 3030
+        livenessProbe:
+          httpGet:
+            port: 3030
+            path: /healthz
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            port: 3030
+            path: /healthz
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
         volumeMounts:
         {{- if .Values.git.ssh.known_hosts }}
         - name: sshdir
