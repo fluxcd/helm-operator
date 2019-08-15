@@ -16,6 +16,7 @@ spec:
   template:
     metadata:
       annotations:
+        checksum/repositories: {{ include (print $.Template.BasePath "/helm-repositories.yaml") . | sha256sum | quote }}
       {{- if .Values.prometheus.enabled }}
         prometheus.io/scrape: "true"
       {{- end }}
@@ -46,8 +47,8 @@ spec:
       {{- end }}
       - name: git-key
         secret:
-          {{- if .Values.git.secretName }}
-          secretName: {{ .Values.git.secretName }}
+          {{- if .Values.git.ssh.secretName }}
+          secretName: {{ .Values.git.ssh.secretName }}
           {{- else }}
           secretName: {{ template "helm-operator.fullname" . }}-git-deploy
           {{- end }}
@@ -78,6 +79,18 @@ spec:
         ports:
         - name: http
           containerPort: 3030
+        livenessProbe:
+          httpGet:
+            port: 3030
+            path: /healthz
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            port: 3030
+            path: /healthz
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
         volumeMounts:
         {{- if .Values.git.ssh.known_hosts }}
         - name: sshdir
