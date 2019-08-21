@@ -5,10 +5,8 @@ This guide shows you how to use Kustomize to bootstrap Helm Operator on a Kubern
 ## Prerequisites
 
 You will need to have Kubernetes set up. For a quick local test,
-you can use `minikube` or `kubeadm`. Any other Kubernetes setup
+you can use `minikube`, `kubeadm` or `kind`. Any other Kubernetes setup
 will work as well though.
-
-### A note on GKE with RBAC enabled
 
 If working on e.g. GKE with RBAC enabled, you will need to add a cluster role binding:
 
@@ -20,7 +18,7 @@ kubectl create clusterrolebinding "cluster-admin-$(whoami)" \
 
 ## Prepare Helm Operator installation 
 
-Create a directory and add the `flux` namespace definition to it:
+Create a directory called `fluxcd` and add the `flux` namespace definition to it:
 
 ```sh
 mkdir fluxcd
@@ -36,7 +34,7 @@ EOF
 Create the `repositories.yaml` file and add the stable, flagger and podinfo Helm repositories to it:
 
 ```sh
-cat > deploy/repositories.yaml <<EOF
+cat > fluxcd/repositories.yaml <<EOF
 apiVersion: v1
 repositories:
 - name: stable
