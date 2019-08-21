@@ -192,7 +192,7 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `serviceAccount.create`                           | `true`                                               | If `true`, create a new service account
 | `serviceAccount.name`                             | `flux`                                               | Service account to be used
 | `clusterRole.create`                              | `true`                                               | If `false`, Helm Operator will be restricted to the namespace where is deployed
-| `createCRD`                                       | `true`                                               | Create the HelmRelease CRD
+| `createCRD`                                       | `false`                                              | Create the HelmRelease CRD
 | `updateChartDeps`                                 | `true`                                               | Update dependencies for charts
 | `git.pollInterval`                                | `git.pollInterval`                                   | Period on which to poll git chart sources for changes
 | `git.timeout`                                     | `git.timeout`                                        | Duration after which git operations time out
