@@ -56,6 +56,8 @@ Create a kustomization file and use the Helm operator deploy YAMLs as base:
 ```sh
 cat > fluxcd/kustomization.yaml <<EOF
 namespace: flux
+resources:
+  - namespace.yaml
 bases:
  - github.com/fluxcd/helm-operator//deploy
 secretGenerator:
