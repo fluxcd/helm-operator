@@ -25,7 +25,7 @@ func makeChartPath(base string, source *helmfluxv1.RepoChartSource) string {
 	// filesystem; but we do need a stable, filesystem-friendly path
 	// to them that is based on the URL.
 	repoPath := filepath.Join(base, base64.URLEncoding.EncodeToString([]byte(source.CleanRepoURL())))
-	if err := os.MkdirAll(repoPath, os.FileMode(os.ModeDir+0660)); err != nil {
+	if err := os.MkdirAll(repoPath, 00750); err != nil {
 		panic(err)
 	}
 	filename := fmt.Sprintf("%s-%s.tgz", source.Name, source.Version)
