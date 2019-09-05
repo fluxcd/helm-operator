@@ -2,6 +2,7 @@ package operator
 
 import (
 	"fmt"
+	"github.com/fluxcd/helm-operator/pkg/release"
 	"sync"
 	"time"
 
@@ -23,6 +24,7 @@ import (
 	ifscheme "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/scheme"
 	hrv1 "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/helm.fluxcd.io/v1"
 	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/helm.fluxcd.io/v1"
+	"github.com/fluxcd/helm-operator/pkg/helm"
 	"github.com/fluxcd/helm-operator/pkg/status"
 )
 
@@ -35,9 +37,6 @@ const (
 	// ChartSynced is used as part of the Event 'reason' when the Chart related to the
 	// a HelmRelease gets released/updated
 	ChartSynced = "ChartSynced"
-	// ErrChartSync is used as part of the Event 'reason' when the related Chart related to the
-	// a HelmRelease fails to be released/updated
-	ErrChartSync = "ErrChartSync"
 
 	// MessageChartSynced - the message used for an Event fired when a HelmRelease
 	// is synced.
@@ -53,6 +52,8 @@ type Controller struct {
 	hrSynced cache.InformerSynced
 
 	sync *chartsync.ChartChangeSync
+
+	helmClients *helm.Clients
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
@@ -73,7 +74,8 @@ func New(
 	kubeclientset kubernetes.Interface,
 	hrInformer hrv1.HelmReleaseInformer,
 	releaseWorkqueue workqueue.RateLimitingInterface,
-	sync *chartsync.ChartChangeSync) *Controller {
+	sync *chartsync.ChartChangeSync,
+	helmClients *helm.Clients) *Controller {
 
 	// Add helm-operator types to the default Kubernetes Scheme so Events can be
 	// logged for helm-operator types.
@@ -90,6 +92,7 @@ func New(
 		releaseWorkqueue: releaseWorkqueue,
 		recorder:         recorder,
 		sync:             sync,
+		helmClients:      helmClients,
 	}
 
 	controller.logger.Log("info", "setting up event handlers")
@@ -225,8 +228,18 @@ func (c *Controller) syncHandler(key string) error {
 		return err
 	}
 
-	c.sync.ReconcileReleaseDef(*hr)
+	helmClient, err := c.getHelmClientForRelease(*hr)
+	if err != nil {
+		c.logger.Log("warning", err.Error(), "resource", hr.ResourceID().String())
+		return nil
+	}
+	c.sync.ReconcileReleaseDef(
+		release.New(log.With(
+			c.logger,
+			"release", hr.GetReleaseName(), "targetNamespace", hr.GetTargetNamespace(), "resource", hr.ResourceID().String(),
+		), helmClient), *hr)
 	c.recorder.Event(hr, corev1.EventTypeNormal, ChartSynced, MessageChartSynced)
+
 	return nil
 }
 
@@ -312,6 +325,20 @@ func (c *Controller) enqueueUpdateJob(old, new interface{}) {
 }
 
 func (c *Controller) deleteRelease(hr helmfluxv1.HelmRelease) {
-	c.logger.Log("info", "deleting release", "resource", hr.ResourceID().String())
-	c.sync.DeleteRelease(hr)
+	logger := log.With(c.logger, "release", hr.GetReleaseName(), "targetNamespace", hr.GetTargetNamespace(), "resource", hr.ResourceID().String())
+	logger.Log("info", "deleting release")
+	helmClient, err := c.getHelmClientForRelease(hr)
+	if err != nil {
+		logger.Log("warning", "failed to delete release", "err", err.Error())
+		return
+	}
+	c.sync.DeleteRelease(release.New(logger, helmClient), hr)
+}
+
+func (c *Controller) getHelmClientForRelease(hr helmfluxv1.HelmRelease) (helm.Client, error) {
+	client, ok := c.helmClients.Load(hr.GetHelmVersion())
+	if !ok {
+		return nil, fmt.Errorf("no Helm client for targeted version: %s", hr.GetHelmVersion())
+	}
+	return client, nil
 }

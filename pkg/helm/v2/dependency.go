@@ -1,4 +1,4 @@
-package chartsync
+package v2
 
 import (
 	"errors"
@@ -8,26 +8,25 @@ import (
 	"path/filepath"
 )
 
-// helmHome is optional; if it's "", it's left to default
-func updateDependencies(chartDir, helmhome string) error {
+func (h *HelmV2) DependencyUpdate(chartPath string) error {
 	var hasLockFile bool
 
 	// sanity check: does the chart directory exist
-	if chartDir == "" {
+	if chartPath == "" {
 		return errors.New("empty path to chart supplied")
 	}
-	chartInfo, err := os.Stat(chartDir)
+	chartInfo, err := os.Stat(chartPath)
 	switch {
 	case os.IsNotExist(err):
-		return fmt.Errorf("chart path %s does not exist", chartDir)
+		return fmt.Errorf("chart path %s does not exist", chartPath)
 	case err != nil:
 		return err
 	case !chartInfo.IsDir():
-		return fmt.Errorf("chart path %s is not a directory", chartDir)
+		return fmt.Errorf("chart path %s is not a directory", chartPath)
 	}
 
 	// check if the requirements file exists
-	reqFilePath := filepath.Join(chartDir, "requirements.yaml")
+	reqFilePath := filepath.Join(chartPath, "requirements.yaml")
 	reqInfo, err := os.Stat(reqFilePath)
 	if err != nil || reqInfo.IsDir() {
 		return nil
@@ -44,7 +43,7 @@ func updateDependencies(chartDir, helmhome string) error {
 	// creates the lockfile. So that it will have the same behaviour
 	// the next time it attempts a release, remove the lockfile if it
 	// was created by helm.
-	lockfilePath := filepath.Join(chartDir, "requirements.lock")
+	lockfilePath := filepath.Join(chartPath, "requirements.lock")
 	info, err := os.Stat(lockfilePath)
 	hasLockFile = (err == nil && !info.IsDir())
 	if !hasLockFile {
@@ -52,20 +51,17 @@ func updateDependencies(chartDir, helmhome string) error {
 	}
 
 	cmd := exec.Command("helm", "repo", "update")
-	if helmhome != "" {
-		cmd.Args = append(cmd.Args, "--home", helmhome)
-	}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("could not update repo: %s", string(out))
 	}
 
 	cmd = exec.Command("helm", "dep", "build", ".")
-	cmd.Dir = chartDir
+	cmd.Dir = chartPath
 
 	out, err = cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("could not update dependencies in %s: %s", chartDir, string(out))
+		return fmt.Errorf("could not update dependencies in %s: %s", chartPath, string(out))
 	}
 
 	return nil

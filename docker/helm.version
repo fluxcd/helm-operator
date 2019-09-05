@@ -2,7 +2,7 @@
 # is the first release that had checksums; but 2.9.1 appears the first
 # that reliably supports authenticating against chart repos, so that
 # wins.
-HELM_VERSION=2.13.0
-HELM_CHECKSUM_amd64=15eca6ad225a8279de80c7ced42305e24bc5ac60bb7d96f2d2fa4af86e02c794
-HELM_CHECKSUM_arm=adf1242eca171ba21847e621ce9fbdbb3dd2aa35ac8532fb05519b1b49fd4456
-HELM_CHECKSUM_arm64=afb51c43ed83fe8bac62f7e47872019cf1c0d8a1927d69fb963959c6accc77b5
+HELM_VERSION=2.14.3
+HELM_CHECKSUM_amd64=38614a665859c0f01c9c1d84fa9a5027364f936814d1e47839b05327e400bf55
+HELM_CHECKSUM_arm=52535e0811fd68c406e41be240446709d228ca86db1de47a0deb8c8de8e82c8b
+HELM_CHECKSUM_arm64=cfcbb577f272bcedef9e4191a619d98d7c622810d4d2445b888743bf3ab908ae
