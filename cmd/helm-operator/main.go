@@ -52,9 +52,10 @@ var (
 	tillerTLSCACert   *string
 	tillerTLSHostname *string
 
-	chartsSyncInterval *time.Duration
-	logReleaseDiffs    *bool
-	updateDependencies *bool
+	chartsSyncInterval   *time.Duration
+	statusUpdateInterval *time.Duration
+	logReleaseDiffs      *bool
+	updateDependencies   *bool
 
 	gitTimeout      *time.Duration
 	gitPollInterval *time.Duration
@@ -104,6 +105,7 @@ func init() {
 	tillerTLSHostname = fs.String("tiller-tls-hostname", "", "server name used to verify the hostname on the returned certificates from the server")
 
 	chartsSyncInterval = fs.Duration("charts-sync-interval", 3*time.Minute, "period on which to reconcile the Helm releases with HelmRelease resources")
+	statusUpdateInterval = fs.Duration("status-update-interval", 10*time.Second, "period on which to update the Helm release status in HelmRelease resources")
 	logReleaseDiffs = fs.Bool("log-release-diffs", false, "log the diff when a chart release diverges; potentially insecure")
 	updateDependencies = fs.Bool("update-chart-deps", true, "update chart dependencies before installing/upgrading a release")
 
@@ -226,7 +228,7 @@ func main() {
 	// the status updater, to keep track of the release status for
 	// every HelmRelease
 	statusUpdater := status.New(ifClient, hrInformer.Lister(), helmClient)
-	go statusUpdater.Loop(shutdown, log.With(logger, "component", "statusupdater"))
+	go statusUpdater.Loop(shutdown, *statusUpdateInterval, log.With(logger, "component", "statusupdater"))
 
 	// start HTTP server
 	go daemonhttp.ListenAndServe(*listenAddr, chartSync, log.With(logger, "component", "daemonhttp"), shutdown)
