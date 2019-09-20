@@ -34,7 +34,7 @@ spec:
       {{- end }}
       volumes:
       {{- if .Values.git.ssh.known_hosts }}
-      - name: sshdir
+      - name: sshknownhosts
         configMap:
           name: {{ template "helm-operator.fullname" . }}-ssh-config
           defaultMode: 0600
@@ -43,6 +43,15 @@ spec:
       - name: git-config
         secret:
           secretName: {{ include "git.config.secretName" . }}
+          defaultMode: 0400
+      {{- end }}
+      {{- if .Values.git.ssh.configMapName }}
+      - name: sshconfig
+        configMap:
+          name: {{ .Values.git.ssh.configMapName }}
+          items:
+            - key: {{ .Values.git.ssh.configMapKey | default "config" }}
+              path: config
           defaultMode: 0400
       {{- end }}
       - name: git-key
@@ -93,9 +102,14 @@ spec:
           timeoutSeconds: 5
         volumeMounts:
         {{- if .Values.git.ssh.known_hosts }}
-        - name: sshdir
+        - name: sshknownhosts
           mountPath: /root/.ssh/known_hosts
           subPath: known_hosts
+          readOnly: true
+        {{- end }}
+        {{- if .Values.git.ssh.configMapName }}
+        - name: sshconfig
+          mountPath: /root/.ssh/
           readOnly: true
         {{- end }}
         {{- if .Values.git.config.enabled }}
