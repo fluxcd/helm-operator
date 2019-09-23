@@ -128,10 +128,13 @@ spec:
         args:
         {{- if .Values.logFormat }}
         - --log-format={{ .Values.logFormat }}
-        {{end}}
+        {{- end }}
         - --git-timeout={{ .Values.git.timeout }}
         - --git-poll-interval={{ .Values.git.pollInterval }}
         - --charts-sync-interval={{ .Values.chartsSyncInterval }}
+        {{- if .Values.statusUpdateInterval }}
+        - --status-update-interval={{ .Values.statusUpdateInterval }}
+        {{- end }}
         - --update-chart-deps={{ .Values.updateChartDeps }}
         - --log-release-diffs={{ .Values.logReleaseDiffs }}
         {{- if .Values.workers }}

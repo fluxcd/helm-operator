@@ -19,8 +19,10 @@ updateChartDeps: true
 logFormat: fmt
 # Log the diff when a chart release diverges
 logReleaseDiffs: false
-# Interval at which to check for changed charts
+# Period on which to reconcile the Helm releases with `HelmRelease` resources
 chartsSyncInterval: "3m"
+# Period on which to update the Helm release status in `HelmRelease` resources
+statusUpdateInterval:
 # Amount of workers processing releases
 workers: 2
 
@@ -55,6 +57,7 @@ configureRepositories:
 
 # For charts stored in Git repos set the SSH private key secret
 git:
+  # Period on which to poll git chart sources for changes
   pollInterval: "5m"
   timeout: "20s"
   # Overrides for git over SSH. If you use your own git server, you

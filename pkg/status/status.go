@@ -20,7 +20,6 @@ import (
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	kube "k8s.io/client-go/kubernetes"
 	"k8s.io/helm/pkg/helm"
 	helmrelease "k8s.io/helm/pkg/proto/hapi/release"
 
@@ -30,14 +29,10 @@ import (
 	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/helm.fluxcd.io/v1"
 )
 
-const period = 10 * time.Second
-
 type Updater struct {
 	hrClient   ifclientset.Interface
 	hrLister   iflister.HelmReleaseLister
-	kube       kube.Interface
 	helmClient *helm.Client
-	namespace  string
 }
 
 func New(hrClient ifclientset.Interface, hrLister iflister.HelmReleaseLister, helmClient *helm.Client) *Updater {
@@ -48,8 +43,8 @@ func New(hrClient ifclientset.Interface, hrLister iflister.HelmReleaseLister, he
 	}
 }
 
-func (u *Updater) Loop(stop <-chan struct{}, logger log.Logger) {
-	ticker := time.NewTicker(period)
+func (u *Updater) Loop(stop <-chan struct{}, interval time.Duration, logger log.Logger) {
+	ticker := time.NewTicker(interval)
 	var logErr error
 
 bail:
