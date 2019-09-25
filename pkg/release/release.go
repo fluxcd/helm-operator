@@ -30,7 +30,6 @@ import (
 
 	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	fluxk8s "github.com/weaveworks/flux/cluster/kubernetes"
-	"github.com/weaveworks/flux/resource"
 )
 
 type Action string
@@ -485,11 +484,6 @@ func ValuesChecksum(rawValues []byte) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-// hrResourceID constructs a resource.ID for a HelmRelease resource.
-func hrResourceID(hr helmfluxv1.HelmRelease) resource.ID {
-	return resource.MakeID(hr.Namespace, "HelmRelease", hr.Name)
-}
-
 // Merges source and destination map, preferring values from the source Values
 // This is slightly adapted from https://github.com/helm/helm/blob/2332b480c9cb70a0d8a85247992d6155fbe82416/cmd/helm/install.go#L359
 func mergeValues(dest, src map[string]interface{}) map[string]interface{} {
@@ -562,6 +556,10 @@ func releaseManifestToUnstructured(manifest string, logger log.Logger) []unstruc
 		bytes, err := yaml.YAMLToJSON([]byte(manifest))
 		if err != nil {
 			logger.Log("err", err)
+			continue
+		}
+
+		if len(bytes) == 0 {
 			continue
 		}
 
