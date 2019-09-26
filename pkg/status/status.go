@@ -21,30 +21,29 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	kube "k8s.io/client-go/kubernetes"
-	"k8s.io/helm/pkg/helm"
-	helmrelease "k8s.io/helm/pkg/proto/hapi/release"
 
 	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	ifclientset "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned"
 	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/helm.fluxcd.io/v1"
+	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
 const period = 10 * time.Second
 
 type Updater struct {
-	hrClient   ifclientset.Interface
-	hrLister   iflister.HelmReleaseLister
-	kube       kube.Interface
-	helmClient *helm.Client
-	namespace  string
+	hrClient    ifclientset.Interface
+	hrLister    iflister.HelmReleaseLister
+	kube        kube.Interface
+	helmClients *helm.Clients
+	namespace   string
 }
 
-func New(hrClient ifclientset.Interface, hrLister iflister.HelmReleaseLister, helmClient *helm.Client) *Updater {
+func New(hrClient ifclientset.Interface, hrLister iflister.HelmReleaseLister, helmClients *helm.Clients) *Updater {
 	return &Updater{
-		hrClient:   hrClient,
-		hrLister:   hrLister,
-		helmClient: helmClient,
+		hrClient:    hrClient,
+		hrLister:    hrLister,
+		helmClients: helmClients,
 	}
 }
 
@@ -66,14 +65,18 @@ bail:
 		}
 		for _, hr := range list {
 			nsHrClient := u.hrClient.HelmV1().HelmReleases(hr.Namespace)
-			releaseName := hr.ReleaseName()
-			releaseStatus, _ := u.helmClient.ReleaseStatus(releaseName)
-			// If we are unable to get the status, we do not care why
-			if releaseStatus == nil {
+			releaseName := hr.GetReleaseName()
+			c, ok := u.helmClients.Load(hr.GetHelmVersion())
+			// If we are unable to get the client, we do not care why
+			if !ok {
 				continue
 			}
-			statusStr := releaseStatus.Info.Status.Code.String()
-			if err := SetReleaseStatus(nsHrClient, *hr, releaseName, statusStr); err != nil {
+			rel, err := c.Status(hr.GetReleaseName(), helm.StatusOptions{})
+			// If we are unable to get the status, we do not care why
+			if err != nil {
+				continue
+			}
+			if err := SetReleaseStatus(nsHrClient, *hr, releaseName, rel.Info.Status.String()); err != nil {
 				logger.Log("namespace", hr.Namespace, "resource", hr.Name, "err", err)
 				continue
 			}
@@ -157,11 +160,6 @@ func SetObservedGeneration(client v1client.HelmReleaseInterface, hr helmfluxv1.H
 
 	_, err = client.UpdateStatus(cHr)
 	return err
-}
-
-// ReleaseFailed returns if the roll-out of the HelmRelease failed.
-func ReleaseFailed(hr helmfluxv1.HelmRelease) bool {
-	return hr.Status.ReleaseStatus == helmrelease.Status_FAILED.String()
 }
 
 // HasSynced returns if the HelmRelease has been processed by the

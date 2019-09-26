@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -16,15 +17,19 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 
-	fluxhelm "github.com/fluxcd/helm-operator/pkg"
+	"github.com/weaveworks/flux/checkpoint"
+
 	"github.com/fluxcd/helm-operator/pkg/chartsync"
 	clientset "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned"
 	ifinformers "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions"
+	"github.com/fluxcd/helm-operator/pkg/helm"
+	"github.com/fluxcd/helm-operator/pkg/helm/v2"
+	"github.com/fluxcd/helm-operator/pkg/helm/v3"
 	daemonhttp "github.com/fluxcd/helm-operator/pkg/http/daemon"
 	"github.com/fluxcd/helm-operator/pkg/operator"
-	"github.com/fluxcd/helm-operator/pkg/release"
 	"github.com/fluxcd/helm-operator/pkg/status"
-	"github.com/weaveworks/flux/checkpoint"
+
+	_ "k8s.io/code-generator/cmd/client-gen/generators"
 )
 
 var (
@@ -60,11 +65,12 @@ var (
 	gitPollInterval *time.Duration
 
 	listenAddr *string
+
+	enabledHelmVersions *[]string
 )
 
 const (
-	product            = "weave-flux-helm"
-	ErrOperatorFailure = "Operator failure: %q"
+	product = "weave-flux-helm"
 )
 
 var version = "unversioned"
@@ -74,7 +80,7 @@ func init() {
 	fs = pflag.NewFlagSet("default", pflag.ExitOnError)
 	fs.Usage = func() {
 		fmt.Fprintf(os.Stderr, "DESCRIPTION\n")
-		fmt.Fprintf(os.Stderr, "  helm-operator releases Helm charts from git.\n")
+		fmt.Fprintf(os.Stderr, "  helm-operator releases Helm charts.\n")
 		fmt.Fprintf(os.Stderr, "\n")
 		fmt.Fprintf(os.Stderr, "FLAGS\n")
 		fs.PrintDefaults()
@@ -109,6 +115,8 @@ func init() {
 
 	gitTimeout = fs.Duration("git-timeout", 20*time.Second, "duration after which git operations time out")
 	gitPollInterval = fs.Duration("git-poll-interval", 5*time.Minute, "period on which to poll git chart sources for changes")
+
+	enabledHelmVersions = fs.StringSlice("enabled-helm-versions", []string{v2.VERSION, v3.VERSION}, "Helm versions supported by this operator instance")
 }
 
 func main() {
@@ -120,6 +128,12 @@ func main() {
 	if *versionFlag {
 		println(version)
 		os.Exit(0)
+	}
+
+	// TODO(hidde): hacked in so that we can control the Helm version with an
+	// environment variable so that we do not have to make any chart modifications.
+	if ver := getEnvAsSlice("HELM_VERSION", []string{}); len(ver) == 1 {
+		enabledHelmVersions = &ver
 	}
 
 	// init go-kit log
@@ -170,17 +184,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	helmClient := fluxhelm.ClientSetup(log.With(logger, "component", "helm"), kubeClient, fluxhelm.TillerOptions{
-		Host:        *tillerIP,
-		Port:        *tillerPort,
-		Namespace:   *tillerNamespace,
-		TLSVerify:   *tillerTLSVerify,
-		TLSEnable:   *tillerTLSEnable,
-		TLSKey:      *tillerTLSKey,
-		TLSCert:     *tillerTLSCert,
-		TLSCACert:   *tillerTLSCACert,
-		TLSHostname: *tillerTLSHostname,
-	})
+	helmClients := &helm.Clients{}
+	for _, v := range *enabledHelmVersions {
+		switch v {
+		case v2.VERSION:
+			helmClients.Add(v2.VERSION, v2.New(log.With(logger, "component", "helm", "version", "v2"), kubeClient, v2.TillerOptions{
+				Host:        *tillerIP,
+				Port:        *tillerPort,
+				Namespace:   *tillerNamespace,
+				TLSVerify:   *tillerTLSVerify,
+				TLSEnable:   *tillerTLSEnable,
+				TLSKey:      *tillerTLSKey,
+				TLSCert:     *tillerTLSCert,
+				TLSCACert:   *tillerTLSCACert,
+				TLSHostname: *tillerTLSHostname,
+			}))
+		case v3.VERSION:
+			helmClients.Add(v3.VERSION, v3.New(log.With(logger, "component", "helm", "version", "v3"), cfg))
+		default:
+			mainLogger.Log("error", fmt.Sprintf("%s is not a supported Helm version, ignoring...", v))
+		}
+	}
 
 	// setup shared informer for HelmReleases
 	nsOpt := ifinformers.WithNamespace(*namespace)
@@ -190,13 +214,9 @@ func main() {
 	// setup workqueue for HelmReleases
 	queue := workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "ChartRelease")
 
-	// release instance is needed during the sync of git chart changes
-	// and during the sync of HelmRelease changes
-	rel := release.New(log.With(logger, "component", "release"), helmClient)
 	chartSync := chartsync.New(
 		log.With(logger, "component", "chartsync"),
-		chartsync.Clients{KubeClient: *kubeClient, IfClient: *ifClient, HrLister: hrInformer.Lister()},
-		rel,
+		chartsync.Clients{KubeClient: *kubeClient, IfClient: *ifClient, HrLister: hrInformer.Lister(), HelmClients: helmClients},
 		queue,
 		chartsync.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval},
 		*namespace,
@@ -206,7 +226,7 @@ func main() {
 	// NB: the operator needs to do its magic with the informer
 	// _before_ starting it or else the cache sync seems to hang at
 	// random
-	opr := operator.New(log.With(logger, "component", "operator"), *logReleaseDiffs, kubeClient, hrInformer, queue, chartSync)
+	opr := operator.New(log.With(logger, "component", "operator"), *logReleaseDiffs, kubeClient, hrInformer, queue, chartSync, helmClients)
 	go ifInformerFactory.Start(shutdown)
 
 	// wait for the caches to be synced before starting _any_ workers
@@ -225,7 +245,7 @@ func main() {
 
 	// the status updater, to keep track of the release status for
 	// every HelmRelease
-	statusUpdater := status.New(ifClient, hrInformer.Lister(), helmClient)
+	statusUpdater := status.New(ifClient, hrInformer.Lister(), helmClients)
 	go statusUpdater.Loop(shutdown, log.With(logger, "component", "statusupdater"))
 
 	// start HTTP server
@@ -237,4 +257,19 @@ func main() {
 	logger.Log("exiting...", shutdownErr)
 	close(shutdown)
 	shutdownWg.Wait()
+}
+
+func getEnv(key string, defaultValue string) string {
+	if v, ok := os.LookupEnv(key); ok {
+		return v
+	}
+	return defaultValue
+}
+
+func getEnvAsSlice(name string, defaultValue []string) []string {
+	v := getEnv(name, "")
+	if v == "" {
+		return defaultValue
+	}
+	return strings.Split(v, ",")
 }
