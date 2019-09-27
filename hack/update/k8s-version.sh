@@ -6,6 +6,11 @@ if [ -z "$VERSION" ]; then
     echo "Must specify version!"
     exit 1
 fi
+
+# cd to the repo root
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
+cd "${REPO_ROOT}"
+
 MODS=($(
     curl -sS https://raw.githubusercontent.com/kubernetes/kubernetes/v${VERSION}/go.mod |
     sed -n 's|.*k8s.io/\(.*\) => ./staging/src/k8s.io/.*|k8s.io/\1|p'

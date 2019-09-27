@@ -28,8 +28,6 @@ import (
 	daemonhttp "github.com/fluxcd/helm-operator/pkg/http/daemon"
 	"github.com/fluxcd/helm-operator/pkg/operator"
 	"github.com/fluxcd/helm-operator/pkg/status"
-
-	_ "k8s.io/code-generator/cmd/client-gen/generators"
 )
 
 var (
