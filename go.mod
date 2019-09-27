@@ -1,6 +1,6 @@
 module github.com/fluxcd/helm-operator
 
-go 1.12
+go 1.13
 
 require (
 	github.com/fluxcd/flux v1.15.0
