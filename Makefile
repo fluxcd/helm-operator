@@ -38,7 +38,7 @@ realclean: clean
 	rm -rf ./cache
 
 test: test/bin/helm
-	PATH="${PWD}/bin:${PWD}/test/bin:${PATH}" GO111MODULES=on go test ${TEST_FLAGS} $(shell go list ./... | grep -v "^github.com/weaveworks/flux/vendor" | sort -u)
+	PATH="${PWD}/bin:${PWD}/test/bin:${PATH}" go test ${TEST_FLAGS} $(shell go list ./... | grep -v "^github.com/weaveworks/flux/vendor" | sort -u)
 
 e2e: test/bin/helm test/bin/kubectl build/.helm-operator.done
 	PATH="${PWD}/test/bin:${PATH}" CURRENT_OS_ARCH=$(CURRENT_OS_ARCH) test/e2e/run.sh
@@ -56,7 +56,7 @@ build/.helm-operator.done: build/helm-operator build/kubectl build/helm docker/s
 
 build/helm-operator: $(HELM_OPERATOR_DEPS)
 build/helm-operator: cmd/helm-operator/*.go
-	GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} go build -o $@ $(LDFLAGS) -ldflags "-X main.version=$(shell ./docker/image-tag)" ./cmd/helm-operator
+	CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} go build -o $@ $(LDFLAGS) -ldflags "-X main.version=$(shell ./docker/image-tag)" ./cmd/helm-operator
 
 build/kubectl: cache/linux-$(ARCH)/kubectl-$(KUBECTL_VERSION)
 test/bin/kubectl: cache/$(CURRENT_OS_ARCH)/kubectl-$(KUBECTL_VERSION)
@@ -83,7 +83,7 @@ cache/%/helm-$(HELM_VERSION): docker/helm.version
 	mv cache/$*/helm $@
 
 $(GOBIN)/bin/helm-operator: $(HELM_OPERATOR_DEPS)
-	GO111MODULE=on go install ./cmd/helm-operator
+	go install ./cmd/helm-operator
 
 pkg/install/generated_templates.gogen.go: pkg/install/templates/*
 	cd pkg/install && go run generate.go embedded-templates
@@ -93,7 +93,7 @@ generate-deploy: pkg/install/generated_templates.gogen.go
 
 check-generated: generate-deploy pkg/install/generated_templates.gogen.go
 	git diff --exit-code -- pkg/install/generated_templates.gogen.go
-	GO111MODULE=on ./hack/verify-codegen.sh
+	./hack/update/verify.sh
 
 build-docs:
 	@cd docs && docker build -t flux-docs .
