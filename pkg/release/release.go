@@ -344,7 +344,7 @@ func (r *Release) OwnedByHelmRelease(release *hapi_release.Release, hr helmfluxv
 		}
 	}
 
-	return false
+	return true
 }
 
 // annotateResources annotates each of the resources created (or updated)
