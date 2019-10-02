@@ -92,11 +92,23 @@ spec:
         # There are no ":latest" images for helm-operator. Find the most recent
         # release or image version at https://hub.docker.com/r/weaveworks/helm-operator/tags
         # and replace the tag here.
-        image: docker.io/fluxcd/helm-operator:1.0.0-rc1
+        image: docker.io/fluxcd/helm-operator:1.0.0-rc2
         imagePullPolicy: IfNotPresent
         ports:
         - name: http
           containerPort: 3030
+        livenessProbe:
+          httpGet:
+            port: 3030
+            path: /healthz
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            port: 3030
+            path: /healthz
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
         resources:
           requests:
             cpu: 50m

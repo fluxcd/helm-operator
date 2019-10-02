@@ -16,6 +16,7 @@ spec:
   template:
     metadata:
       annotations:
+        checksum/repositories: {{ include (print $.Template.BasePath "/helm-repositories.yaml") . | sha256sum | quote }}
       {{- if .Values.prometheus.enabled }}
         prometheus.io/scrape: "true"
       {{- end }}
@@ -33,7 +34,7 @@ spec:
       {{- end }}
       volumes:
       {{- if .Values.git.ssh.known_hosts }}
-      - name: sshdir
+      - name: sshknownhosts
         configMap:
           name: {{ template "helm-operator.fullname" . }}-ssh-config
           defaultMode: 0600
@@ -44,10 +45,19 @@ spec:
           secretName: {{ include "git.config.secretName" . }}
           defaultMode: 0400
       {{- end }}
+      {{- if .Values.git.ssh.configMapName }}
+      - name: sshconfig
+        configMap:
+          name: {{ .Values.git.ssh.configMapName }}
+          items:
+            - key: {{ .Values.git.ssh.configMapKey | default "config" }}
+              path: config
+          defaultMode: 0400
+      {{- end }}
       - name: git-key
         secret:
-          {{- if .Values.git.secretName }}
-          secretName: {{ .Values.git.secretName }}
+          {{- if .Values.git.ssh.secretName }}
+          secretName: {{ .Values.git.ssh.secretName }}
           {{- else }}
           secretName: {{ template "helm-operator.fullname" . }}-git-deploy
           {{- end }}
@@ -78,11 +88,28 @@ spec:
         ports:
         - name: http
           containerPort: 3030
+        livenessProbe:
+          httpGet:
+            port: 3030
+            path: /healthz
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            port: 3030
+            path: /healthz
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
         volumeMounts:
         {{- if .Values.git.ssh.known_hosts }}
-        - name: sshdir
+        - name: sshknownhosts
           mountPath: /root/.ssh/known_hosts
           subPath: known_hosts
+          readOnly: true
+        {{- end }}
+        {{- if .Values.git.ssh.configMapName }}
+        - name: sshconfig
+          mountPath: /root/.ssh/
           readOnly: true
         {{- end }}
         {{- if .Values.git.config.enabled }}
@@ -115,10 +142,13 @@ spec:
         args:
         {{- if .Values.logFormat }}
         - --log-format={{ .Values.logFormat }}
-        {{end}}
+        {{- end }}
         - --git-timeout={{ .Values.git.timeout }}
         - --git-poll-interval={{ .Values.git.pollInterval }}
         - --charts-sync-interval={{ .Values.chartsSyncInterval }}
+        {{- if .Values.statusUpdateInterval }}
+        - --status-update-interval={{ .Values.statusUpdateInterval }}
+        {{- end }}
         - --update-chart-deps={{ .Values.updateChartDeps }}
         - --log-release-diffs={{ .Values.logReleaseDiffs }}
         {{- if .Values.workers }}

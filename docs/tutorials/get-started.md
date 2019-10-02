@@ -1,6 +1,6 @@
-# Get started with the Helm operator
+# Get started with the Helm operator and Tiller
 
-## Installing Helm / Tiller
+## Install Helm / Tiller
 
 Generate certificates for Tiller and Flux. This will provide a CA, servercerts for Tiller and client certs for Helm / Flux.
 
@@ -35,9 +35,7 @@ echo '{"CN":"'$USER_NAME'","hosts":[""],"key":{"algo":"rsa","size":4096}}' | cfs
 
 Alternatively, you can follow the [Helm documentation for configuring TLS](https://docs.helm.sh/using_helm/#using-ssl-between-helm-and-tiller).
 
-Next deploy Helm with TLS and RBAC enabled;
-
-Create a file called `helm-rbac.yaml`. This contains all the RBAC configuration for Tiller:
+Next create the RBAC configuration for Tiller:
 
 ```yaml
 apiVersion: v1
@@ -101,7 +99,7 @@ subjects:
   namespace: kube-system
 ```
 
-Deploy Tiller:
+Save the above config as `helm-rbac.yaml` and deploy Tiller:
 
 ```bash
 kubectl apply -f helm-rbac.yaml
@@ -141,7 +139,7 @@ helm --tls --tls-verify \
 
 ## Deploy the Helm Operator
 
-First create a new Kubernetes TLS secret for the client certs;
+First create a new Kubernetes TLS secret for the client certs:
 
 ```bash
 kubectl create secret tls helm-client --cert=tls/flux-helm-operator.pem --key=./tls/flux-helm-operator-key.pem
@@ -149,20 +147,21 @@ kubectl create secret tls helm-client --cert=tls/flux-helm-operator.pem --key=./
 
 > **Note:** this has to be in the same namespace as the flux-helm-operator is deployed in.
 
-Deploy Flux with Helm;
+Deploy Flux with Helm:
 
 ```bash
 helm repo add fluxcd https://fluxcd.github.io/flux
 
 helm upgrade --install \
     --set helmOperator.create=true \
+    --set helmOperator.createCRD=true \
     --set git.url=$YOUR_GIT_REPO \
     --set helmOperator.tls.enable=true \
     --set helmOperator.tls.verify=true \
     --set helmOperator.tls.secretName=helm-client \
     --set helmOperator.tls.caContent="$(cat ./tls/ca.pem)" \
     flux \
-    fluxcd/helm-operator
+    fluxcd/flux
 ```
 
 > **Note:**

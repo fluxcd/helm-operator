@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/fluxcd/helm-operator.svg?style=svg)](https://circleci.com/gh/fluxcd/helm-operator)
 [![GoDoc](https://godoc.org/github.com/fluxcd/helm-operator?status.svg)](https://godoc.org/github.com/fluxcd/helm-operator)
-[![Documentation](https://img.shields.io/badge/latest-documentation-informational)](https://docs.fluxcd.io/en/latest/)
+[![Documentation](https://img.shields.io/badge/latest-documentation-informational)](https://docs.fluxcd.io/projects/helm-operator/en/latest/)
 
 The Helm Operator provides an extension to [Flux](https://github.com/fluxcd/flux)
 that automates Helm Chart releases in a GitOps manner.
@@ -25,13 +25,14 @@ and the Helm Operator makes sure Helm charts are released as specified in the re
 ## Get started with the Helm Operator
 
 Get started [installing the Helm operator](/chart/helm-operator/README.md)
-or just [browse through the documentation](https://docs.fluxcd.io/en/latest/helm-operator/).
+or just [browse through the documentation](https://docs.fluxcd.io/projects/helm-operator/en/latest/).
 
 ### Integrations
 
 As Flux Helm Operator is Open Source, integrations are very straight-forward. Here are
 a few popular ones you might want to check out:
 
+- [Progressive Delivery workshop (Helm v3 alpha)](https://helm.workshop.flagger.dev/)
 - [Managing Helm releases the GitOps way](https://github.com/fluxcd/helm-operator-get-started)
 - [GitOps for Istio Canary deployments](https://github.com/stefanprodan/gitops-istio)
 
