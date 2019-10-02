@@ -29,7 +29,7 @@ import (
 	helmutil "k8s.io/helm/pkg/releaseutil"
 
 	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
-	fluxk8s "github.com/weaveworks/flux/cluster/kubernetes"
+	fluxk8s "github.com/fluxcd/flux/pkg/cluster/kubernetes"
 )
 
 type Action string
