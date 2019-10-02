@@ -24,7 +24,8 @@ import (
 	"github.com/fluxcd/helm-operator/pkg/operator"
 	"github.com/fluxcd/helm-operator/pkg/release"
 	"github.com/fluxcd/helm-operator/pkg/status"
-	"github.com/weaveworks/flux/checkpoint"
+	"github.com/fluxcd/flux/pkg/checkpoint"
+	_ "k8s.io/code-generator/cmd/client-gen/generators"
 )
 
 var (
