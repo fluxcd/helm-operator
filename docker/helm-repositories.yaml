@@ -48,3 +48,11 @@ repositories:
   password: ""
   url: https://openfaas.github.io/faas-netes
   username: ""
+- caFile: ""
+  cache: /var/fluxd/helm/repository/cache/eks-index.yaml
+  certFile: ""
+  keyFile: ""
+  name: eks
+  password: ""
+  url: https://aws.github.io/eks-charts
+  username: ""
