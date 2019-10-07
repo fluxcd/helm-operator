@@ -1,3 +1,14 @@
+## 0.2.0 (2019-10-07)
+
+### Improvements
+
+ - Update Helm Operator to `1.0.0-rc2`
+   [fluxcd/helm-operator#59](https://github.com/fluxcd/helm-operator/pull/59)
+ - Expand the list of public Helm repositories in the default config
+   [fluxcd/helm-operator#53](https://github.com/fluxcd/helm-operator/pull/53)
+ - Add `statusUpdateInterval` option for configuring the interval at which the operator consults Tiller for the status of a release
+   [fluxcd/helm-operator#44](https://github.com/fluxcd/helm-operator/pull/44)
+
 ## 0.1.1 (2019-09-15)
 
 ### Improvements
