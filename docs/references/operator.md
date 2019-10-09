@@ -20,7 +20,7 @@ take action accordingly.
 | Flag                        | Default                       | Purpose
 | --------------------------  | ----------------------------- | ---
 | `--log-format`              | `fmt`                         | Changes the logging format; `fmt` or `json`.
-| `--workers`                 | `1`                           | Amount of workers processing releases.
+| `--workers`                 | `2`                           | Amount of workers processing releases.
 | `--listen`                  | `:3030`                       | Listen address where `/metrics` and API will be served.
 | **Cluster configuration**
 | `--kubeconfig`              |                               | Path to a kubeconfig. Only required if out-of-cluster.
