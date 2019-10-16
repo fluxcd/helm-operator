@@ -19,6 +19,12 @@ spec:
     - JSONPath: .status.releaseStatus
       name: Status
       type: string
+    - JSONPath: .spec.chart.name
+      name: Chart
+      type: string
+    - JSONPath: .spec.chart.version
+      name: Version
+      type: string    
     - JSONPath: .status.conditions[?(@.type=="Released")].message
       name: Message
       type: string
