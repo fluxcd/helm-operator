@@ -1,3 +1,26 @@
+## 1.0.0-rc3 (2019-10-18)
+
+> **Notice:** upgrading to this version from `<=0.10.x` by just
+> updating your Helm Operator image tag is not possible as the
+> CRD domain and version have changed. An upgrade guide can be
+> found [here](./docs/guides/upgrading-to-ga.md).
+
+This is the third release candidate.
+
+### Improvements
+
+ - Update Helm to `v2.14.3` and kubectl to `v1.14.7`
+   [fluxcd/helm-operator#73][#73]
+ - Add EKS repo to the list of public Helm repositories in the default config
+   [fluxcd/helm-operator#64][#64]
+ - De-experimental-ise `--workers` flag and set the default value to two workers
+   [fluxcd/helm-operator#53][#53]
+
+### Maintenance and documentation
+
+ - Build: Make release build cope with `v` prefixed tags 
+   [fluxcd/helm-operator#50][#61]
+
 ## 1.0.0-rc2 (2019-10-02)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
