@@ -19,7 +19,17 @@ This is the third release candidate.
 ### Maintenance and documentation
 
  - Build: Make release build cope with `v` prefixed tags 
-   [fluxcd/helm-operator#50][#61]
+   [fluxcd/helm-operator#61][#61]
+
+### Thanks
+
+Many thanks to @hiddeco and @stefanprodan
+for contributions to this release.
+
+[#73]: https://github.com/fluxcd/helm-operator/pull/73
+[#64]: https://github.com/fluxcd/helm-operator/pull/64
+[#53]: https://github.com/fluxcd/helm-operator/pull/53
+[#61]: https://github.com/fluxcd/helm-operator/pull/61
 
 ## 1.0.0-rc2 (2019-10-02)
 
