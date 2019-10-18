@@ -35,7 +35,7 @@ replace github.com/docker/distribution => github.com/2opremio/distribution v0.0.
 // the version).
 // The libs are thereby kept compatible with client-go v11, which is
 // itself compatible with Kubernetes 1.14.
-
+// The helm package is pinned here to avoid pulling old versions of Helm due to Flux circular dependency
 replace (
 	k8s.io/api => k8s.io/api v0.0.0-20190708174958-539a33f6e817
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
