@@ -112,7 +112,7 @@ Add `identity.pub` as a read-only deployment key in your Git repo and install He
 ```sh
 helm -i helm-operator fluxcd/helm-operator \
 --namespace fluxcd \
---set git.ssh.secret=helm-operator-ssh \
+--set git.ssh.secretName=helm-operator-ssh \
 --set-file git.ssh.known_hosts=/tmp/flux_known_hosts
 ```
 
@@ -151,7 +151,7 @@ when installing Helm Operator, you can refer the Flux deploy key by its Kubernet
 ```sh
 helm -i helm-operator fluxcd/helm-operator \
 --namespace fluxcd \
---set git.ssh.secret=flux-git-deploy
+--set git.ssh.secretName=flux-git-deploy
 ```
 
 The deploy key naming convention is `<Flux Release Name>-git-deploy`.

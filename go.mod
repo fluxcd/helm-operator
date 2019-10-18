@@ -21,7 +21,7 @@ require (
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator v0.0.0-20190511023357-639c964206c2
 	k8s.io/gengo v0.0.0-20190907103519-ebc107f98eab // indirect
-	k8s.io/helm v2.13.1+incompatible
+	k8s.io/helm v2.14.3+incompatible
 	k8s.io/klog v0.3.3
 )
 
@@ -35,7 +35,7 @@ replace github.com/docker/distribution => github.com/2opremio/distribution v0.0.
 // the version).
 // The libs are thereby kept compatible with client-go v11, which is
 // itself compatible with Kubernetes 1.14.
-
+// The helm package is pinned here to avoid pulling old versions of Helm due to Flux circular dependency
 replace (
 	k8s.io/api => k8s.io/api v0.0.0-20190708174958-539a33f6e817
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
@@ -43,4 +43,5 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator => k8s.io/code-generator v0.0.0-20190311093542-50b561225d70
 	k8s.io/component-base => k8s.io/component-base v0.0.0-20190708175518-244289f83105
+	k8s.io/helm => k8s.io/helm v2.14.3+incompatible
 )

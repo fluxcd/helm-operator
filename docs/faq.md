@@ -21,6 +21,31 @@ The Helm operator will receive the delete event and will purge the Helm release.
 If you delete a Helm release with `helm delete my-release`, the release name can't be reused.
 You need to use the `helm delete --purge` option only then Flux will be able reinstall a release.
 
+### It takes a long time before the operator processes an update to a `HelmRelease` resource. How can I speed up the processing of releases?
+
+The operator watches for changes of Custom Resources of kind `HelmRelease`. It receives Kubernetes
+Events and queues these to be processed, all resources will also be re-queued every
+`--charts-sync-interval` (default `3m`) for a dry-run to detect and revert manual changes made to a
+release.
+
+Depending on how many resources the operator is watching and the complexity of the charts (umbrella
+charts for example generally take a longer time to process); the default amount of workers may not
+be sufficient to instantly process a release the moment it enters the queue as the queue works on
+a [FIFO](https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)) basis, and other releases
+may have to be processed first.
+
+The solution is to increase the amount of workers processing the releases using the `--workers`
+flag (default `2`), i.e. by steps of `2` until the releases are processed within a time frame that
+feels right to you.
+
+If this does not give the desired effect, or if the amount of workers required is incredible high,
+there are two other tweaks possible:
+
+1. increasing the `--charts-sync-interval`; this causes the queue to be less heavy occupied at the
+   cost of detecting mutations less rapidly
+1. using multiple Helm operator instances, i.e. by having one operator per namespace; namespace
+   scoping is possible by configuring the `--allow-namespace` flag
+
 ### I have a dedicated Kubernetes cluster per environment and I want to use the same Git repo for all. How can I do that?
 
 *Option 1*
