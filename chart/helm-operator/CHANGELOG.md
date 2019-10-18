@@ -1,3 +1,10 @@
+## 0.2.1 (2019-10-18)
+
+### Improvements
+
+ - Update Helm Operator to `1.0.0-rc3`
+   [fluxcd/helm-operator#74](https://github.com/fluxcd/helm-operator/pull/74)
+
 ## 0.2.0 (2019-10-07)
 
 ### Improvements
