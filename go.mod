@@ -21,7 +21,7 @@ require (
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator v0.0.0-20190511023357-639c964206c2
 	k8s.io/gengo v0.0.0-20190907103519-ebc107f98eab // indirect
-	k8s.io/helm v2.13.1+incompatible
+	k8s.io/helm v2.14.3+incompatible
 	k8s.io/klog v0.3.3
 )
 
@@ -43,4 +43,5 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator => k8s.io/code-generator v0.0.0-20190311093542-50b561225d70
 	k8s.io/component-base => k8s.io/component-base v0.0.0-20190708175518-244289f83105
+	k8s.io/helm => k8s.io/helm v2.14.3+incompatible
 )
