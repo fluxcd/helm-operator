@@ -42,6 +42,16 @@ tls:
   caContent: ""
   hostname: ""
 
+# ADVANCED: Allow for deploying Tiller as a sidecar (restricted to 'localhost' for security reasons).
+# When enabled, either .clusterRole.create should be true or .clusterRole.name should be set to the name of a cluster role granting the required privileges.
+# Please make extra sure you know what you are doing before enabling this. :)
+tillerSidecar:
+  enabled: false
+  image:
+    repository: gcr.io/kubernetes-helm/tiller
+    tag: v2.14.3
+  storage: secret
+
 # For charts stored in Helm repositories other than stable
 # mount repositories.yaml configuration in a volume
 configureRepositories:

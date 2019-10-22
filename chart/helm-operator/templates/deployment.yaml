@@ -159,6 +159,10 @@ spec:
         {{- else if .Values.allowNamespace }}
         - --allow-namespace={{ .Values.allowNamespace }}
         {{- end }}
+        {{- if .Values.tillerSidecar.enabled }}
+        - --tiller-ip=localhost
+        - --tiller-port=44134
+        {{- else }}
         {{- if .Values.tillerHost }}
         - --tiller-ip={{ .Values.tillerHost }}
         - --tiller-port={{ .Values.tillerPort }}
@@ -177,12 +181,42 @@ spec:
         {{- end }}
         {{- end }}
         {{- end }}
+        {{- end }}
       {{- if .Values.extraEnvs }}
         env:
 {{ toYaml .Values.extraEnvs | indent 8 }}
       {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
+      {{- if .Values.tillerSidecar.enabled }}
+      - name: tiller
+        image: "{{ .Values.tillerSidecar.image.repository }}:{{ .Values.tillerSidecar.image.tag }}"
+        args:
+        - --listen=localhost:44134
+        - --probe-listen=:44135
+        - --storage={{ .Values.tillerSidecar.storage }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 44135
+          name: http
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: 44135
+          initialDelaySeconds: 1
+          timeoutSeconds: 1
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 44135
+          initialDelaySeconds: 1
+          timeoutSeconds: 1
+        env:
+        - name: TILLER_NAMESPACE
+          value: {{ .Release.Namespace }}
+        - name: TILLER_HISTORY_MAX
+          value: "10"
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
