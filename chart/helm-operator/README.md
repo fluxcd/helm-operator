@@ -207,6 +207,10 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `logReleaseDiffs`                                 | `false`                                              | Helm operator should log the diff when a chart release diverges (possibly insecure)
 | `allowNamespace`                                  | `None`                                               | If set, this limits the scope to a single namespace. If not specified, all namespaces will be watched
 | `tillerNamespace`                                 | `kube-system`                                        | Namespace in which the Tiller server can be found
+| `tillerSidecar.enabled`                           | `false`                                              | Whether to deploy Tiller as a sidecar (and listening on `localhost` only).
+| `tillerSidecar.image.repository`                  | `gcr.io/kubernetes-helm/tiller`                      | Image repository to use for the Tiller sidecar.
+| `tillerSidecar.image.tag`                         | `v2.14.3`                                            | Image tag to use for the Tiller sidecar.
+| `tillerSidecar.storage`                           | `secret`                                             | Storage engine to use for the Tiller sidecar.
 | `tls.enable`                                      | `false`                                              | Enable TLS for communicating with Tiller
 | `tls.verify`                                      | `false`                                              | Verify the Tiller certificate, also enables TLS when set to true
 | `tls.secretName`                                  | `helm-client-certs`                                  | Name of the secret containing the TLS client certificates for communicating with Tiller
