@@ -14,6 +14,9 @@ metadata:
 spec:
   releaseName: rabbitmq
   targetNamespace: mq
+  timeout: 300
+  resetValues: false
+  forceUpgrade: false
   chart:
     repository: https://kubernetes-charts.storage.googleapis.com/
     name: rabbitmq
@@ -37,6 +40,12 @@ cluster, and doesn't have access to local configuration, the
 repository is given as a URL rather than an alias (the URL in the
 example is what's usually aliased as `stable`). The `name` and
 `version` specify the chart to release.
+
+The `timeout` sets the timeout value for the helm install or upgrade. If you don't supply it, it is set to 300.
+
+The `resetValues`, if set to `true`, will reset values on helm upgrade.
+
+The `forceUpgrade`, if set to `true`, will force Helm upgrade through delete/recreate
 
 The `values` section is where you provide the value overrides for the
 chart. This is as you would put in a `values.yaml` file, but inlined
