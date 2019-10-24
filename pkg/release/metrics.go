@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-kit/kit/metrics/prometheus"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 const (
@@ -27,6 +28,15 @@ var (
 	}, []string{LabelAction, LabelDryRun, LabelSuccess, LabelNamespace, LabelReleaseName})
 )
 
+var (
+	releasesPerformed = promauto.NewCounter(stdprometheus.CounterOpts{
+		Namespace: "flux",
+		Subsystem: "helm_operator",
+		Name:      "releases_performed_total",
+		Help:      "Total number of releases performed.",
+	})
+)
+
 func ObserveRelease(start time.Time, action Action, dryRun, success bool, namespace, releaseName string) {
 	releaseDuration.With(
 		LabelAction, string(action),
@@ -35,4 +45,8 @@ func ObserveRelease(start time.Time, action Action, dryRun, success bool, namesp
 		LabelNamespace, namespace,
 		LabelReleaseName, releaseName,
 	).Observe(time.Since(start).Seconds())
+}
+
+func RecordRelease() {
+	go releasesPerformed.Inc()
 }

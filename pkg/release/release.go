@@ -28,8 +28,8 @@ import (
 	hapi_release "k8s.io/helm/pkg/proto/hapi/release"
 	helmutil "k8s.io/helm/pkg/releaseutil"
 
-	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	fluxk8s "github.com/fluxcd/flux/pkg/cluster/kubernetes"
+	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 )
 
 type Action string
@@ -228,6 +228,7 @@ func (r *Release) Install(chartPath, releaseName string, hr helmfluxv1.HelmRelea
 		}
 		if !opts.DryRun {
 			r.annotateResources(res.Release, hr)
+			RecordRelease()
 		}
 		return res.Release, checksum, err
 	case UpgradeAction:
@@ -248,6 +249,7 @@ func (r *Release) Install(chartPath, releaseName string, hr helmfluxv1.HelmRelea
 		}
 		if !opts.DryRun {
 			r.annotateResources(res.Release, hr)
+			RecordRelease()
 		}
 		return res.Release, checksum, err
 	default:
