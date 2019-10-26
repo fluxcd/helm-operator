@@ -49,7 +49,7 @@ tillerSidecar:
   enabled: false
   image:
     repository: gcr.io/kubernetes-helm/tiller
-    tag: v2.14.3
+    tag: v2.15.1
   storage: secret
 
 # For charts stored in Helm repositories other than stable
