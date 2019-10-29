@@ -75,9 +75,10 @@ spec:
 ```
 
 In this case, the git repo will be cloned, and the chart will be
-released from the ref given (which defaults to `master`, if not
-supplied). Commits to the git repo may result in releases, if they
-update the chart at the path given.
+released from the ref given. If not supplied, the operator uses
+the value specified by the `--git-default-ref` flag (which
+defaults to `master`). Commits to the git repo may result in releases,
+if they update the chart at the path given.
 
 Note that you will usually need to provide an SSH key to grant access
 to the git repository. The example deployment shows how to mount a

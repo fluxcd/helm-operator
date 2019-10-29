@@ -196,6 +196,7 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `updateChartDeps`                                 | `true`                                               | Update dependencies for charts
 | `git.pollInterval`                                | `git.pollInterval`                                   | Period on which to poll git chart sources for changes
 | `git.timeout`                                     | `git.timeout`                                        | Duration after which git operations time out
+| `git.defaultRef`                                  | `master`                                             | Ref to clone chart from if ref is unspecified in a HelmRelease
 | `git.ssh.secretName`                              | `None`                                               | The name of the kubernetes secret with the SSH private key, supercedes `git.secretName`
 | `git.ssh.known_hosts`                             | `None`                                               | The contents of an SSH `known_hosts` file, if you need to supply host key(s)
 | `git.ssh.configMapName`                           | `None`                                               | The name of a kubernetes config map containing the ssh config

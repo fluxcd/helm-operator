@@ -117,13 +117,11 @@ type GitChartSource struct {
 	SkipDepUpdate bool `json:"skipDepUpdate,omitempty"`
 }
 
-// DefaultGitRef is the ref assumed if the Ref field is not given in
-// a GitChartSource
-const DefaultGitRef = "master"
-
-func (s GitChartSource) RefOrDefault() string {
+// RefOrDefault returns the configured ref of the chart source. If the chart source
+// does not specify a ref, the provided default is used instead.
+func (s GitChartSource) RefOrDefault(defaultGitRef string) string {
 	if s.Ref == "" {
-		return DefaultGitRef
+		return defaultGitRef
 	}
 	return s.Ref
 }
