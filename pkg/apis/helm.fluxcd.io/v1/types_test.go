@@ -50,3 +50,29 @@ func TestHelmValues(t *testing.T) {
 		assert.Exactly(t, tc.expectedOriginal, tc.original, "original was mutated. test case: %d", i)
 	}
 }
+
+func TestRefOrDefault(t *testing.T) {
+	testCases := []struct {
+		chartSource      GitChartSource
+		potentialDefault string
+		expected         string
+	}{
+		{
+			chartSource: GitChartSource{
+				Ref: "master",
+			},
+			potentialDefault: "dev",
+			expected:         "master",
+		},
+		{
+			chartSource:      GitChartSource{},
+			potentialDefault: "dev",
+			expected:         "dev",
+		},
+	}
+
+	for _, tc := range testCases {
+		got := tc.chartSource.RefOrDefault(tc.potentialDefault)
+		assert.Equal(t, tc.expected, got)
+	}
+}

@@ -89,6 +89,7 @@ type Config struct {
 	UpdateDeps      bool
 	GitTimeout      time.Duration
 	GitPollInterval time.Duration
+	GitDefaultRef   string
 }
 
 func (c Config) WithDefaults() Config {
@@ -195,7 +196,7 @@ func (chs *ChartChangeSync) Run(stopCh <-chan struct{}, errc chan error, wg *syn
 					// schedule an upgrade for every HelmRelease that
 					// makes use of the mirror
 					for _, hr := range resources {
-						ref := hr.Spec.ChartSource.GitChartSource.RefOrDefault()
+						ref := hr.Spec.ChartSource.GitChartSource.RefOrDefault(chs.config.GitDefaultRef)
 						path := hr.Spec.ChartSource.GitChartSource.Path
 						releaseName := hr.ReleaseName()
 
@@ -507,7 +508,7 @@ func (chs *ChartChangeSync) getGitChartSource(hr helmfluxv1.HelmRelease) (string
 	// Validate the clone we have for the release is the same as
 	// is being referenced in the chart source.
 	if ok {
-		ok = chartClone.remote == chartSource.GitURL && chartClone.ref == chartSource.RefOrDefault()
+		ok = chartClone.remote == chartSource.GitURL && chartClone.ref == chartSource.RefOrDefault(chs.config.GitDefaultRef)
 		if !ok {
 			if chartClone.export != nil {
 				chartClone.export.Clean()

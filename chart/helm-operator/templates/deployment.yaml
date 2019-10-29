@@ -145,6 +145,9 @@ spec:
         {{- end }}
         - --git-timeout={{ .Values.git.timeout }}
         - --git-poll-interval={{ .Values.git.pollInterval }}
+        {{- if .Values.git.defaultRef }}
+        - --git-default-ref={{ .Values.git.defaultRef }}
+        {{- end }}
         - --charts-sync-interval={{ .Values.chartsSyncInterval }}
         {{- if .Values.statusUpdateInterval }}
         - --status-update-interval={{ .Values.statusUpdateInterval }}

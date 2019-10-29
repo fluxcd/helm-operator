@@ -16,6 +16,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 
+	"github.com/fluxcd/flux/pkg/checkpoint"
 	fluxhelm "github.com/fluxcd/helm-operator/pkg"
 	"github.com/fluxcd/helm-operator/pkg/chartsync"
 	clientset "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned"
@@ -24,7 +25,6 @@ import (
 	"github.com/fluxcd/helm-operator/pkg/operator"
 	"github.com/fluxcd/helm-operator/pkg/release"
 	"github.com/fluxcd/helm-operator/pkg/status"
-	"github.com/fluxcd/flux/pkg/checkpoint"
 	_ "k8s.io/code-generator/cmd/client-gen/generators"
 )
 
@@ -60,6 +60,7 @@ var (
 
 	gitTimeout      *time.Duration
 	gitPollInterval *time.Duration
+	gitDefaultRef   *string
 
 	listenAddr *string
 )
@@ -112,6 +113,7 @@ func init() {
 
 	gitTimeout = fs.Duration("git-timeout", 20*time.Second, "duration after which git operations time out")
 	gitPollInterval = fs.Duration("git-poll-interval", 5*time.Minute, "period on which to poll git chart sources for changes")
+	gitDefaultRef = fs.String("git-default-ref", "master", "ref to clone chart from if ref is unspecified in a HelmRelease")
 }
 
 func main() {
@@ -201,7 +203,13 @@ func main() {
 		chartsync.Clients{KubeClient: *kubeClient, IfClient: *ifClient, HrLister: hrInformer.Lister()},
 		rel,
 		queue,
-		chartsync.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval},
+		chartsync.Config{
+			LogDiffs:        *logReleaseDiffs,
+			UpdateDeps:      *updateDependencies,
+			GitTimeout:      *gitTimeout,
+			GitPollInterval: *gitPollInterval,
+			GitDefaultRef:   *gitDefaultRef,
+		},
 		*namespace,
 	)
 
