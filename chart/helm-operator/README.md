@@ -110,7 +110,7 @@ kubectl -n fluxcd create secret generic helm-operator-ssh --from-file=/tmp/ident
 Add `identity.pub` as a read-only deployment key in your Git repo and install Helm Operator:
 
 ```sh
-helm -i helm-operator fluxcd/helm-operator \
+helm upgrade -i helm-operator fluxcd/helm-operator \
 --namespace fluxcd \
 --set git.ssh.secretName=helm-operator-ssh \
 --set-file git.ssh.known_hosts=/tmp/flux_known_hosts
@@ -149,7 +149,7 @@ helm upgrade -i flux fluxcd/flux \
 when installing Helm Operator, you can refer the Flux deploy key by its Kubernetes Secret name:
 
 ```sh
-helm -i helm-operator fluxcd/helm-operator \
+helm upgrade -i helm-operator fluxcd/helm-operator \
 --namespace fluxcd \
 --set git.ssh.secretName=flux-git-deploy
 ```
