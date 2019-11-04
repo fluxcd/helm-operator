@@ -64,6 +64,9 @@ spec:
             resetValues:
               description: If supplied will reset values on helm upgrade
               type: boolean
+            wait:
+              description: Wait for an upgrade to complete before marking release as successful
+              type: boolean
             forceUpgrade:
               description: If supplied will force Helm upgrade through delete/recreate
               type: boolean

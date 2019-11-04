@@ -196,6 +196,9 @@ type HelmReleaseSpec struct {
 	// Reset values on helm upgrade
 	// +optional
 	ResetValues bool `json:"resetValues,omitempty"`
+	// Wait for the install or upgrade to complete before marking release as successful
+	// +optional
+	Wait bool `json:"wait,omitempty"`
 	// Force resource update through delete/recreate, allows recovery from a failed state
 	// +optional
 	ForceUpgrade bool `json:"forceUpgrade,omitempty"`
