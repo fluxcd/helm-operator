@@ -6,18 +6,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fluxcd/helm-operator/pkg/helm"
+	fluxk8s "github.com/fluxcd/flux/pkg/cluster/kubernetes"
+	"github.com/fluxcd/flux/pkg/resource"
 	"github.com/ghodss/yaml"
 	"github.com/go-kit/kit/log"
-	"github.com/weaveworks/flux/resource"
 
 	"helm.sh/helm/pkg/releaseutil"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	fluxk8s "github.com/weaveworks/flux/cluster/kubernetes"
-
 	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
 // managedByHelmRelease determines if the given `helm.Release` is
