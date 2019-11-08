@@ -212,12 +212,18 @@ func main() {
 	// setup workqueue for HelmReleases
 	queue := workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "ChartRelease")
 
+	gitChartSourceSync := chartsync.NewGitChartSourceSync(
+		log.With(logger, "component", "gitchartsourcesync"),
+		hrInformer.Lister(),
+		chartsync.GitConfig{GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval},
+		queue,
+	)
+
 	chartSync := chartsync.New(
 		log.With(logger, "component", "chartsync"),
 		chartsync.Clients{KubeClient: *kubeClient, IfClient: *ifClient, HrLister: hrInformer.Lister(), HelmClients: helmClients},
-		queue,
-		chartsync.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval},
-		*namespace,
+		gitChartSourceSync,
+		chartsync.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies},
 	)
 
 	// prepare operator and start FluxRelease informer
@@ -238,8 +244,8 @@ func main() {
 	// start operator
 	go opr.Run(*workers, shutdown, shutdownWg)
 
-	// start git sync loop
-	go chartSync.Run(shutdown, errc, shutdownWg)
+	// start git chart sources sync loop
+	go gitChartSourceSync.Run(shutdown, errc, shutdownWg)
 
 	// the status updater, to keep track of the release status for
 	// every HelmRelease
