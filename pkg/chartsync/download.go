@@ -18,6 +18,23 @@ import (
 	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 )
 
+// EnsureChartFetched returns the path to a downloaded chart, fetching
+// it first if necessary. It always returns the expected path to the
+// chart, and either an error or nil.
+func EnsureChartFetched(base string, source *helmfluxv1.RepoChartSource) (string, error) {
+	chartPath := makeChartPath(base, source)
+	stat, err := os.Stat(chartPath)
+	switch {
+	case os.IsNotExist(err):
+		return chartPath, downloadChart(chartPath, source)
+	case err != nil:
+		return chartPath, err
+	case stat.IsDir():
+		return chartPath, errors.New("path to chart exists but is a directory")
+	}
+	return chartPath, nil
+}
+
 // makeChartPath gives the expected filesystem location for a chart,
 // without testing whether the file exists or not.
 func makeChartPath(base string, source *helmfluxv1.RepoChartSource) string {
@@ -30,23 +47,6 @@ func makeChartPath(base string, source *helmfluxv1.RepoChartSource) string {
 	}
 	filename := fmt.Sprintf("%s-%s.tgz", source.Name, source.Version)
 	return filepath.Join(repoPath, filename)
-}
-
-// ensureChartFetched returns the path to a downloaded chart, fetching
-// it first if necessary. It always returns the expected path to the
-// chart, and either an error or nil.
-func ensureChartFetched(base string, source *helmfluxv1.RepoChartSource) (string, error) {
-	chartPath := makeChartPath(base, source)
-	stat, err := os.Stat(chartPath)
-	switch {
-	case os.IsNotExist(err):
-		return chartPath, downloadChart(chartPath, source)
-	case err != nil:
-		return chartPath, err
-	case stat.IsDir():
-		return chartPath, errors.New("path to chart exists but is a directory")
-	}
-	return chartPath, nil
 }
 
 // downloadChart attempts to fetch a chart tarball, given the name,

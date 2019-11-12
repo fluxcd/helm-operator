@@ -9,8 +9,8 @@ import (
 
 // releaseToGenericRelease transforms a v3 release structure
 // into a generic `helm.Release`
-func releaseToGenericRelease(r *release.Release) helm.Release {
-	return helm.Release{
+func releaseToGenericRelease(r *release.Release) *helm.Release {
+	return &helm.Release{
 		Name:      r.Name,
 		Namespace: r.Namespace,
 		Chart:     chartToGenericChart(r.Chart),

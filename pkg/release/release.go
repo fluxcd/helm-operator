@@ -1,556 +1,338 @@
 package release
 
 import (
-	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
-	"github.com/weaveworks/flux/resource"
-	"io/ioutil"
-	"net/url"
-	"os/exec"
+	"errors"
 	"path/filepath"
-	"strings"
-	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/go-kit/kit/log"
-	"github.com/spf13/pflag"
-	fluxk8s "github.com/weaveworks/flux/cluster/kubernetes"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/client-go/kubernetes"
-	k8sclientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/getter"
-	helmenv "k8s.io/helm/pkg/helm/environment"
-	helmutil "k8s.io/helm/pkg/releaseutil"
+	"github.com/google/go-cmp/cmp"
 
-	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	corev1 "k8s.io/api/core/v1"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
+
+	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	"github.com/fluxcd/helm-operator/pkg/chartsync"
+	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/helm"
+	"github.com/fluxcd/helm-operator/pkg/status"
 )
 
-type Action string
+const maxHistory = 10
 
+// Condition change reasons.
 const (
-	InstallAction Action = "CREATE"
-	UpgradeAction Action = "UPDATE"
+	ReasonDownloadFailed   = "RepoFetchFailed"
+	ReasonDownloaded       = "RepoChartInCache"
+	ReasonInstallFailed    = "HelmInstallFailed"
+	ReasonClientError      = "HelmClientError"
+	ReasonDependencyFailed = "UpdateDependencyFailed"
+	ReasonUpgradeFailed    = "HelmUpgradeFailed"
+	ReasonRollbackFailed   = "HelmRollbackFailed"
+	ReasonSuccess          = "HelmSuccess"
 )
 
-// Release contains clients needed to provide functionality related to Helm releases
+// Various (final) errors.
+var (
+	ErrDepUpdate       = errors.New("failed updating dependencies")
+	ErrChartDownload   = errors.New("failed to fetch chart")
+	ErrNoChartSource   = errors.New("no chart source given")
+	ErrComposingValues = errors.New("failed to compose values for chart release")
+	ErrShouldSync      = errors.New("failed to determine if the release should be synced")
+)
+
+// Config holds the configuration for releases.
+type Config struct {
+	ChartCache string
+	UpdateDeps bool
+	LogDiffs   bool
+}
+
+// WithDefaults sets the default values for the release config.
+func (c Config) WithDefaults() Config {
+	if c.ChartCache == "" {
+		c.ChartCache = "/tmp"
+	}
+	return c
+}
+
+// Release holds the elements required to perform a Helm release,
+// and provides the methods to perform a sync or uninstall.
 type Release struct {
-	logger     log.Logger
-	helmClient helm.Client
+	logger             log.Logger
+	coreV1Client       corev1client.CoreV1Interface
+	helmReleaseClient  v1client.HelmV1Interface
+	gitChartSourceSync *chartsync.GitChartSourceSync
+	config             Config
 }
 
-type InstallOptions struct {
-	DryRun    bool
-	ReuseName bool
-}
+func New(logger log.Logger, coreV1Client corev1client.CoreV1Interface, helmReleaseClient v1client.HelmV1Interface,
+	gitChartSourceSync *chartsync.GitChartSourceSync, config Config) *Release {
 
-// New creates a new Release instance.
-func New(logger log.Logger, helmClient helm.Client) *Release {
 	r := &Release{
-		logger:     logger,
-		helmClient: helmClient,
+		logger:             logger,
+		coreV1Client:       coreV1Client,
+		helmReleaseClient:  helmReleaseClient,
+		gitChartSourceSync: gitChartSourceSync,
+		config:             config.WithDefaults(),
 	}
 	return r
 }
 
-// GetUpgradableRelease returns a release if the current state of it
-// allows an upgrade, a descriptive error if it is not allowed, or
-// nil if the release does not exist.
-func (r *Release) GetUpgradableRelease(namespace string, releaseName string) (*helm.Release, error) {
-	rel, err := r.helmClient.Status(releaseName, helm.StatusOptions{Namespace: namespace})
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			return nil, nil
+// Sync synchronizes the given `v1.HelmRelease` with Helm.
+func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (*v1.HelmRelease, error) {
+	defer status.SetObservedGeneration(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, hr.Generation)
+
+	logger := releaseLogger(r.logger, hr)
+
+	// Ensure we have the chart for the release, construct the path
+	// to the chart and get the revision.
+	var chartPath, revision string
+	switch {
+	case hr.Spec.GitChartSource != nil:
+		s, _ := r.gitChartSourceSync.Load(hr)
+		if s == nil {
+			// Chart source has been requested, but is not ready yet,
+			// wait for the next signal...
+			return hr, nil
 		}
-		return nil, err
-	}
-	if rel.Info == nil {
-		return nil, fmt.Errorf("release exists but can not determine if it can be upgraded due to missing metadata")
-	}
-	switch rel.Info.Status {
-	case helm.StatusDeployed:
-		return &rel, nil
-	case helm.StatusFailed:
-		return nil, fmt.Errorf("release requires a rollback before it can be upgraded (%s)", rel.Info.Status)
-	case helm.StatusPendingInstall,
-		helm.StatusPendingUpgrade,
-		helm.StatusPendingRollback:
-		return nil, fmt.Errorf("operation pending for release (%s)", rel.Info.Status)
-	default:
-		return nil, fmt.Errorf("current state prevents it from being upgraded (%s)", rel.Info.Status)
-	}
-}
+		// Lock the resource so that it does not get updated by
+		// the chart sync process.
+		s.Lock()
+		defer s.Unlock()
 
-// shouldRollback determines if a release should be rolled back
-// based on the status of the Client release.
-func (r *Release) shouldRollback(namespace string, releaseName string) (bool, error) {
-	rel, err := r.helmClient.Status(releaseName, helm.StatusOptions{Namespace: namespace})
-	if err != nil {
-		return false, err
-	}
-	if rel.Info == nil {
-		return false, fmt.Errorf("release exists but can not determine if it can be rolled back due to missing metadata")
-	}
-	switch rel.Info.Status {
-	case helm.StatusFailed:
-		return true, nil
-	case helm.StatusPendingRollback:
-		return false, nil
-	default:
-		return false, fmt.Errorf("release with status %s cannot be rolled back", rel.Info.Status)
-	}
-}
+		chartPath = s.ChartPath(hr.Spec.GitChartSource.Path)
+		revision = s.Head
 
-// canUninstall determines if a release can be rolled back based on
-// the status of the Client release.
-func (r *Release) canUninstall(namespace string, releaseName string) (bool, error) {
-	rel, err := r.helmClient.Status(releaseName, helm.StatusOptions{Namespace: namespace})
-	if err != nil {
-		return false, err
-	}
-	if rel.Info == nil {
-		return false, fmt.Errorf("release exists but can not determine if it can be uninstalled due to missing metadata")
-	}
-	switch rel.Info.Status {
-	case helm.StatusDeployed, helm.StatusFailed:
-		return true, nil
-	case helm.StatusUninstalled:
-		return false, nil
-	default:
-		return false, fmt.Errorf("release with status [%s] cannot be uninstalled", rel.Info.Status)
-	}
-}
-
-// Install performs a Chart release given the directory containing the
-// charts, and the HelmRelease specifying the release. Depending
-// on the release type, this is either a new release, or an upgrade of
-// an existing one.
-func (r *Release) Install(chartPath, releaseName string, hr helmfluxv1.HelmRelease, action Action, opts InstallOptions,
-	kubeClient *kubernetes.Clientset) (release *helm.Release, checksum string, err error) {
-
-	defer func(start time.Time) {
-		ObserveRelease(
-			start,
-			action,
-			opts.DryRun,
-			err == nil,
-			hr.Namespace,
-			hr.GetReleaseName(),
-		)
-	}(time.Now())
-
-	r.logger.Log("info", fmt.Sprintf("processing release (as %s)", releaseName),
-		"action", fmt.Sprintf("%v", action),
-		"options", fmt.Sprintf("%+v", opts),
-		"timeout", fmt.Sprintf("%vs", hr.GetTimeout()))
-
-	vals, err := Values(kubeClient.CoreV1(), hr.Namespace, chartPath, hr.GetValuesFromSources(), hr.Spec.Values)
-	if err != nil {
-		r.logger.Log("error", fmt.Sprintf("failed to compose values for chart release: %v", err))
-		return nil, "", err
-	}
-
-	strVals, err := vals.YAML()
-	if err != nil {
-		r.logger.Log("error", fmt.Sprintf("problem with supplied customizations for chart release: %v", err))
-		return nil, "", err
-	}
-	rawVals := []byte(strVals)
-	checksum = ValuesChecksum(rawVals)
-
-	switch action {
-	case InstallAction:
-		rel, err := r.helmClient.InstallFromPath(chartPath, releaseName, rawVals, helm.InstallOptions{
-			Namespace: hr.GetTargetNamespace(), DryRun: opts.DryRun, Replace: opts.ReuseName, Timeout: hr.GetTimeout()})
-		if err != nil {
-			// Delete the chart if it is an initial install;
-			// this can potentially be replaced by setting the Atomic
-			// install option to true, but there is a bug that causes
-			// the release to also be removed if it is _not_ an initial
-			// install: https://github.com/helm/helm/issues/5875
-			r.logger.Log("error", fmt.Sprintf("chart release failed: %v", err))
-			{
-				history, err := r.helmClient.History(releaseName, helm.HistoryOptions{Namespace: hr.GetTargetNamespace(), Max: 2})
-				if err == nil && len(history) == 1 && history[0].Info != nil && history[0].Info.Status == helm.StatusFailed {
-					r.logger.Log("info", "cleaning up failed initial release")
-					if err = r.helmClient.Uninstall(releaseName, helm.UninstallOptions{Namespace: hr.GetTargetNamespace()}); err != nil {
-						r.logger.Log("error", err.Error())
-						return nil, "", err
-					}
-				}
+		if r.config.UpdateDeps && !hr.Spec.GitChartSource.SkipDepUpdate {
+			// Attempt to update chart dependencies, if it fails we
+			// simply update the status on the resource and return.
+			if err := client.DependencyUpdate(chartPath); err != nil {
+				_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+					v1.HelmReleaseReleased, corev1.ConditionFalse, ReasonDependencyFailed, err.Error()))
+				logger.Log("error", ErrDepUpdate.Error(), "err", err)
+				return hr, ErrDepUpdate
 			}
-			return nil, checksum, err
 		}
-		if !opts.DryRun {
-			r.annotateResources(rel, hr.ResourceID())
-		}
-		return &rel, checksum, err
-	case UpgradeAction:
-		rel, err := r.helmClient.UpgradeFromPath(chartPath, releaseName, rawVals, helm.UpgradeOptions{
-			Namespace:   hr.GetTargetNamespace(),
-			DryRun:      opts.DryRun,
-			ResetValues: hr.Spec.ResetValues,
-			Force:       hr.Spec.ForceUpgrade,
-			Wait:        hr.Spec.Rollback.Enable,
-			Timeout:     hr.GetTimeout()})
-		if err != nil {
-			r.logger.Log("error", fmt.Sprintf("chart upgrade release failed: %v", err))
-			return nil, checksum, err
-		}
-		if !opts.DryRun {
-			r.annotateResources(rel, hr.ResourceID())
-		}
-		return &rel, checksum, err
-	default:
-		err = fmt.Errorf("valid install options: CREATE, UPDATE; provided: %s", action)
-		r.logger.Log("error", err.Error())
-		return nil, "", err
-	}
-}
+	case hr.Spec.RepoChartSource != nil:
+		var err error
 
-// Rollback rolls back a Chart release if required
-func (r *Release) Rollback(hr helmfluxv1.HelmRelease) (*helm.Release, error) {
-	ok, err := r.shouldRollback(hr.GetTargetNamespace(), hr.GetReleaseName())
-	if !ok {
+		chartPath, err = chartsync.EnsureChartFetched(r.config.ChartCache, hr.Spec.RepoChartSource)
+		revision = hr.Spec.RepoChartSource.Version
+
 		if err != nil {
-			return nil, err
+			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+				v1.HelmReleaseChartFetched, corev1.ConditionFalse, ReasonDownloadFailed, err.Error()))
+			logger.Log("error", ErrChartDownload.Error(), "err", err.Error())
+			return hr, ErrChartDownload
 		}
-		return nil, nil
+
+		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+			v1.HelmReleaseChartFetched, corev1.ConditionTrue, ReasonDownloaded, "chart fetched: "+filepath.Base(chartPath)))
+	default:
+		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+			v1.HelmReleaseChartFetched, corev1.ConditionFalse, ReasonDownloadFailed, ErrNoChartSource.Error()))
+		logger.Log("error", ErrNoChartSource.Error())
+		return hr, ErrNoChartSource
 	}
-	r.logger.Log("info", "rolling back release")
-	rel, err := r.helmClient.Rollback(hr.GetReleaseName(), helm.RollbackOptions{
-		Namespace:    hr.GetTargetNamespace(),
-		Timeout:      hr.Spec.Rollback.GetTimeout(),
-		Wait:         hr.Spec.Rollback.Wait,
-		DisableHooks: hr.Spec.Rollback.DisableHooks,
-		Recreate:     hr.Spec.Rollback.Recreate,
-		Force:        hr.Spec.Rollback.Force,
+
+	// Check if a release already exists, this is used to determine
+	// if and how we should sync, and what actions we should take
+	// if the sync fails.
+	curRel, err := client.Status(hr.GetReleaseName(), helm.StatusOptions{Namespace: hr.GetTargetNamespace()})
+	if err != nil {
+		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+			v1.HelmReleaseReleased, corev1.ConditionFalse, ReasonClientError, err.Error()))
+		logger.Log("error", ErrShouldSync.Error(), "err", err.Error())
+		return hr, ErrShouldSync
+	}
+
+	// Record failure reason for further condition updates.
+	failReason := ReasonInstallFailed
+	if curRel != nil {
+		failReason = ReasonUpgradeFailed
+	}
+
+	// Compose the values from the sources and values defined in the
+	// `v1.HelmRelease` resource.
+	composedValues, err := composeValues(r.coreV1Client, hr, chartPath)
+	if err != nil {
+		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+			v1.HelmReleaseReleased, corev1.ConditionFalse, failReason, ErrComposingValues.Error()))
+		logger.Log("error", ErrComposingValues.Error(), "err", err.Error())
+		return hr, ErrComposingValues
+	}
+	defer status.SetValuesChecksum(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, composedValues.Checksum())
+
+	if ok, err := shouldSync(logger, client, hr, curRel, chartPath, composedValues, r.config.LogDiffs); !ok {
+		if err != nil {
+			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+				v1.HelmReleaseReleased, corev1.ConditionFalse, failReason, ErrComposingValues.Error()))
+			logger.Log("error", ErrShouldSync.Error(), "err", err.Error())
+		}
+		return hr, ErrShouldSync
+	}
+
+	// `shouldSync` above has already validated the YAML output of our
+	// composed values, so we ignore the fact that this could
+	// technically return an error.
+	v, _ := composedValues.YAML()
+
+	var performRollback bool
+
+	// Off we go! Attempt to perform the actual upgrade.
+	rel, err := client.UpgradeFromPath(chartPath, hr.GetReleaseName(), v, helm.UpgradeOptions{
+		Namespace:   hr.GetTargetNamespace(),
+		Timeout:     hr.GetTimeout(),
+		Install:     curRel == nil,
+		Force:       hr.Spec.ForceUpgrade,
+		ResetValues: hr.Spec.ResetValues,
+		MaxHistory:  maxHistory,
+		Atomic:      hr.Spec.Rollback.Enable,
 	})
 	if err != nil {
-		r.logger.Log("error", fmt.Sprintf("failed to rollback release: %v", err))
-		return nil, err
+		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+			v1.HelmReleaseReleased, corev1.ConditionFalse, failReason, err.Error()))
+		logger.Log("error", "Helm release failed", "revision", revision, "err", err.Error())
+
+		// If this is the first release, or rollbacks are not enabled;
+		// return and wait for the next signal to retry...
+		if curRel == nil || !hr.Spec.Rollback.Enable {
+			return hr, err
+		}
+
+		performRollback = true
+	} else {
+		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+			v1.HelmReleaseReleased, corev1.ConditionTrue, ReasonSuccess, "Helm release sync succeeded"))
+		status.SetReleaseRevision(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, revision)
+		logger.Log("info", "Helm release sync succeeded", "revision", revision)
 	}
 
-	r.annotateResources(rel, hr.ResourceID())
-	r.logger.Log("info", "rolled back release")
-	return &rel, err
-}
-
-// Uninstall purges a Chart release
-func (r *Release) Uninstall(hr helmfluxv1.HelmRelease) error {
-	ok, err := r.canUninstall(hr.GetTargetNamespace(), hr.GetReleaseName())
-	if !ok {
+	// The upgrade attempt failed, rollback if instructed...
+	if performRollback {
+		rel, err = client.Rollback(hr.GetReleaseName(), helm.RollbackOptions{
+			Namespace: hr.GetTargetNamespace(),
+			Timeout:   hr.GetTimeout(),
+			Force:     hr.Spec.ForceUpgrade,
+		})
 		if err != nil {
-			return err
+			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+				v1.HelmReleaseRolledBack, corev1.ConditionFalse, ReasonRollbackFailed, err.Error()))
+			logger.Log("error", "Helm rollback failed", "err", err.Error())
+			return hr, err
 		}
-		return nil
+		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+			v1.HelmReleaseRolledBack, corev1.ConditionTrue, ReasonSuccess, "Helm rollback succeeded"))
+		logger.Log("info", "Helm rollback succeeded")
 	}
 
-	err = r.helmClient.Uninstall(hr.GetReleaseName(), helm.UninstallOptions{Namespace: hr.GetTargetNamespace()})
+	annotateResources(logger, rel, hr.ResourceID())
+
+	return hr, nil
+}
+
+// Uninstalls removes the Helm release for the given `v1.HelmRelease`,
+// and the git chart source if present.
+func (r *Release) Uninstall(client helm.Client, hr *v1.HelmRelease) {
+	logger := releaseLogger(r.logger, hr)
+
+	if err := client.Uninstall(hr.GetReleaseName(), helm.UninstallOptions{
+		Namespace:   hr.GetTargetNamespace(),
+		KeepHistory: false,
+	}); err != nil {
+		logger.Log("error", "failed to uninstall Helm release", "err", err.Error())
+	}
+
+	if hr.Spec.GitChartSource != nil {
+		r.gitChartSourceSync.Delete(hr)
+	}
+}
+
+// shouldSync determines if the given `v1.HelmRelease` should be synced
+// with Helm. The cheapest checks which do not require a dry-run are
+// consulted first (e.g. is this our first sync, has the release been
+// rolled back, have we already seen this revision of the resource);
+// before running the dry-run release to determine if any undefined
+// mutations have occurred.
+func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRel *helm.Release,
+	chartPath string, values values, logDiffs bool) (bool, error) {
+
+	if curRel == nil {
+		logger.Log("info", "no existing release; installing")
+		// If there is no existing release, we should simply sync.
+		return true, nil
+	}
+
+	if ok, resourceID := managedByHelmRelease(curRel, *hr); !ok {
+		logger.Log("warning", "release appears to be managed by " + resourceID + "; skipping")
+		return false, nil
+	}
+
+	if s := curRel.Info.Status; !s.Syncable() {
+		logger.Log("warning", "unable to sync release with status " + s.String() +"; skipping")
+		return false, nil
+	}
+
+	if status.HasRolledBack(*hr) {
+		if hr.Status.ValuesChecksum != values.Checksum() {
+			// The release has been rolled back but the values have
+			// changed. We should attempt a new sync to see if the
+			// change resolved the issue that triggered the rollback.
+			logger.Log("info", "values appear to have changed since rollback; attempting upgrade")
+			return true, nil
+		}
+		logger.Log("warning", "release has been rolled back; skipping")
+		return false, nil
+	}
+
+	if !status.HasSynced(*hr) {
+		// The generation of this `v1.HelmRelease` has not been
+		// processed, we should simply sync.
+		return true, nil
+	}
+
+	// We use the UID as dry-run release name, as this value is unique,
+	// causes no collision with releases that may exist, and does not
+	// exceed the max release name length of 53 characters.
+	dryRunRelName := string(hr.UID)
+	b, err := values.YAML()
 	if err != nil {
-		r.logger.Log("error", fmt.Sprintf("uninstall error: %v", err))
-		return err
-	}
-	r.logger.Log("info", "uninstalled release")
-	return nil
-}
-
-// ManagedByHelmRelease validates the release is managed by the given
-// HelmRelease, by looking for the resource ID in the antecedent
-// annotation. This validation is necessary because we can not
-// validate the uniqueness of a release name on the creation of a
-// HelmRelease, which would result in the operator attempting to
-// upgrade a release indefinitely when multiple HelmReleases with the
-// same release name exist.
-//
-// To be able to migrate existing releases to a HelmRelease, empty
-// (missing) annotations are handled as true / owned by.
-func (r *Release) ManagedByHelmRelease(release *helm.Release, hr helmfluxv1.HelmRelease) bool {
-	objs := releaseManifestToUnstructured(release.Manifest, log.NewNopLogger())
-
-	escapedAnnotation := strings.ReplaceAll(fluxk8s.AntecedentAnnotation, ".", `\.`)
-	args := []string{"-o", "jsonpath={.metadata.annotations." + escapedAnnotation + "}", "get"}
-
-	for ns, res := range namespacedResourceMap(objs, release.Namespace) {
-		for _, r := range res {
-			a := append(args, "--namespace", ns, r)
-
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-
-			cmd := exec.CommandContext(ctx, "kubectl", a...)
-			out, err := cmd.Output()
-			if err != nil {
-				continue
-			}
-
-			v := strings.TrimSpace(string(out))
-			if v == "" {
-				return true
-			}
-			return v == hr.ResourceID().String()
-		}
+		// Without valid YAML values we are unable to sync.
+		return false, ErrComposingValues
 	}
 
-	return false
-}
-
-// annotateResources annotates each of the resources created (or updated)
-// by the release so that we can spot them.
-func (r *Release) annotateResources(rel helm.Release, resourceID resource.ID) {
-	objs := releaseManifestToUnstructured(rel.Manifest, r.logger)
-	for namespace, res := range namespacedResourceMap(objs, rel.Namespace) {
-		args := []string{"annotate", "--overwrite"}
-		args = append(args, "--namespace", namespace)
-		args = append(args, res...)
-		args = append(args, fluxk8s.AntecedentAnnotation+"="+resourceID.String())
-
-		// The timeout is set to a high value as it may take some time
-		// to annotate large umbrella charts.
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-		defer cancel()
-
-		cmd := exec.CommandContext(ctx, "kubectl", args...)
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			r.logger.Log("output", string(output), "err", err)
-		}
-	}
-}
-
-// Values tries to resolve all given value file sources and merges
-// them into one Values struct. It returns the merged Values.
-func Values(corev1 k8sclientv1.CoreV1Interface, ns string, chartPath string,
-	valuesFromSource []helmfluxv1.ValuesFromSource, values chartutil.Values) (chartutil.Values, error) {
-
-	result := chartutil.Values{}
-
-	for _, v := range valuesFromSource {
-		var valueFile chartutil.Values
-
-		switch {
-		case v.ConfigMapKeyRef != nil:
-			cm := v.ConfigMapKeyRef
-			name := cm.Name
-			key := cm.Key
-			if key == "" {
-				key = "values.yaml"
-			}
-			optional := cm.Optional != nil && *cm.Optional
-			configMap, err := corev1.ConfigMaps(ns).Get(name, metav1.GetOptions{})
-			if err != nil {
-				if errors.IsNotFound(err) && optional {
-					continue
-				}
-				return result, err
-			}
-			d, ok := configMap.Data[key]
-			if !ok {
-				if optional {
-					continue
-				}
-				return result, fmt.Errorf("could not find key %v in ConfigMap %s/%s", key, ns, name)
-			}
-			if err := yaml.Unmarshal([]byte(d), &valueFile); err != nil {
-				if optional {
-					continue
-				}
-				return result, fmt.Errorf("unable to yaml.Unmarshal %v from %s in ConfigMap %s/%s", d, key, ns, name)
-			}
-		case v.SecretKeyRef != nil:
-			s := v.SecretKeyRef
-			name := s.Name
-			key := s.Key
-			if key == "" {
-				key = "values.yaml"
-			}
-			optional := s.Optional != nil && *s.Optional
-			secret, err := corev1.Secrets(ns).Get(name, metav1.GetOptions{})
-			if err != nil {
-				if errors.IsNotFound(err) && optional {
-					continue
-				}
-				return result, err
-			}
-			d, ok := secret.Data[key]
-			if !ok {
-				if optional {
-					continue
-				}
-				return result, fmt.Errorf("could not find key %s in Secret %s/%s", key, ns, name)
-			}
-			if err := yaml.Unmarshal(d, &valueFile); err != nil {
-				return result, fmt.Errorf("unable to yaml.Unmarshal %v from %s in Secret %s/%s", d, key, ns, name)
-			}
-		case v.ExternalSourceRef != nil:
-			es := v.ExternalSourceRef
-			url := es.URL
-			optional := es.Optional != nil && *es.Optional
-			b, err := readURL(url)
-			if err != nil {
-				if optional {
-					continue
-				}
-				return result, fmt.Errorf("unable to read value file from URL %s", url)
-			}
-			if err := yaml.Unmarshal(b, &valueFile); err != nil {
-				if optional {
-					continue
-				}
-				return result, fmt.Errorf("unable to yaml.Unmarshal %v from URL %s", b, url)
-			}
-		case v.ChartFileRef != nil:
-			cf := v.ChartFileRef
-			filePath := cf.Path
-			optional := cf.Optional != nil && *cf.Optional
-			f, err := readLocalChartFile(filepath.Join(chartPath, filePath))
-			if err != nil {
-				if optional {
-					continue
-				}
-				return result, fmt.Errorf("unable to read value file from path %s", filePath)
-			}
-			if err := yaml.Unmarshal(f, &valueFile); err != nil {
-				if optional {
-					continue
-				}
-				return result, fmt.Errorf("unable to yaml.Unmarshal %v from URL %s", f, filePath)
-			}
-		}
-
-		result = mergeValues(result, valueFile)
-	}
-
-	result = mergeValues(result, values)
-
-	return result, nil
-}
-
-// ValuesChecksum calculates the SHA256 checksum of the given raw
-// values.
-func ValuesChecksum(rawValues []byte) string {
-	hasher := sha256.New()
-	hasher.Write(rawValues)
-	return hex.EncodeToString(hasher.Sum(nil))
-}
-
-// Merges source and destination map, preferring values from the source Values
-// This is slightly adapted from https://github.com/helm/helm/blob/2332b480c9cb70a0d8a85247992d6155fbe82416/cmd/helm/install.go#L359
-func mergeValues(dest, src map[string]interface{}) map[string]interface{} {
-	for k, v := range src {
-		// If the key doesn't exist already, then just set the key to that value
-		if _, exists := dest[k]; !exists {
-			dest[k] = v
-			continue
-		}
-		nextMap, ok := v.(map[string]interface{})
-		// If it isn't another map, overwrite the value
-		if !ok {
-			dest[k] = v
-			continue
-		}
-		// Edge case: If the key exists in the destination, but isn't a map
-		destMap, isMap := dest[k].(map[string]interface{})
-		// If the source map has a map for this key, prefer it
-		if !isMap {
-			dest[k] = v
-			continue
-		}
-		// If we got to this point, it is a map in both, so merge them
-		dest[k] = mergeValues(destMap, nextMap)
-	}
-	return dest
-}
-
-// readURL attempts to read a file from an url.
-// This is slightly adapted from https://github.com/helm/helm/blob/2332b480c9cb70a0d8a85247992d6155fbe82416/cmd/helm/install.go#L552
-func readURL(URL string) ([]byte, error) {
-	var settings helmenv.EnvSettings
-	flags := pflag.NewFlagSet("helmClient-env", pflag.ContinueOnError)
-	settings.AddFlags(flags)
-	settings.Init(flags)
-
-	u, _ := url.Parse(URL)
-	p := getter.All(settings)
-
-	getterConstructor, err := p.ByScheme(u.Scheme)
-
+	// Perform the dry-run so that we can compare what we ought to be
+	// running matches what is defined in the `v1.HelmRelease`.
+	desRel, err := client.UpgradeFromPath(chartPath, dryRunRelName, b, helm.UpgradeOptions{Install: true, DryRun: true})
 	if err != nil {
-		return []byte{}, err
+		return false, err
 	}
 
-	getter, err := getterConstructor(URL, "", "", "")
-	if err != nil {
-		return []byte{}, err
+	curValues, desValues := curRel.Values, desRel.Values
+	curChart, desChart := curRel.Chart, desRel.Chart
+
+	// Compare values to detect mutations.
+	vDiff := cmp.Diff(curValues, desValues)
+	if vDiff != "" && logDiffs {
+		logger.Log("info", "values have diverged", "diff", vDiff)
 	}
-	data, err := getter.Get(URL)
-	return data.Bytes(), err
+
+	// Compare chart to detect mutations.
+	cDiff := cmp.Diff(curChart, desChart)
+	if cDiff != "" && logDiffs {
+		logger.Log("info", "chart has diverged", "diff", cDiff)
+	}
+
+	return vDiff != "" || cDiff != "", nil
 }
 
-// readLocalChartFile attempts to read a file from the chart path.
-func readLocalChartFile(filePath string) ([]byte, error) {
-	f, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	return f, nil
-}
-
-// releaseManifestToUnstructured turns a string containing YAML
-// manifests into an array of Unstructured objects.
-func releaseManifestToUnstructured(manifest string, logger log.Logger) []unstructured.Unstructured {
-	manifests := helmutil.SplitManifests(manifest)
-	var objs []unstructured.Unstructured
-	for _, manifest := range manifests {
-		bytes, err := yaml.YAMLToJSON([]byte(manifest))
-		if err != nil {
-			logger.Log("err", err)
-			continue
-		}
-
-		var u unstructured.Unstructured
-		if err := u.UnmarshalJSON(bytes); err != nil {
-			logger.Log("err", err)
-			continue
-		}
-
-		// Helm charts may include list kinds, we are only interested in
-		// the items on those lists.
-		if u.IsList() {
-			l, err := u.ToList()
-			if err != nil {
-				logger.Log("err", err)
-				continue
-			}
-			objs = append(objs, l.Items...)
-			continue
-		}
-
-		objs = append(objs, u)
-	}
-	return objs
-}
-
-// namespacedResourceMap iterates over the given objects and maps the
-// resource identifier against the namespace from the object, if no
-// namespace is present (either because the object kind has no namespace
-// or it belongs to the release namespace) it gets mapped against the
-// given release namespace.
-func namespacedResourceMap(objs []unstructured.Unstructured, releaseNamespace string) map[string][]string {
-	resources := make(map[string][]string)
-	for _, obj := range objs {
-		namespace := obj.GetNamespace()
-		if namespace == "" {
-			namespace = releaseNamespace
-		}
-		resource := obj.GetKind() + "/" + obj.GetName()
-		resources[namespace] = append(resources[namespace], resource)
-	}
-	return resources
+// releaseLogger returns a logger in the context of the given
+// HelmRelease (that being, with metadata included).
+func releaseLogger(logger log.Logger, hr *v1.HelmRelease) log.Logger {
+	return log.With(logger,
+		"release", hr.GetReleaseName(),
+		"targetNamespace", hr.GetTargetNamespace(),
+		"resource", hr.ResourceID().String(),
+		"helmVersion", hr.GetHelmVersion(),
+	)
 }

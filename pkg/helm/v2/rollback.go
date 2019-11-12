@@ -2,13 +2,14 @@ package v2
 
 import (
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/status"
 
 	helmv2 "k8s.io/helm/pkg/helm"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
-func (h *HelmV2) Rollback(releaseName string, opts helm.RollbackOptions) (helm.Release, error) {
+func (h *HelmV2) Rollback(releaseName string, opts helm.RollbackOptions) (*helm.Release, error) {
 	res, err := h.client.RollbackRelease(
 		releaseName,
 		helmv2.RollbackVersion(int32(opts.Version)),
@@ -20,7 +21,10 @@ func (h *HelmV2) Rollback(releaseName string, opts helm.RollbackOptions) (helm.R
 		helmv2.RollbackForce(opts.Force),
 	)
 	if err != nil {
-		return helm.Release{}, errors.Wrapf(err, "failed to perform rollback for release [%s]", releaseName)
+		if s, ok := status.FromError(err); ok {
+			return nil, errors.New(s.Message())
+		}
+		return nil, err
 	}
 	return releaseToGenericRelease(res.Release), nil
 }

@@ -3,6 +3,7 @@ package v2
 import (
 	"time"
 
+	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/proto/hapi/chart"
 	"k8s.io/helm/pkg/proto/hapi/release"
 
@@ -11,8 +12,8 @@ import (
 
 // releaseToGenericRelease transforms a v2 release structure
 // into a generic `helm.Release`
-func releaseToGenericRelease(r *release.Release) helm.Release {
-	return helm.Release{
+func releaseToGenericRelease(r *release.Release) *helm.Release {
+	return &helm.Release{
 		Name:      r.Name,
 		Namespace: r.Namespace,
 		Chart:     chartToGenericChart(r.Chart),
@@ -54,11 +55,8 @@ func infoToGenericInfo(i *release.Info) *helm.Info {
 // valuesToGenericValues transforms a v2 values structure into
 // a generic `map[string]interface{}`
 func valuesToGenericValues(c *chart.Config) map[string]interface{} {
-	m := make(map[string]interface{})
-	for k, v := range c.Values {
-		m[k] = v.Value
-	}
-	return m
+	vals, _ := chartutil.ReadValues([]byte(c.GetRaw()))
+	return vals.AsMap()
 }
 
 // lookUpGenericStatus looks up the generic status for the

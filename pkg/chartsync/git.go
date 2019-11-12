@@ -80,15 +80,19 @@ type GitChartSourceSync struct {
 }
 
 func NewGitChartSourceSync(logger log.Logger,
-	lister lister.HelmReleaseLister, cfg GitConfig, queue ReleaseQueue) *GitChartSourceSync {
+	lister lister.HelmReleaseLister, client clientset.Interface, cfg GitConfig, queue ReleaseQueue) *GitChartSourceSync {
 
 	return &GitChartSourceSync{
 		logger:       logger,
 		config:       cfg,
+
 		lister:       lister,
+		client:       client,
+
 		mirrors:      git.NewMirrors(),
 		sourcesMu:    sync.Mutex{},
 		sources:      make(map[string]*GitChartSource),
+
 		releaseQueue: queue,
 	}
 }
@@ -214,20 +218,22 @@ func (c *GitChartSourceSync) Delete(hr *v1.HelmRelease) bool {
 	source, ok := c.sources[hr.ResourceID().String()]
 	if ok {
 		source.Lock()
+		defer source.Unlock()
+
 		if source.Export != nil {
 			// Clean-up the export.
 			source.Export.Clean()
 		}
+
 		// Remove the in store source.
 		delete(c.sources, hr.ResourceID().String())
-		source.Unlock()
-	}
 
-	if hrs, err := c.getHelmReleasesForMirror(source.Mirror); err == nil && len(hrs) == 0 {
-		// The mirror is no longer in use by any source;
-		// stop and delete the mirror.
-		c.mirrors.StopOne(source.Mirror)
-		ok = true
+		if hrs, err := c.getHelmReleasesForMirror(source.Mirror); err == nil && len(hrs) == 0 {
+			// The mirror is no longer in use by any source;
+			// stop and delete the mirror.
+			c.mirrors.StopOne(source.Mirror)
+			ok = true
+		}
 	}
 	return ok
 }
@@ -344,7 +350,7 @@ func (c *GitChartSourceSync) syncGitChartSource(repo *git.Repo, hr *v1.HelmRelea
 
 	defer func() {
 		logger.Log("info", "succesfully cloned git repository")
-		status.SetCondition(nsClient, *hr, status.NewCondition(
+		_ = status.SetCondition(nsClient, *hr, status.NewCondition(
 			v1.HelmReleaseChartFetched,
 			corev1.ConditionTrue,
 			ReasonGitCloned,

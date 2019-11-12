@@ -25,11 +25,10 @@ func (cs *Clients) Load(version string) (Client, bool) {
 
 // Client is the generic interface for Client (v2 and v3) clients
 type Client interface {
-	InstallFromPath(chartPath string, releaseName string, values []byte, opts InstallOptions) (Release, error)
-	UpgradeFromPath(chartPath string, releaseName string, values []byte, opts UpgradeOptions) (Release, error)
-	Status(releaseName string, opts StatusOptions) (Release, error)
-	History(releaseName string, opts HistoryOptions) ([]Release, error)
-	Rollback(releaseName string, opts RollbackOptions) (Release, error)
+	UpgradeFromPath(chartPath string, releaseName string, values []byte, opts UpgradeOptions) (*Release, error)
+	Status(releaseName string, opts StatusOptions) (*Release, error)
+	History(releaseName string, opts HistoryOptions) ([]*Release, error)
+	Rollback(releaseName string, opts RollbackOptions) (*Release, error)
 	DependencyUpdate(chartPath string) error
 	Uninstall(releaseName string, opts UninstallOptions) error
 }

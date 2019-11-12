@@ -10,9 +10,10 @@ import (
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
-func (h *HelmV3) History(releaseName string, opts helm.HistoryOptions) ([]helm.Release, error) {
+func (h *HelmV3) History(releaseName string, opts helm.HistoryOptions) ([]*helm.Release, error) {
 	cfg, cleanup, err := initActionConfig(h.kc, HelmOptions{Namespace: opts.Namespace})
 	defer cleanup()
+
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to setup Helm client")
 	}
@@ -32,15 +33,11 @@ func (h *HelmV3) History(releaseName string, opts helm.HistoryOptions) ([]helm.R
 		rels = append(rels, hist[i])
 	}
 
-	if len(rels) == 0 {
-		return make([]helm.Release, 0), nil
-	}
-
 	return getReleaseHistory(hist), nil
 }
 
-func getReleaseHistory(rls []*release.Release) []helm.Release {
-	history := make([]helm.Release, len(rls))
+func getReleaseHistory(rls []*release.Release) []*helm.Release {
+	history := make([]*helm.Release, len(rls))
 	for i := len(rls) - 1; i >= 0; i-- {
 		r := rls[i]
 		history = append(history, releaseToGenericRelease(r))

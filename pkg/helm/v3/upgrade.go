@@ -6,17 +6,18 @@ import (
 	"helm.sh/helm/pkg/action"
 	"helm.sh/helm/pkg/chart/loader"
 	"helm.sh/helm/pkg/chartutil"
+	"helm.sh/helm/pkg/release"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
 func (h *HelmV3) UpgradeFromPath(chartPath string, releaseName string, values []byte,
-	opts helm.UpgradeOptions) (helm.Release, error) {
+	opts helm.UpgradeOptions) (*helm.Release, error) {
 
 	cfg, cleanup, err := initActionConfig(h.kc, HelmOptions{Namespace: opts.Namespace})
 	defer cleanup()
 	if err != nil {
-		return helm.Release{}, errors.Wrap(err, "failed to setup Helm client")
+		return nil, errors.Wrap(err, "failed to setup Helm client")
 	}
 
 	client := action.NewUpgrade(cfg)
@@ -26,35 +27,45 @@ func (h *HelmV3) UpgradeFromPath(chartPath string, releaseName string, values []
 	// all chart dependencies are present
 	chartRequested, err := loader.Load(chartPath)
 	if err != nil {
-		return helm.Release{}, errors.Wrapf(err, "failed to load chart from path [%s] for release [%s]", chartPath, releaseName)
+		return nil, errors.Wrapf(err, "failed to load chart from path [%s] for release [%s]", chartPath, releaseName)
 	}
 
 	// Read and set values
 	val, err := chartutil.ReadValues(values)
 	if err != nil {
-		return helm.Release{}, errors.Wrap(err, "failed to read values")
+		return nil, errors.Wrap(err, "failed to read values")
 	}
 
-	// Validate the configured options
-	if err := opts.Validate([]string{}); err != nil {
-		h.logger.Log("warning", err.Error())
+	var res *release.Release
+	if opts.Install {
+		client := action.NewInstall(cfg)
+		client.Namespace = opts.Namespace
+		client.ReleaseName = releaseName
+		client.Atomic = opts.Atomic
+		client.DisableHooks = opts.DisableHooks
+		client.DryRun = opts.DryRun
+		client.Timeout = opts.Timeout
+		client.Wait = opts.Wait
+
+		res, err = client.Run(chartRequested, val.AsMap())
+	} else {
+		client := action.NewUpgrade(cfg)
+		client.Namespace = opts.Namespace
+		client.Atomic = opts.Atomic
+		client.DisableHooks = opts.DisableHooks
+		client.DryRun = opts.DryRun
+		client.Force = opts.Force
+		client.MaxHistory = opts.MaxHistory
+		client.ResetValues = opts.ResetValues
+		client.ReuseValues = opts.ReuseValues
+		client.Timeout = opts.Timeout
+		client.Wait = opts.Wait
+
+		res, err = client.Run(releaseName, chartRequested, val.AsMap())
 	}
 
-	// Set all configured options
-	client.Atomic = opts.Atomic
-	client.DisableHooks = opts.DisableHooks
-	client.DryRun = opts.DryRun
-	client.Force = opts.Force
-	client.MaxHistory = opts.MaxHistory
-	client.ResetValues = opts.ResetValues
-	client.ReuseValues = opts.ReuseValues
-	client.Timeout = opts.Timeout
-	client.Wait = opts.Wait
-
-	// Run upgrade
-	res, err := client.Run(releaseName, chartRequested, val.AsMap())
 	if err != nil {
-		return helm.Release{}, errors.Wrapf(err, "failed to upgrade chart for release [%s]", releaseName)
+		return nil, errors.Wrapf(err, "failed to upgrade chart for release [%s]", releaseName)
 	}
 	return releaseToGenericRelease(res), err
 }

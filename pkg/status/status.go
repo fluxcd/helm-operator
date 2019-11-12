@@ -71,9 +71,9 @@ bail:
 			if !ok {
 				continue
 			}
-			rel, err := c.Status(hr.GetReleaseName(), helm.StatusOptions{})
+			rel, _ := c.Status(hr.GetReleaseName(), helm.StatusOptions{})
 			// If we are unable to get the status, we do not care why
-			if err != nil {
+			if rel == nil {
 				continue
 			}
 			if err := SetReleaseStatus(nsHrClient, *hr, releaseName, rel.Info.Status.String()); err != nil {
@@ -186,6 +186,12 @@ func HasRolledBack(hr helmfluxv1.HelmRelease) bool {
 		// each other, on which we both want to act, we _must_ compare
 		// the update timestamps as the transition timestamp will only
 		// change on a status shift.
+		// TODO(hidde): in case of a pod restart the last update time
+		// will actually refresh because of the pruned cache;
+		// triggering a rollout that should not happen. A solution for
+		// this may be to look at the revision we also record, as this
+		// will tell us if we already attempted a release for this
+		// revision (but failed to do so).
 		if chartFetched.Status == v1.ConditionTrue && rolledBack.LastUpdateTime.Before(&chartFetched.LastUpdateTime) {
 			return false
 		}
