@@ -3,6 +3,7 @@ package release
 import (
 	"errors"
 	"path/filepath"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/google/go-cmp/cmp"
@@ -38,6 +39,7 @@ var (
 	ErrNoChartSource   = errors.New("no chart source given")
 	ErrComposingValues = errors.New("failed to compose values for chart release")
 	ErrShouldSync      = errors.New("failed to determine if the release should be synced")
+	ErrRolledBack	   = errors.New("upgrade failed and release has been rolled back")
 )
 
 // Config holds the configuration for releases.
@@ -79,7 +81,10 @@ func New(logger log.Logger, coreV1Client corev1client.CoreV1Interface, helmRelea
 }
 
 // Sync synchronizes the given `v1.HelmRelease` with Helm.
-func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (*v1.HelmRelease, error) {
+func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRelease, err error) {
+	defer func(start time.Time) {
+		ObserveRelease(start, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
+	}(time.Now())
 	defer status.SetObservedGeneration(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, hr.Generation)
 
 	logger := releaseLogger(r.logger, hr)
@@ -228,11 +233,14 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (*v1.HelmRelease,
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
 			v1.HelmReleaseRolledBack, corev1.ConditionTrue, ReasonSuccess, "Helm rollback succeeded"))
 		logger.Log("info", "Helm rollback succeeded")
+
+		// We should still report failure.
+		err = ErrRolledBack
 	}
 
 	annotateResources(logger, rel, hr.ResourceID())
 
-	return hr, nil
+	return hr, err
 }
 
 // Uninstalls removes the Helm release for the given `v1.HelmRelease`,

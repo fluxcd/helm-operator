@@ -1,13 +1,14 @@
 package release
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/go-kit/kit/metrics/prometheus"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 )
 
 const (
-	LabelAction      = "action"
-	LabelDryRun      = "dry_run"
 	LabelSuccess     = "success"
 	LabelNamespace   = "namespace"
 	LabelReleaseName = "release_name"
@@ -21,16 +22,13 @@ var (
 		Name:      "release_duration_seconds",
 		Help:      "Release duration in seconds.",
 		Buckets:   durationBuckets,
-	}, []string{LabelAction, LabelDryRun, LabelSuccess, LabelNamespace, LabelReleaseName})
+	}, []string{LabelSuccess, LabelNamespace, LabelReleaseName})
 )
 
-// TODO(hidde): put metrics back
-//func ObserveRelease(start time.Time, action Action, dryRun, success bool, namespace, releaseName string) {
-//	releaseDuration.With(
-//		LabelAction, string(action),
-//		LabelDryRun, fmt.Sprint(dryRun),
-//		LabelSuccess, fmt.Sprint(success),
-//		LabelNamespace, namespace,
-//		LabelReleaseName, releaseName,
-//	).Observe(time.Since(start).Seconds())
-//}
+func ObserveRelease(start time.Time, success bool, namespace, releaseName string) {
+	releaseDuration.With(
+		LabelSuccess, fmt.Sprint(success),
+		LabelNamespace, namespace,
+		LabelReleaseName, releaseName,
+	).Observe(time.Since(start).Seconds())
+}
