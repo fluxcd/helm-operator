@@ -73,7 +73,7 @@ type GitChartSourceSync struct {
 
 	mirrors *git.Mirrors
 
-	sourcesMu sync.Mutex
+	sourcesMu sync.RWMutex
 	sources   map[string]*GitChartSource
 
 	releaseQueue ReleaseQueue
@@ -90,7 +90,6 @@ func NewGitChartSourceSync(logger log.Logger,
 		client:       client,
 
 		mirrors:      git.NewMirrors(),
-		sourcesMu:    sync.Mutex{},
 		sources:      make(map[string]*GitChartSource),
 
 		releaseQueue: queue,
@@ -183,9 +182,9 @@ func (c *GitChartSourceSync) Load(hr *v1.HelmRelease) (*GitChartSource, bool) {
 
 	// Check if we have a source in store and return if it still equals
 	// to what is configured in the source.
-	c.sourcesMu.Lock()
+	c.sourcesMu.RLock()
 	cc, ok := c.sources[hr.ResourceID().String()]
-	c.sourcesMu.Unlock()
+	c.sourcesMu.RUnlock()
 	if ok && cc.forHelmRelease(hr) {
 		return cc, true
 	}
