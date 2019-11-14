@@ -22,7 +22,10 @@ import (
 // it first if necessary. It always returns the expected path to the
 // chart, and either an error or nil.
 func EnsureChartFetched(base string, source *helmfluxv1.RepoChartSource) (string, error) {
-	chartPath := makeChartPath(base, source)
+	chartPath, err := makeChartPath(base, source)
+	if err != nil {
+		return chartPath, err
+	}
 	stat, err := os.Stat(chartPath)
 	switch {
 	case os.IsNotExist(err):
@@ -37,16 +40,16 @@ func EnsureChartFetched(base string, source *helmfluxv1.RepoChartSource) (string
 
 // makeChartPath gives the expected filesystem location for a chart,
 // without testing whether the file exists or not.
-func makeChartPath(base string, source *helmfluxv1.RepoChartSource) string {
+func makeChartPath(base string, source *helmfluxv1.RepoChartSource) (string, error) {
 	// We don't need to obscure the location of the charts in the
 	// filesystem; but we do need a stable, filesystem-friendly path
 	// to them that is based on the URL.
 	repoPath := filepath.Join(base, base64.URLEncoding.EncodeToString([]byte(source.CleanRepoURL())))
 	if err := os.MkdirAll(repoPath, 00750); err != nil {
-		panic(err)
+		return "", err
 	}
 	filename := fmt.Sprintf("%s-%s.tgz", source.Name, source.Version)
-	return filepath.Join(repoPath, filename)
+	return filepath.Join(repoPath, filename), nil
 }
 
 // downloadChart attempts to fetch a chart tarball, given the name,
