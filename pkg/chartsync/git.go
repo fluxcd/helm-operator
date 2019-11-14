@@ -11,7 +11,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
@@ -102,7 +101,6 @@ func (c *GitChartSourceSync) Run(stopCh <-chan struct{}, errCh chan error, wg *s
 
 	wg.Add(1)
 	go func() {
-		defer runtime.HandleCrash()
 		defer func() {
 			c.mirrors.StopAllAndWait()
 			wg.Done()
@@ -199,10 +197,8 @@ func (c *GitChartSourceSync) Load(hr *v1.HelmRelease) (*GitChartSource, bool) {
 		return nil, false
 	}
 
-	if s, _ := c.syncGitChartSource(repo, hr); s != nil {
-		return s, true
-	}
-	return nil, false
+	s, _ := c.syncGitChartSource(repo, hr)
+	return s, s != nil
 }
 
 // Delete cleans up the git chart source for the given resource ID,
@@ -281,7 +277,7 @@ func (c *GitChartSourceSync) syncGitChartSource(repo *git.Repo, hr *v1.HelmRelea
 	if !ok {
 		// No source found in store;
 		// create the boilerplate of a new one.
-		s = &GitChartSource{Mutex: sync.Mutex{}, Mirror: mirrorName, Remote: source.GitURL}
+		s = &GitChartSource{Mirror: mirrorName, Remote: source.GitURL}
 		c.sources[hr.ResourceID().String()] = s
 	}
 	// Acquire source lock and unlock sources lock.
@@ -347,20 +343,19 @@ func (c *GitChartSourceSync) syncGitChartSource(repo *git.Repo, hr *v1.HelmRelea
 		defer oldExport.Clean()
 	}
 
-	defer func() {
-		logger.Log("info", "succesfully cloned git repository")
-		_ = status.SetCondition(nsClient, *hr, status.NewCondition(
-			v1.HelmReleaseChartFetched,
-			corev1.ConditionTrue,
-			ReasonGitCloned,
-			"successfully cloned git repository",
-		))
-	}()
-
 	// :magic:
 	s.Export = newExport
 	s.Ref = hr.Spec.RefOrDefault()
 	s.Head = refHead
+
+	logger.Log("info", "succesfully cloned git repository")
+	_ = status.SetCondition(nsClient, *hr, status.NewCondition(
+		v1.HelmReleaseChartFetched,
+		corev1.ConditionTrue,
+		ReasonGitCloned,
+		"successfully cloned git repository",
+	))
+
 	return s, true
 }
 
