@@ -387,7 +387,7 @@ func (c *GitChartSourceSync) getHelmReleasesForMirror(mirror string) ([]*v1.Helm
 	}
 	mHrs := make([]*v1.HelmRelease, 0)
 	for _, hr := range hrs {
-		if mirrorName(hr) == "" {
+		if m := mirrorName(hr); m == "" || m != mirror {
 			continue
 		}
 		mHrs = append(mHrs, hr.DeepCopy()) // to prevent modifying the (shared) lister store
