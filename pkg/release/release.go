@@ -192,7 +192,11 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		Force:       hr.Spec.ForceUpgrade,
 		ResetValues: hr.Spec.ResetValues,
 		MaxHistory:  maxHistory,
-		Atomic:      hr.Spec.Rollback.Enable,
+		// We only set this during installation to delete a failed
+		// release, but not during upgrades, as we ourselves want
+		// to be in control of rollbacks.
+		Atomic:      curRel == nil,
+		Wait:		 hr.Spec.Rollback.Enable,
 	})
 	if err != nil {
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
