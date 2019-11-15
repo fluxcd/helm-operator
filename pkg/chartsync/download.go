@@ -24,16 +24,19 @@ import (
 func EnsureChartFetched(base string, source *helmfluxv1.RepoChartSource) (string, error) {
 	chartPath, err := makeChartPath(base, source)
 	if err != nil {
-		return chartPath, err
+		return chartPath, ChartUnavailableError{err}
 	}
 	stat, err := os.Stat(chartPath)
 	switch {
 	case os.IsNotExist(err):
-		return chartPath, downloadChart(chartPath, source)
+		if err := downloadChart(chartPath, source); err != nil {
+			return chartPath, ChartUnavailableError{err}
+		}
+		return chartPath, nil
 	case err != nil:
-		return chartPath, err
+		return chartPath, ChartUnavailableError{err}
 	case stat.IsDir():
-		return chartPath, errors.New("path to chart exists but is a directory")
+		return chartPath, ChartUnavailableError{errors.New("path to chart exists but is a directory")}
 	}
 	return chartPath, nil
 }

@@ -213,10 +213,9 @@ func main() {
 	// setup workqueue for HelmReleases
 	queue := workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "ChartRelease")
 
-	gitChartSourceSync := chartsync.NewGitChartSourceSync(
-		log.With(logger, "component", "gitchartsourcesync"),
+	gitChartSync := chartsync.NewGitChartSync(
+		log.With(logger, "component", "gitchartsync"),
 		hrInformer.Lister(),
-		ifClient,
 		chartsync.GitConfig{GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval},
 		queue,
 	)
@@ -225,7 +224,7 @@ func main() {
 		log.With(logger, "component", "release"),
 		kubeClient.CoreV1(),
 		ifClient.HelmV1(),
-		gitChartSourceSync,
+		gitChartSync,
 		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies},
 	)
 
@@ -247,8 +246,8 @@ func main() {
 	// start operator
 	go opr.Run(*workers, shutdown, shutdownWg)
 
-	// start git chart sources sync loop
-	go gitChartSourceSync.Run(shutdown, errc, shutdownWg)
+	// start git chart sync loop
+	go gitChartSync.Run(shutdown, errc, shutdownWg)
 
 	// the status updater, to keep track of the release status for
 	// every HelmRelease
@@ -256,7 +255,7 @@ func main() {
 	go statusUpdater.Loop(shutdown, log.With(logger, "component", "statusupdater"))
 
 	// start HTTP server
-	go daemonhttp.ListenAndServe(*listenAddr, gitChartSourceSync, log.With(logger, "component", "daemonhttp"), shutdown)
+	go daemonhttp.ListenAndServe(*listenAddr, gitChartSync, log.With(logger, "component", "daemonhttp"), shutdown)
 
 	checkpoint.CheckForUpdates(product, version, nil, log.With(logger, "component", "checkpoint"))
 

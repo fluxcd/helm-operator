@@ -22,6 +22,8 @@ const maxHistory = 10
 
 // Condition change reasons.
 const (
+	ReasonGitNotReady      = "GitNotReady"
+	ReasonGitCloned        = "GitRepoCloned"
 	ReasonDownloadFailed   = "RepoFetchFailed"
 	ReasonDownloaded       = "RepoChartInCache"
 	ReasonInstallFailed    = "HelmInstallFailed"
@@ -35,11 +37,10 @@ const (
 // Various (final) errors.
 var (
 	ErrDepUpdate       = errors.New("failed updating dependencies")
-	ErrChartDownload   = errors.New("failed to fetch chart")
 	ErrNoChartSource   = errors.New("no chart source given")
 	ErrComposingValues = errors.New("failed to compose values for chart release")
 	ErrShouldSync      = errors.New("failed to determine if the release should be synced")
-	ErrRolledBack	   = errors.New("upgrade failed and release has been rolled back")
+	ErrRolledBack      = errors.New("upgrade failed and release has been rolled back")
 )
 
 // Config holds the configuration for releases.
@@ -60,22 +61,22 @@ func (c Config) WithDefaults() Config {
 // Release holds the elements required to perform a Helm release,
 // and provides the methods to perform a sync or uninstall.
 type Release struct {
-	logger             log.Logger
-	coreV1Client       corev1client.CoreV1Interface
-	helmReleaseClient  v1client.HelmV1Interface
-	gitChartSourceSync *chartsync.GitChartSourceSync
-	config             Config
+	logger            log.Logger
+	coreV1Client      corev1client.CoreV1Interface
+	helmReleaseClient v1client.HelmV1Interface
+	gitChartSync      *chartsync.GitChartSync
+	config            Config
 }
 
 func New(logger log.Logger, coreV1Client corev1client.CoreV1Interface, helmReleaseClient v1client.HelmV1Interface,
-	gitChartSourceSync *chartsync.GitChartSourceSync, config Config) *Release {
+	gitChartSync *chartsync.GitChartSync, config Config) *Release {
 
 	r := &Release{
-		logger:             logger,
-		coreV1Client:       coreV1Client,
-		helmReleaseClient:  helmReleaseClient,
-		gitChartSourceSync: gitChartSourceSync,
-		config:             config.WithDefaults(),
+		logger:            logger,
+		coreV1Client:      coreV1Client,
+		helmReleaseClient: helmReleaseClient,
+		gitChartSync:      gitChartSync,
+		config:            config.WithDefaults(),
 	}
 	return r
 }
@@ -90,23 +91,30 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	logger := releaseLogger(r.logger, hr)
 
 	// Ensure we have the chart for the release, construct the path
-	// to the chart and get the revision.
+	// to the chart, and record the revision.
 	var chartPath, revision string
 	switch {
 	case hr.Spec.GitChartSource != nil:
-		s, _ := r.gitChartSourceSync.Load(hr)
-		if s == nil {
-			// Chart source has been requested, but is not ready yet,
-			// wait for the next signal...
-			return hr, nil
+		s, err := r.gitChartSync.ChartDir(hr)
+		if err != nil {
+			switch err.(type) {
+			case chartsync.ChartUnavailableError:
+				_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+					v1.HelmReleaseChartFetched, corev1.ConditionFalse, ReasonDownloadFailed, err.Error()))
+			case chartsync.ChartNotReadyError:
+				_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+					v1.HelmReleaseChartFetched, corev1.ConditionUnknown, ReasonGitNotReady, err.Error()))
+			}
+			logger.Log("error", err.Error())
+			return hr, err
 		}
-		// Lock the resource so that it does not get updated by
-		// the chart sync process.
-		s.Lock()
-		defer s.Unlock()
+		defer s.Clean()
 
 		chartPath = s.ChartPath(hr.Spec.GitChartSource.Path)
 		revision = s.Head
+
+		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+			v1.HelmReleaseChartFetched, corev1.ConditionTrue, ReasonGitCloned, "successfully cloned chart revision: " + revision))
 
 		if r.config.UpdateDeps && !hr.Spec.GitChartSource.SkipDepUpdate {
 			// Attempt to update chart dependencies, if it fails we
@@ -114,8 +122,8 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 			if err := client.DependencyUpdate(chartPath); err != nil {
 				_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
 					v1.HelmReleaseReleased, corev1.ConditionFalse, ReasonDependencyFailed, err.Error()))
-				logger.Log("error", ErrDepUpdate.Error(), "err", err)
-				return hr, ErrDepUpdate
+				logger.Log("error", ErrDepUpdate.Error(), "err", err.Error())
+				return hr, err
 			}
 		}
 	case hr.Spec.RepoChartSource != nil:
@@ -127,8 +135,8 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		if err != nil {
 			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
 				v1.HelmReleaseChartFetched, corev1.ConditionFalse, ReasonDownloadFailed, err.Error()))
-			logger.Log("error", ErrChartDownload.Error(), "err", err.Error())
-			return hr, ErrChartDownload
+			logger.Log("error", err.Error())
+			return hr, err
 		}
 
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
@@ -260,7 +268,7 @@ func (r *Release) Uninstall(client helm.Client, hr *v1.HelmRelease) {
 	}
 
 	if hr.Spec.GitChartSource != nil {
-		r.gitChartSourceSync.Delete(hr)
+		r.gitChartSync.Delete(hr)
 	}
 }
 
