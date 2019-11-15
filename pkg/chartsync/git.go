@@ -142,29 +142,8 @@ func (c *GitChartSourceSync) Run(stopCh <-chan struct{}, errCh chan error, wg *s
 						// Wait for the signal from the newly requested mirror...
 						continue
 					}
-					if mirrorStatus, err := mirror.Status(); mirrorStatus != git.RepoReady {
-						c.logger.Log("warning", "mirror not ready for sync", "status", mirrorStatus, "mirror", mirrorName)
-						for _, hr := range hrs {
-							nsClient := c.client.HelmV1().HelmReleases(hr.Namespace)
-							_ = status.SetCondition(nsClient, *hr, status.NewCondition(
-								v1.HelmReleaseChartFetched,
-								corev1.ConditionUnknown,
-								ReasonGitNotReady,
-								err.Error(),
-							))
-						}
-						// Wait for the next signal...
-						continue
-					}
-					for _, hr := range hrs {
-						if _, ok := c.syncGitChartSource(mirror, hr); ok {
-							cacheKey, err := cache.MetaNamespaceKeyFunc(hr.GetObjectMeta())
-							if err != nil {
-								continue // this should never happen
-							}
-							c.releaseQueue.AddRateLimited(cacheKey)
-						}
-					}
+
+					c.processChangedMirror(mirror, hrs)
 				}
 			case <-stopCh:
 				c.logger.Log("info", "stopping sync of git chart sources")
@@ -187,7 +166,7 @@ func (c *GitChartSourceSync) Load(hr *v1.HelmRelease) (*GitChartSource, bool) {
 		return cc, true
 	}
 
-	// Check if there is an existing mirror .
+	// Check if there is an existing mirror.
 	mirror := mirrorName(hr)
 	repo, ok := c.mirrors.Get(mirror)
 	if !ok {
@@ -233,7 +212,8 @@ func (c *GitChartSourceSync) Delete(hr *v1.HelmRelease) bool {
 	return ok
 }
 
-// SyncMirrors instructs all git mirrors to sync from their respective upstreams.
+// SyncMirrors instructs all git mirrors to sync from their respective
+// upstreams.
 func (c *GitChartSourceSync) SyncMirrors() {
 	c.logger.Log("info", "starting git chart source sync")
 	for _, err := range c.mirrors.RefreshAll(c.config.GitTimeout) {
@@ -242,12 +222,43 @@ func (c *GitChartSourceSync) SyncMirrors() {
 	c.logger.Log("info", "finished syncing git chart sources")
 }
 
+// processChangedMirror syncs all given `v1.HelmRelease`s with the
+// mirror we received a change signal for. In case the mirror is not
+// in a ready state yet, it sets a condition on all provided
+// releases and returns early.
+func (c *GitChartSourceSync) processChangedMirror(mirror *git.Repo, hrs []*v1.HelmRelease) {
+	if mirrorStatus, err := mirror.Status(); mirrorStatus != git.RepoReady {
+		c.logger.Log("warning", "mirror not ready for sync: " + err.Error(), "status", mirrorStatus, "mirror", mirrorName)
+		for _, hr := range hrs {
+			nsClient := c.client.HelmV1().HelmReleases(hr.Namespace)
+			_ = status.SetCondition(nsClient, *hr, status.NewCondition(
+				v1.HelmReleaseChartFetched,
+				corev1.ConditionUnknown,
+				ReasonGitNotReady,
+				err.Error(),
+			))
+		}
+		// Mirror is not ready yet; wait for signal.
+		return
+	}
+	for _, hr := range hrs {
+		if _, ok := c.syncGitChartSource(mirror, hr); ok {
+			cacheKey, err := cache.MetaNamespaceKeyFunc(hr.GetObjectMeta())
+			if err != nil {
+				continue // this should never happen
+			}
+			// Schedule release sync by adding it to the queue.
+			c.releaseQueue.AddRateLimited(cacheKey)
+		}
+	}
+}
+
 // syncGitChartSource synchronizes the source in store with the latest
-// HEAD for the configured ref in the given repository. But only if it
-// has seen commits for paths we are interested in. It returns the
+// HEAD for the configured ref in the given mirror. But only if it has
+// seen commits for paths we are interested in. It returns the
 // synchronized source or nil and a boolean indicating if the source
 // was updated.
-func (c *GitChartSourceSync) syncGitChartSource(repo *git.Repo, hr *v1.HelmRelease) (*GitChartSource, bool) {
+func (c *GitChartSourceSync) syncGitChartSource(mirror *git.Repo, hr *v1.HelmRelease) (*GitChartSource, bool) {
 
 	mirrorName := mirrorName(hr)
 	if mirrorName == "" {
@@ -259,15 +270,15 @@ func (c *GitChartSourceSync) syncGitChartSource(repo *git.Repo, hr *v1.HelmRelea
 	logger := log.With(c.logger,
 		"mirror", source.GitURL, "ref", source.RefOrDefault(), "path", source.Path, "resource", hr.ResourceID().String())
 
-	if repoStatus, err := repo.Status(); repoStatus != git.RepoReady {
-		logger.Log("warning", "mirror not ready for sync", "status", repoStatus)
+	if mirrorStatus, err := mirror.Status(); mirrorStatus != git.RepoReady {
+		logger.Log("warning", "mirror not ready for export: " + err.Error(), "status", mirrorStatus)
 		_ = status.SetCondition(nsClient, *hr, status.NewCondition(
 			v1.HelmReleaseChartFetched,
 			corev1.ConditionUnknown,
 			ReasonGitNotReady,
 			"mirror not ready for sync: "+err.Error(),
 		))
-		// Repository is not ready yet; wait for signal.
+		// Mirror is not ready yet; wait for signal.
 		return nil, false
 	}
 
@@ -287,7 +298,7 @@ func (c *GitChartSourceSync) syncGitChartSource(repo *git.Repo, hr *v1.HelmRelea
 
 	// Get the current HEAD for the configured ref.
 	ctx, cancel := context.WithTimeout(context.Background(), c.config.GitTimeout)
-	refHead, err := repo.Revision(ctx, hr.Spec.GitChartSource.RefOrDefault())
+	refHead, err := mirror.Revision(ctx, hr.Spec.GitChartSource.RefOrDefault())
 	cancel()
 	if err != nil {
 		logger.Log("error", "failed to get current HEAD for configured ref", "err", err.Error())
@@ -304,7 +315,7 @@ func (c *GitChartSourceSync) syncGitChartSource(repo *git.Repo, hr *v1.HelmRelea
 		// We did find an existing source earlier; check if the
 		// repository has seen commits in paths we are interested in.
 		ctx, cancel = context.WithTimeout(context.Background(), c.config.GitTimeout)
-		commits, err := repo.CommitsBetween(ctx, s.Head, refHead, hr.Spec.Path)
+		commits, err := mirror.CommitsBetween(ctx, s.Head, refHead, hr.Spec.Path)
 		cancel()
 		// No commits or failed retrieving commit range,
 		// return without updating source.
@@ -324,7 +335,7 @@ func (c *GitChartSourceSync) syncGitChartSource(repo *git.Repo, hr *v1.HelmRelea
 
 	// Export a new working clone for the source at the recorded ref HEAD.
 	ctx, cancel = context.WithTimeout(context.Background(), c.config.GitTimeout)
-	newExport, err := repo.Export(ctx, refHead)
+	newExport, err := mirror.Export(ctx, refHead)
 	cancel()
 	if err != nil {
 		_ = status.SetCondition(nsClient, *hr, status.NewCondition(
