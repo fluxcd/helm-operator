@@ -95,7 +95,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	var chartPath, revision string
 	switch {
 	case hr.Spec.GitChartSource != nil:
-		s, err := r.gitChartSync.ChartDir(hr)
+		export, revision, err := r.gitChartSync.GetMirrorCopy(hr)
 		if err != nil {
 			switch err.(type) {
 			case chartsync.ChartUnavailableError:
@@ -108,10 +108,9 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 			logger.Log("error", err.Error())
 			return hr, err
 		}
-		defer s.Clean()
 
-		chartPath = s.ChartPath(hr.Spec.GitChartSource.Path)
-		revision = s.Head
+		defer export.Clean()
+		chartPath = filepath.Join(export.Dir(), hr.Spec.GitChartSource.Path)
 
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
 			v1.HelmReleaseChartFetched, corev1.ConditionTrue, ReasonGitCloned, "successfully cloned chart revision: " + revision))

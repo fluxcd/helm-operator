@@ -3,7 +3,6 @@ package chartsync
 import (
 	"context"
 	"errors"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -33,20 +32,6 @@ type ReleaseQueue interface {
 type GitConfig struct {
 	GitTimeout      time.Duration
 	GitPollInterval time.Duration
-}
-
-// GitChartDir holds a `git.Export` of a chart repository,
-// and the commit hash of the HEAD of this export.
-type GitChartDir struct {
-	*git.Export
-	Head string
-}
-
-func (d GitChartDir) ChartPath(relativePath string) string {
-	if d.Export != nil {
-		return filepath.Join(d.Dir(), relativePath)
-	}
-	return ""
 }
 
 // GitChartSync syncs `sourceRef`s with their mirrors, and queues
@@ -153,31 +138,31 @@ func (c *GitChartSync) Run(stopCh <-chan struct{}, errCh chan error, wg *sync.Wa
 	}()
 }
 
-// ChartDir returns a newly exported `GitChartDir` for the given `v1.HelmRelease`
-// at the latest HEAD, or an error.
-func (c *GitChartSync) ChartDir(hr *v1.HelmRelease) (GitChartDir, error) {
+// GetMirrorCopy returns a newly exported copy of the git mirror at the
+// recorded HEAD and a string with the HEAD commit hash, or an error.
+func (c *GitChartSync) GetMirrorCopy(hr *v1.HelmRelease) (*git.Export, string, error) {
 	mirror := mirrorName(hr)
 	repo, ok := c.mirrors.Get(mirror)
 	if !ok {
 		// We did not find a mirror; request one, return, and wait for
 		// signal.
 		c.maybeMirror(mirror, hr.Spec.GitURL)
-		return GitChartDir{}, ChartNotReadyError{ErrNoMirror}
+		return nil, "", ChartNotReadyError{ErrNoMirror}
 	}
 
 	s, ok, err := c.sync(hr, mirror, repo)
 	if err != nil {
-		return GitChartDir{}, err
+		return nil, "", err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), c.config.GitTimeout)
 	defer cancel()
 	export, err := repo.Export(ctx, s.head)
 	if err != nil {
-		return GitChartDir{}, ChartUnavailableError{err}
+		return nil, "", ChartUnavailableError{err}
 	}
 
-	return GitChartDir{export, s.head}, nil
+	return export, s.head, nil
 }
 
 // Delete cleans up the source reference for the given `v1.HelmRelease`,
