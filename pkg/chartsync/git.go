@@ -94,11 +94,6 @@ func (c *GitChartSync) Run(stopCh <-chan struct{}, errCh chan error, wg *sync.Wa
 
 	wg.Add(1)
 	go func() {
-		defer func() {
-			c.mirrors.StopAllAndWait()
-			wg.Done()
-		}()
-
 		for {
 			select {
 			case changed := <-c.mirrors.Changes():
@@ -132,6 +127,8 @@ func (c *GitChartSync) Run(stopCh <-chan struct{}, errCh chan error, wg *sync.Wa
 				}
 			case <-stopCh:
 				c.logger.Log("info", "stopping sync of git chart sources")
+				c.mirrors.StopAllAndWait()
+				wg.Done()
 				return
 			}
 		}
