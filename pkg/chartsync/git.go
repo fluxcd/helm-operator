@@ -59,8 +59,8 @@ type GitChartSync struct {
 
 	mirrors *git.Mirrors
 
-	sourcesMu sync.RWMutex
-	sources   map[string]sourceRef
+	releaseSourcesMu   sync.RWMutex
+	releaseSourcesByID map[string]sourceRef
 
 	releaseQueue ReleaseQueue
 }
@@ -89,13 +89,13 @@ func NewGitChartSync(logger log.Logger,
 	lister lister.HelmReleaseLister, cfg GitConfig, queue ReleaseQueue) *GitChartSync {
 
 	return &GitChartSync{
-		logger:       logger,
-		config:       cfg,
+		logger: logger,
+		config: cfg,
 
-		lister:       lister,
+		lister: lister,
 
-		mirrors:      git.NewMirrors(),
-		sources:      make(map[string]sourceRef),
+		mirrors:            git.NewMirrors(),
+		releaseSourcesByID: make(map[string]sourceRef),
 
 		releaseQueue: queue,
 	}
@@ -185,14 +185,14 @@ func (c *GitChartSync) ChartDir(hr *v1.HelmRelease) (GitChartDir, error) {
 // It returns a boolean indicating a successful removal (`true` if so,
 // `false` otherwise).
 func (c *GitChartSync) Delete(hr *v1.HelmRelease) bool {
-	c.sourcesMu.Lock()
-	defer c.sourcesMu.Unlock()
+	c.releaseSourcesMu.Lock()
+	defer c.releaseSourcesMu.Unlock()
 
 	// Attempt to get the source from store.
-	source, ok := c.sources[hr.ResourceID().String()]
+	source, ok := c.releaseSourcesByID[hr.ResourceID().String()]
 	if ok {
 		// Remove the in store source.
-		delete(c.sources, hr.ResourceID().String())
+		delete(c.releaseSourcesByID, hr.ResourceID().String())
 
 		if hrs, err := c.helmReleasesForMirror(source.mirror); err == nil && len(hrs) == 0 {
 			// The mirror is no longer in use by any source;
@@ -230,18 +230,18 @@ func (c *GitChartSync) processChangedMirror(mirror string, repo *git.Repo, hrs [
 }
 
 func (c *GitChartSync) get(hr *v1.HelmRelease) (sourceRef, bool) {
-	c.sourcesMu.RLock()
-	defer c.sourcesMu.RUnlock()
-	if s, ok := c.sources[hr.ResourceID().String()]; ok && s.forHelmRelease(hr) {
+	c.releaseSourcesMu.RLock()
+	defer c.releaseSourcesMu.RUnlock()
+	if s, ok := c.releaseSourcesByID[hr.ResourceID().String()]; ok && s.forHelmRelease(hr) {
 		return s, ok
 	}
 	return sourceRef{}, false
 }
 
 func (c *GitChartSync) store(hr *v1.HelmRelease, s sourceRef) {
-	c.sourcesMu.Lock()
-	c.sources[hr.ResourceID().String()] = s
-	c.sourcesMu.Unlock()
+	c.releaseSourcesMu.Lock()
+	c.releaseSourcesByID[hr.ResourceID().String()] = s
+	c.releaseSourcesMu.Unlock()
 }
 
 // sync synchronizes the record we have for the given `v1.HelmRelease`
