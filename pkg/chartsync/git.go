@@ -170,10 +170,9 @@ func (c *GitChartSync) Delete(hr *v1.HelmRelease) bool {
 	c.releaseSourcesMu.Lock()
 	defer c.releaseSourcesMu.Unlock()
 
-	// Attempt to get the source from store.
+	// Attempt to get the source from store, and delete it if found.
 	source, ok := c.releaseSourcesByID[hr.ResourceID().String()]
 	if ok {
-		// Remove the in store source.
 		delete(c.releaseSourcesByID, hr.ResourceID().String())
 
 		if hrs, err := c.helmReleasesForMirror(source.mirror); err == nil && len(hrs) == 0 {
@@ -211,21 +210,6 @@ func (c *GitChartSync) processChangedMirror(mirror string, repo *git.Repo, hrs [
 	}
 }
 
-func (c *GitChartSync) get(hr *v1.HelmRelease) (sourceRef, bool) {
-	c.releaseSourcesMu.RLock()
-	defer c.releaseSourcesMu.RUnlock()
-	if s, ok := c.releaseSourcesByID[hr.ResourceID().String()]; ok && s.forHelmRelease(hr) {
-		return s, ok
-	}
-	return sourceRef{}, false
-}
-
-func (c *GitChartSync) store(hr *v1.HelmRelease, s sourceRef) {
-	c.releaseSourcesMu.Lock()
-	c.releaseSourcesByID[hr.ResourceID().String()] = s
-	c.releaseSourcesMu.Unlock()
-}
-
 // sync synchronizes the record we have for the given `v1.HelmRelease`
 // with the given mirror. It always updates the HEAD record in the
 // `sourceRef`, but only returns `true` if the update was relevant for
@@ -241,9 +225,12 @@ func (c *GitChartSync) sync(hr *v1.HelmRelease, mirrorName string, repo *git.Rep
 		return sourceRef{}, false, ChartNotReadyError{err}
 	}
 
+	c.releaseSourcesMu.RLock()
+	s, ok := c.releaseSourcesByID[hr.ResourceID().String()]
+	c.releaseSourcesMu.RUnlock()
+
 	var changed bool
-	s, ok := c.get(hr)
-	if !ok {
+	if !ok || !s.forHelmRelease(hr) {
 		s = sourceRef{mirror: mirrorName, remote: source.GitURL, ref: source.RefOrDefault()}
 		changed = true
 	}
@@ -272,8 +259,13 @@ func (c *GitChartSync) sync(hr *v1.HelmRelease, mirrorName string, repo *git.Rep
 		changed = len(commits) > 0
 	}
 
+	// Update the HEAD reference
 	s.head = head
-	c.store(hr, s)
+
+	c.releaseSourcesMu.Lock()
+	c.releaseSourcesByID[hr.ResourceID().String()] = s
+	c.releaseSourcesMu.Unlock()
+
 	return s, changed, nil
 }
 
