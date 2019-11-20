@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export E2E_NAMESPACE=flux-e2e
+export E2E_NAMESPACE=helm-operator-e2e
 export DEMO_NAMESPACE=demo
 ROOT_DIR=$(git rev-parse --show-toplevel)
 export ROOT_DIR
