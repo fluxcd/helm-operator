@@ -20,7 +20,6 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
-	"github.com/fluxcd/helm-operator/pkg/chartsync"
 	ifscheme "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/scheme"
 	hrv1 "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/helm.fluxcd.io/v1"
 	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/helm.fluxcd.io/v1"
@@ -30,7 +29,6 @@ import (
 
 const (
 	controllerAgentName = "helm-operator"
-	CacheSyncTimeout    = 180 * time.Second
 )
 
 const (
@@ -51,7 +49,7 @@ type Controller struct {
 	hrLister iflister.HelmReleaseLister
 	hrSynced cache.InformerSynced
 
-	sync *chartsync.ChartChangeSync
+	release *release.Release
 
 	helmClients *helm.Clients
 
@@ -74,7 +72,7 @@ func New(
 	kubeclientset kubernetes.Interface,
 	hrInformer hrv1.HelmReleaseInformer,
 	releaseWorkqueue workqueue.RateLimitingInterface,
-	sync *chartsync.ChartChangeSync,
+	release *release.Release,
 	helmClients *helm.Clients) *Controller {
 
 	// Add helm-operator types to the default Kubernetes Scheme so Events can be
@@ -91,7 +89,7 @@ func New(
 		hrSynced:         hrInformer.Informer().HasSynced,
 		releaseWorkqueue: releaseWorkqueue,
 		recorder:         recorder,
-		sync:             sync,
+		release:          release,
 		helmClients:      helmClients,
 	}
 
@@ -233,11 +231,7 @@ func (c *Controller) syncHandler(key string) error {
 		c.logger.Log("warning", err.Error(), "resource", hr.ResourceID().String())
 		return nil
 	}
-	c.sync.ReconcileReleaseDef(
-		release.New(log.With(
-			c.logger,
-			"release", hr.GetReleaseName(), "targetNamespace", hr.GetTargetNamespace(), "resource", hr.ResourceID().String(),
-		), helmClient), *hr)
+	c.release.Sync(helmClient, hr.DeepCopy())
 	c.recorder.Event(hr, corev1.EventTypeNormal, ChartSynced, MessageChartSynced)
 
 	return nil
@@ -299,26 +293,16 @@ func (c *Controller) enqueueUpdateJob(old, new interface{}) {
 		return
 	}
 
-	// Skip if the current HelmRelease generation has been rolled
-	// back, as otherwise we will end up in a loop of failure, but
-	// continue if the checksum of the values differs, as the failure
-	// may have been the result of the values contents.
-	if newHr.Spec.Rollback.Enable && status.HasRolledBack(newHr) && c.sync.CompareValuesChecksum(newHr) {
-		c.logger.Log("warning", "release has been rolled back, skipping", "resource", newHr.ResourceID().String())
-		return
-	}
-
-	log := []string{"info", "enqueuing release"}
+	logStr := []string{"info", "enqueuing release"}
 	if diff != "" && c.logDiffs {
-		log = append(log, "diff", diff)
+		logStr = append(logStr, "diff", diff)
 	}
-	log = append(log, "resource", newHr.ResourceID().String())
+	logStr = append(logStr, "resource", newHr.ResourceID().String())
 
-	l := make([]interface{}, len(log))
-	for i, v := range log {
+	l := make([]interface{}, len(logStr))
+	for i, v := range logStr {
 		l[i] = v
 	}
-
 	c.logger.Log(l...)
 
 	c.enqueueJob(new)
@@ -332,7 +316,7 @@ func (c *Controller) deleteRelease(hr helmfluxv1.HelmRelease) {
 		logger.Log("warning", "failed to delete release", "err", err.Error())
 		return
 	}
-	c.sync.DeleteRelease(release.New(logger, helmClient), hr)
+	c.release.Uninstall(helmClient, hr.DeepCopy())
 }
 
 func (c *Controller) getHelmClientForRelease(hr helmfluxv1.HelmRelease) (helm.Client, error) {

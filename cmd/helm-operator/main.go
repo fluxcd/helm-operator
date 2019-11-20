@@ -27,6 +27,7 @@ import (
 	"github.com/fluxcd/helm-operator/pkg/helm/v3"
 	daemonhttp "github.com/fluxcd/helm-operator/pkg/http/daemon"
 	"github.com/fluxcd/helm-operator/pkg/operator"
+	"github.com/fluxcd/helm-operator/pkg/release"
 	"github.com/fluxcd/helm-operator/pkg/status"
 )
 
@@ -212,19 +213,26 @@ func main() {
 	// setup workqueue for HelmReleases
 	queue := workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "ChartRelease")
 
-	chartSync := chartsync.New(
-		log.With(logger, "component", "chartsync"),
-		chartsync.Clients{KubeClient: *kubeClient, IfClient: *ifClient, HrLister: hrInformer.Lister(), HelmClients: helmClients},
+	gitChartSync := chartsync.NewGitChartSync(
+		log.With(logger, "component", "gitchartsync"),
+		hrInformer.Lister(),
+		chartsync.GitConfig{GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval},
 		queue,
-		chartsync.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval},
-		*namespace,
+	)
+
+	rel := release.New(
+		log.With(logger, "component", "release"),
+		kubeClient.CoreV1(),
+		ifClient.HelmV1(),
+		gitChartSync,
+		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies},
 	)
 
 	// prepare operator and start FluxRelease informer
 	// NB: the operator needs to do its magic with the informer
 	// _before_ starting it or else the cache sync seems to hang at
 	// random
-	opr := operator.New(log.With(logger, "component", "operator"), *logReleaseDiffs, kubeClient, hrInformer, queue, chartSync, helmClients)
+	opr := operator.New(log.With(logger, "component", "operator"), *logReleaseDiffs, kubeClient, hrInformer, queue, rel, helmClients)
 	go ifInformerFactory.Start(shutdown)
 
 	// wait for the caches to be synced before starting _any_ workers
@@ -238,8 +246,8 @@ func main() {
 	// start operator
 	go opr.Run(*workers, shutdown, shutdownWg)
 
-	// start git sync loop
-	go chartSync.Run(shutdown, errc, shutdownWg)
+	// start git chart sync loop
+	go gitChartSync.Run(shutdown, errc, shutdownWg)
 
 	// the status updater, to keep track of the release status for
 	// every HelmRelease
@@ -247,7 +255,7 @@ func main() {
 	go statusUpdater.Loop(shutdown, log.With(logger, "component", "statusupdater"))
 
 	// start HTTP server
-	go daemonhttp.ListenAndServe(*listenAddr, chartSync, log.With(logger, "component", "daemonhttp"), shutdown)
+	go daemonhttp.ListenAndServe(*listenAddr, gitChartSync, log.With(logger, "component", "daemonhttp"), shutdown)
 
 	checkpoint.CheckForUpdates(product, version, nil, log.With(logger, "component", "checkpoint"))
 

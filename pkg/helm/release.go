@@ -56,3 +56,18 @@ type Status string
 func (s Status) String() string {
 	return string(s)
 }
+
+// Syncable returns if the Status allows a sync
+func (s Status) Syncable() bool {
+	switch s {
+	case StatusUnknown,
+		 StatusFailed,
+		 StatusUninstalling,
+		 StatusPendingInstall,
+		 StatusPendingUpgrade,
+		 StatusPendingRollback:
+		 return false
+	default:
+		return true
+	}
+}

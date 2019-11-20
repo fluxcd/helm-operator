@@ -18,35 +18,41 @@ import (
 	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 )
 
+// EnsureChartFetched returns the path to a downloaded chart, fetching
+// it first if necessary. It always returns the expected path to the
+// chart, and either an error or nil.
+func EnsureChartFetched(base string, source *helmfluxv1.RepoChartSource) (string, error) {
+	chartPath, err := makeChartPath(base, source)
+	if err != nil {
+		return chartPath, ChartUnavailableError{err}
+	}
+	stat, err := os.Stat(chartPath)
+	switch {
+	case os.IsNotExist(err):
+		if err := downloadChart(chartPath, source); err != nil {
+			return chartPath, ChartUnavailableError{err}
+		}
+		return chartPath, nil
+	case err != nil:
+		return chartPath, ChartUnavailableError{err}
+	case stat.IsDir():
+		return chartPath, ChartUnavailableError{errors.New("path to chart exists but is a directory")}
+	}
+	return chartPath, nil
+}
+
 // makeChartPath gives the expected filesystem location for a chart,
 // without testing whether the file exists or not.
-func makeChartPath(base string, source *helmfluxv1.RepoChartSource) string {
+func makeChartPath(base string, source *helmfluxv1.RepoChartSource) (string, error) {
 	// We don't need to obscure the location of the charts in the
 	// filesystem; but we do need a stable, filesystem-friendly path
 	// to them that is based on the URL.
 	repoPath := filepath.Join(base, base64.URLEncoding.EncodeToString([]byte(source.CleanRepoURL())))
 	if err := os.MkdirAll(repoPath, 00750); err != nil {
-		panic(err)
+		return "", err
 	}
 	filename := fmt.Sprintf("%s-%s.tgz", source.Name, source.Version)
-	return filepath.Join(repoPath, filename)
-}
-
-// ensureChartFetched returns the path to a downloaded chart, fetching
-// it first if necessary. It always returns the expected path to the
-// chart, and either an error or nil.
-func ensureChartFetched(base string, source *helmfluxv1.RepoChartSource) (string, error) {
-	chartPath := makeChartPath(base, source)
-	stat, err := os.Stat(chartPath)
-	switch {
-	case os.IsNotExist(err):
-		return chartPath, downloadChart(chartPath, source)
-	case err != nil:
-		return chartPath, err
-	case stat.IsDir():
-		return chartPath, errors.New("path to chart exists but is a directory")
-	}
-	return chartPath, nil
+	return filepath.Join(repoPath, filename), nil
 }
 
 // downloadChart attempts to fetch a chart tarball, given the name,

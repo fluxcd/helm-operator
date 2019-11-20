@@ -26,6 +26,8 @@ require (
 	github.com/yvasiyarov/gorelic v0.0.7 // indirect
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
+	google.golang.org/grpc v1.20.1
+	gopkg.in/yaml.v2 v2.2.2
 	helm.sh/helm v3.0.0-beta.3+incompatible
 	k8s.io/api v0.0.0
 	k8s.io/apiextensions-apiserver v0.0.0
@@ -36,6 +38,7 @@ require (
 	k8s.io/kubernetes v1.15.4
 	k8s.io/utils v0.0.0-20190712204705-3dccf664f023 // indirect
 	rsc.io/letsencrypt v0.0.3 // indirect
+	sigs.k8s.io/yaml v1.1.0
 )
 
 // this is required to avoid
