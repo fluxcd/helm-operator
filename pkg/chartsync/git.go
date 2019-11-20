@@ -123,6 +123,14 @@ func (c *GitChartSync) Run(stopCh <-chan struct{}, errCh chan error, wg *sync.Wa
 						continue
 					}
 
+					// We received a signal from a mirror, but no
+					// resource refers to it anymore.
+					if ok && len(hrs) == 0 {
+						// Garbage collect the mirror.
+						c.mirrors.StopOne(mirrorName)
+						continue
+					}
+
 					c.processChangedMirror(mirrorName, repo, hrs)
 				}
 			case <-stopCh:
