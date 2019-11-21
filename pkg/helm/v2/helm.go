@@ -36,6 +36,10 @@ type HelmV2 struct {
 	logger log.Logger
 }
 
+func (h *HelmV2) Version() string {
+	return VERSION
+}
+
 // getVersion retrieves the Tiller version. This is a _V2 only_  method
 // and used internally during the setup of the client.
 func (h *HelmV2) getVersion() (string, error) {

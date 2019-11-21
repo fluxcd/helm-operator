@@ -36,14 +36,15 @@ type Updater struct {
 	hrLister    iflister.HelmReleaseLister
 	kube        kube.Interface
 	helmClients *helm.Clients
-	namespace   string
+	defaultHelmVersion string
 }
 
-func New(hrClient ifclientset.Interface, hrLister iflister.HelmReleaseLister, helmClients *helm.Clients) *Updater {
+func New(hrClient ifclientset.Interface, hrLister iflister.HelmReleaseLister, helmClients *helm.Clients, defaultHelmVersion string) *Updater {
 	return &Updater{
-		hrClient:    hrClient,
-		hrLister:    hrLister,
-		helmClients: helmClients,
+		hrClient:           hrClient,
+		hrLister:           hrLister,
+		helmClients:        helmClients,
+		defaultHelmVersion: defaultHelmVersion,
 	}
 }
 
@@ -66,7 +67,7 @@ bail:
 		for _, hr := range list {
 			nsHrClient := u.hrClient.HelmV1().HelmReleases(hr.Namespace)
 			releaseName := hr.GetReleaseName()
-			c, ok := u.helmClients.Load(hr.GetHelmVersion())
+			c, ok := u.helmClients.Load(hr.GetHelmVersion(u.defaultHelmVersion))
 			// If we are unable to get the client, we do not care why
 			if !ok {
 				continue

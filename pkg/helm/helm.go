@@ -31,4 +31,5 @@ type Client interface {
 	Rollback(releaseName string, opts RollbackOptions) (*Release, error)
 	DependencyUpdate(chartPath string) error
 	Uninstall(releaseName string, opts UninstallOptions) error
+	Version() string
 }

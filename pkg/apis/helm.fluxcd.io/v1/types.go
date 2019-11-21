@@ -2,7 +2,6 @@ package v1
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/weaveworks/flux/resource"
 
 	"github.com/fluxcd/helm-operator/pkg/helm/v2"
-	"github.com/fluxcd/helm-operator/pkg/helm/v3"
 )
 
 // +genclient
@@ -189,14 +187,12 @@ type HelmReleaseSpec struct {
 	Rollback Rollback `json:"rollback,omitempty"`
 }
 
-func (hr HelmRelease) GetHelmVersion() string {
+func (hr HelmRelease) GetHelmVersion(defaultVersion string) string {
 	if hr.Spec.HelmVersion != "" {
 		return hr.Spec.HelmVersion
 	}
-	// TODO(hidde): figure out a way to make this configurable
-	// through flags, for now, this will do just fine.
-	if v, ok := os.LookupEnv("HELM_VERSION"); ok && (v == v2.VERSION || v == v3.VERSION) {
-		return v
+	if defaultVersion != "" {
+		return defaultVersion
 	}
 	return v2.VERSION
 }

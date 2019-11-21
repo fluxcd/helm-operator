@@ -50,6 +50,10 @@ func New(logger log.Logger, kubeConfig *rest.Config) helm.Client {
 	}
 }
 
+func (h *HelmV3) Version() string {
+	return VERSION
+}
+
 // initActionConfig initializes the configuration for the action,
 // like the namespace it should be executed in and the storage driver.
 func initActionConfig(kubeConfig *rest.Config, opts HelmOptions) (*action.Configuration, func(), error) {
