@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fluxcd/flux/pkg/git"
 	"github.com/go-kit/kit/log"
-	"github.com/weaveworks/flux/git"
 
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"

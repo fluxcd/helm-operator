@@ -5,12 +5,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fluxcd/flux/pkg/resource"
 	"github.com/ghodss/yaml"
+
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/helm/pkg/chartutil"
 
-	"github.com/weaveworks/flux/resource"
+	"k8s.io/helm/pkg/chartutil"
 
 	"github.com/fluxcd/helm-operator/pkg/helm/v2"
 )

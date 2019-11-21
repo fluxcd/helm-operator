@@ -17,7 +17,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 
-	"github.com/weaveworks/flux/checkpoint"
+	"github.com/fluxcd/flux/pkg/checkpoint"
 
 	"github.com/fluxcd/helm-operator/pkg/chartsync"
 	clientset "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned"
