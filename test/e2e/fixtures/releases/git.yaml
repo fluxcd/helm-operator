@@ -1,0 +1,17 @@
+---
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: podinfo-git
+  namespace: demo
+spec:
+  releaseName: podinfo-git
+  timeout: 300
+  resetValues: false
+  forceUpgrade: false
+  chart:
+    git: ssh://git@gitsrv/git-server/repos/cluster.git
+    ref: master
+    path: charts/podinfo
+  values:
+    replicaCount: 1

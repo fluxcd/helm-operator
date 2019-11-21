@@ -1,9 +1,13 @@
 .DEFAULT: all
-.PHONY: all clean realclean test integration-test check-generated
+.PHONY: all clean realclean test integration-test check-generated lint-e2e
 
 SUDO := $(shell docker info > /dev/null 2> /dev/null || echo "sudo")
 
 TEST_FLAGS?=
+
+BATS_VERSION := 1.1.0
+SHELLCHECK_VERSION := 0.7.0
+SHFMT_VERSION := 2.6.4
 
 include docker/kubectl.version
 include docker/helm.version
@@ -40,8 +44,20 @@ realclean: clean
 test: test/bin/helm
 	PATH="${PWD}/bin:${PWD}/test/bin:${PATH}" go test ${TEST_FLAGS} $(shell go list ./... | grep -v "^github.com/weaveworks/flux/vendor" | sort -u)
 
-e2e: test/bin/helm test/bin/kubectl build/.helm-operator.done
-	PATH="${PWD}/test/bin:${PATH}" CURRENT_OS_ARCH=$(CURRENT_OS_ARCH) test/e2e/run.sh
+e2e: test/bin/helm test/bin/kubectl test/e2e/bats build/.helm-operator.done
+	PATH="${PWD}/test/bin:${PATH}" CURRENT_OS_ARCH=$(CURRENT_OS_ARCH) test/e2e/run.bash
+
+E2E_BATS_FILES := test/e2e/*.bats
+E2E_BASH_FILES := test/e2e/run.bash test/e2e/lib/*
+SHFMT_DIFF_CMD := test/bin/shfmt -i 2 -sr -d
+SHFMT_WRITE_CMD := test/bin/shfmt -i 2 -sr -w
+lint-e2e: test/bin/shfmt test/bin/shellcheck
+	@# shfmt is not compatible with .bats files, so we preprocess them to turn '@test's into functions
+	for I in $(E2E_BATS_FILES); do \
+	  ( cat "$$I" | sed 's%@test.*%test() {%' | $(SHFMT_DIFF_CMD) ) || ( echo "Please correct the diff for file $$I"; exit 1 ); \
+	done
+	$(SHFMT_DIFF_CMD) $(E2E_BASH_FILES) || ( echo "Please run '$(SHFMT_WRITE_CMD) $(E2E_BASH_FILES)'"; exit 1 )
+	test/bin/shellcheck $(E2E_BASH_FILES) $(E2E_BATS_FILES)
 
 build/.%.done: docker/Dockerfile.%
 	mkdir -p ./build/docker/$*
@@ -62,7 +78,9 @@ build/kubectl: cache/linux-$(ARCH)/kubectl-$(KUBECTL_VERSION)
 test/bin/kubectl: cache/$(CURRENT_OS_ARCH)/kubectl-$(KUBECTL_VERSION)
 build/helm: cache/linux-$(ARCH)/helm-$(HELM_VERSION)
 test/bin/helm: cache/$(CURRENT_OS_ARCH)/helm-$(HELM_VERSION)
-build/kubectl test/bin/kubectl build/helm test/bin/helm:
+test/bin/shellcheck: cache/$(CURRENT_OS_ARCH)/shellcheck-$(SHELLCHECK_VERSION)
+test/bin/shfmt: cache/$(CURRENT_OS_ARCH)/shfmt-$(SHFMT_VERSION)
+build/kubectl test/bin/kubectl build/helm test/bin/helm test/bin/shellcheck test/bin/shfmt:
 	mkdir -p build
 	cp $< $@
 	if [ `basename $@` = "build" -a $(CURRENT_OS_ARCH) = "linux-$(ARCH)" ]; then strip $@; fi
@@ -87,6 +105,23 @@ $(GOBIN)/bin/helm-operator: $(HELM_OPERATOR_DEPS)
 
 pkg/install/generated_templates.gogen.go: pkg/install/templates/*
 	cd pkg/install && go run generate.go embedded-templates
+
+cache/%/shellcheck-$(SHELLCHECK_VERSION):
+	mkdir -p cache/$*
+	curl --fail -L -o cache/$*/shellcheck-$(SHELLCHECK_VERSION).tar.xz "https://storage.googleapis.com/shellcheck/shellcheck-v$(SHELLCHECK_VERSION).$(CURRENT_OS).x86_64.tar.xz"
+	tar -C cache/$* --strip-components 1 -xvJf cache/$*/shellcheck-$(SHELLCHECK_VERSION).tar.xz shellcheck-v$(SHELLCHECK_VERSION)/shellcheck
+	mv cache/$*/shellcheck $@
+
+cache/%/shfmt-$(SHFMT_VERSION):
+	mkdir -p cache/$*
+	curl --fail -L -o $@ "https://github.com/mvdan/sh/releases/download/v$(SHFMT_VERSION)/shfmt_v$(SHFMT_VERSION)_`echo $* | tr - _`"
+
+test/e2e/bats: cache/bats-v$(BATS_VERSION).tar.gz
+	mkdir -p $@
+	tar -C $@ --strip-components 1 -xzf $<
+
+cache/bats-v$(BATS_VERSION).tar.gz:
+	curl --fail -L -o $@ https://github.com/bats-core/bats-core/archive/v$(BATS_VERSION).tar.gz
 
 generate-deploy: pkg/install/generated_templates.gogen.go
 	cd deploy && go run ../pkg/install/generate.go deploy
