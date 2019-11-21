@@ -88,7 +88,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	}(time.Now())
 	defer status.SetObservedGeneration(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, hr.Generation)
 
-	logger := releaseLogger(r.logger, hr)
+	logger := releaseLogger(r.logger, client, hr)
 
 	// Ensure we have the chart for the release, construct the path
 	// to the chart, and record the revision.
@@ -257,7 +257,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 // Uninstalls removes the Helm release for the given `v1.HelmRelease`,
 // and the git chart source if present.
 func (r *Release) Uninstall(client helm.Client, hr *v1.HelmRelease) {
-	logger := releaseLogger(r.logger, hr)
+	logger := releaseLogger(r.logger, client, hr)
 
 	if err := client.Uninstall(hr.GetReleaseName(), helm.UninstallOptions{
 		Namespace:   hr.GetTargetNamespace(),
@@ -351,11 +351,11 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 
 // releaseLogger returns a logger in the context of the given
 // HelmRelease (that being, with metadata included).
-func releaseLogger(logger log.Logger, hr *v1.HelmRelease) log.Logger {
+func releaseLogger(logger log.Logger, client helm.Client, hr *v1.HelmRelease) log.Logger {
 	return log.With(logger,
 		"release", hr.GetReleaseName(),
 		"targetNamespace", hr.GetTargetNamespace(),
 		"resource", hr.ResourceID().String(),
-		"helmVersion", hr.GetHelmVersion(),
+		"helmVersion", client.Version(),
 	)
 }

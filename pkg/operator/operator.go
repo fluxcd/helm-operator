@@ -51,7 +51,8 @@ type Controller struct {
 
 	release *release.Release
 
-	helmClients *helm.Clients
+	helmClients        *helm.Clients
+	defaultHelmVersion string
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
@@ -73,7 +74,8 @@ func New(
 	hrInformer hrv1.HelmReleaseInformer,
 	releaseWorkqueue workqueue.RateLimitingInterface,
 	release *release.Release,
-	helmClients *helm.Clients) *Controller {
+	helmClients *helm.Clients,
+	defaultHelmVersion string) *Controller {
 
 	// Add helm-operator types to the default Kubernetes Scheme so Events can be
 	// logged for helm-operator types.
@@ -83,14 +85,15 @@ func New(
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
 
 	controller := &Controller{
-		logger:           logger,
-		logDiffs:         logReleaseDiffs,
-		hrLister:         hrInformer.Lister(),
-		hrSynced:         hrInformer.Informer().HasSynced,
-		releaseWorkqueue: releaseWorkqueue,
-		recorder:         recorder,
-		release:          release,
-		helmClients:      helmClients,
+		logger:             logger,
+		logDiffs:           logReleaseDiffs,
+		hrLister:           hrInformer.Lister(),
+		hrSynced:           hrInformer.Informer().HasSynced,
+		releaseWorkqueue:   releaseWorkqueue,
+		recorder:           recorder,
+		release:            release,
+		helmClients:        helmClients,
+		defaultHelmVersion: defaultHelmVersion,
 	}
 
 	controller.logger.Log("info", "setting up event handlers")
@@ -320,9 +323,10 @@ func (c *Controller) deleteRelease(hr helmfluxv1.HelmRelease) {
 }
 
 func (c *Controller) getHelmClientForRelease(hr helmfluxv1.HelmRelease) (helm.Client, error) {
-	client, ok := c.helmClients.Load(hr.GetHelmVersion())
+	version := hr.GetHelmVersion(c.defaultHelmVersion)
+	client, ok := c.helmClients.Load(version)
 	if !ok {
-		return nil, fmt.Errorf("no Helm client for targeted version: %s", hr.GetHelmVersion())
+		return nil, fmt.Errorf("no Helm client for targeted version: %s", version)
 	}
 	return client, nil
 }

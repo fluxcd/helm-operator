@@ -66,6 +66,7 @@ var (
 	listenAddr *string
 
 	enabledHelmVersions *[]string
+	defaultHelmVersion  *string
 )
 
 const (
@@ -129,10 +130,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	// TODO(hidde): hacked in so that we can control the Helm version with an
-	// environment variable so that we do not have to make any chart modifications.
-	if ver := getEnvAsSlice("HELM_VERSION", []string{}); len(ver) == 1 {
-		enabledHelmVersions = &ver
+	// Support enabling the Helm supported versions through an
+	// environment variable.
+	helmVersionEnv := getEnvAsSlice("HELM_VERSION", []string{})
+	if len(helmVersionEnv) > 0 && !fs.Changed("enabled-helm-versions") {
+		enabledHelmVersions = &helmVersionEnv
 	}
 
 	// init go-kit log
@@ -202,6 +204,12 @@ func main() {
 			helmClients.Add(v3.VERSION, v3.New(log.With(logger, "component", "helm", "version", "v3"), cfg))
 		default:
 			mainLogger.Log("error", fmt.Sprintf("%s is not a supported Helm version, ignoring...", v))
+			continue
+		}
+
+		if defaultHelmVersion == nil {
+			defaultVersion := v
+			defaultHelmVersion = &defaultVersion
 		}
 	}
 
@@ -232,7 +240,8 @@ func main() {
 	// NB: the operator needs to do its magic with the informer
 	// _before_ starting it or else the cache sync seems to hang at
 	// random
-	opr := operator.New(log.With(logger, "component", "operator"), *logReleaseDiffs, kubeClient, hrInformer, queue, rel, helmClients)
+	opr := operator.New(log.With(logger, "component", "operator"),
+		*logReleaseDiffs, kubeClient, hrInformer, queue, rel, helmClients, *defaultHelmVersion)
 	go ifInformerFactory.Start(shutdown)
 
 	// wait for the caches to be synced before starting _any_ workers
@@ -251,7 +260,7 @@ func main() {
 
 	// the status updater, to keep track of the release status for
 	// every HelmRelease
-	statusUpdater := status.New(ifClient, hrInformer.Lister(), helmClients)
+	statusUpdater := status.New(ifClient, hrInformer.Lister(), helmClients, *defaultHelmVersion)
 	go statusUpdater.Loop(shutdown, log.With(logger, "component", "statusupdater"))
 
 	// start HTTP server
