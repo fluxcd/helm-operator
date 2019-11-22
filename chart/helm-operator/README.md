@@ -6,7 +6,7 @@ a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) p
 ## Prerequisites
 
 * Kubernetes >= v1.11
-* Tiller >= v2.14
+* Tiller >= v2.16
 
 ## Installation
 
