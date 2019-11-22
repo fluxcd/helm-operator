@@ -5,7 +5,7 @@ fullnameOverride: ""
 
 image:
   repository: docker.io/fluxcd/helm-operator
-  tag: 1.0.0-rc3
+  tag: 1.0.0-rc4
   pullPolicy: IfNotPresent
   pullSecret:
 
@@ -42,6 +42,16 @@ tls:
   caContent: ""
   hostname: ""
 
+# ADVANCED: Allow for deploying Tiller as a sidecar (restricted to 'localhost' for security reasons).
+# When enabled, either .clusterRole.create should be true or .clusterRole.name should be set to the name of a cluster role granting the required privileges.
+# Please make extra sure you know what you are doing before enabling this. :)
+tillerSidecar:
+  enabled: false
+  image:
+    repository: gcr.io/kubernetes-helm/tiller
+    tag: v2.16.1
+  storage: secret
+
 # For charts stored in Helm repositories other than stable
 # mount repositories.yaml configuration in a volume
 configureRepositories:
@@ -60,6 +70,9 @@ git:
   # Period on which to poll git chart sources for changes
   pollInterval: "5m"
   timeout: "20s"
+  # Ref to clone chart from if ref is unspecified in a HelmRelease,
+  # empty defaults to `master`
+  defaultRef: ""
   # Overrides for git over SSH. If you use your own git server, you
   # will likely need to provide a host key for it in this field.
   ssh:
