@@ -70,8 +70,9 @@ git:
   # Period on which to poll git chart sources for changes
   pollInterval: "5m"
   timeout: "20s"
-  # Ref to clone chart from if ref is unspecified in a HelmRelease
-  defaultRef: "master"
+  # Ref to clone chart from if ref is unspecified in a HelmRelease,
+  # empty defaults to `master`
+  defaultRef: ""
   # Overrides for git over SSH. If you use your own git server, you
   # will likely need to provide a host key for it in this field.
   ssh:
