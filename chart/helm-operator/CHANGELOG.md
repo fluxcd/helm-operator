@@ -1,3 +1,16 @@
+## 0.3.0 (2019-11-22)
+
+### Improvements
+
+ - Update Helm Operator to `1.0.0-rc4`
+   [fluxcd/helm-operator#114](https://github.com/fluxcd/helm-operator/pull/114)
+ - Fix upgrade command install instructions in `README.md`
+   [fluxcd/helm-operator#92](https://github.com/fluxcd/helm-operator/pull/92)
+ - Add `git.defaultRef` option for configuring an alternative Git default ref
+   [fluxcd/helm-operator#83](https://github.com/fluxcd/helm-operator/pull/83)
+ - Allow for deploying Tiller as a sidecar by setting `tillerSidecar.enabled`
+   [fluxcd/helm-operator#79](https://github.com/fluxcd/helm-operator/pull/79)
+
 ## 0.2.1 (2019-10-18)
 
 ### Improvements
