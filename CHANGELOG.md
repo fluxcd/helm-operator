@@ -1,3 +1,35 @@
+## 1.0.0-rc4 (2019-11-22)
+
+> **Notice:** upgrading to this version from `<=0.10.x` by just
+> updating your Helm Operator image tag is not possible as the
+> CRD domain and version have changed. An upgrade guide can be
+> found [here](./docs/guides/upgrading-to-ga.md).
+
+### Improvements
+
+ - Update Helm to `2.16.1`
+   [fluxcd/helm-operator#107][#107]
+ - Add flag to specify an alternative default Git ref
+   [fluxcd/helm-operator#83][#83]
+
+### Maintenance and documentation
+
+ - Build: use `fluxcd/flux` import in `chartsync` package
+   [fluxcd/helm-operator#101][#101]
+ - Documentation: document `timeout`, `resetValues` and `forceUpgrade`
+   `HelmRelease` fields
+   [fluxcd/helm-operator#882[#82]
+
+### Thanks 
+
+Many thanks to @carnott-snap, @frabar-lancom, @hiddeco, @niall-weedon,
+and @stefanprodan for contributions to this release.
+
+[#82]: https://github.com/fluxcd/helm-operator/pull/82
+[#83]: https://github.com/fluxcd/helm-operator/pull/83
+[#101]: https://github.com/fluxcd/helm-operator/pull/101
+[#107]: https://github.com/fluxcd/helm-operator/pull/107
+
 ## 1.0.0-rc3 (2019-10-18)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
