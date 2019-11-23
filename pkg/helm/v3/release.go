@@ -72,7 +72,7 @@ func formatVersion(c *chart.Chart) string {
 }
 
 // lookUpGenericStatus looks up the generic status for the
-// given v3 status
+// given v3 release status.
 func lookUpGenericStatus(s release.Status) helm.Status {
 	var statuses = map[release.Status]helm.Status{
 		release.StatusUnknown:         helm.StatusUnknown,

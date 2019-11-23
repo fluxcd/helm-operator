@@ -1,15 +1,17 @@
 package v2
 
 import (
+	"errors"
 	"fmt"
 	"time"
+
+	"github.com/go-kit/kit/log"
+	"google.golang.org/grpc/status"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	helmv2 "k8s.io/helm/pkg/helm"
 	"k8s.io/helm/pkg/tlsutil"
-
-	"github.com/go-kit/kit/log"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
@@ -118,4 +120,11 @@ func tillerHost(kubeClient *kubernetes.Clientset, opts TillerOptions) (string, e
 	}
 
 	return fmt.Sprintf("%s:%s", opts.Host, opts.Port), nil
+}
+
+func statusMessageErr(err error) error {
+	if s, ok := status.FromError(err); ok {
+		return errors.New(s.Message())
+	}
+	return err
 }
