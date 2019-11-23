@@ -32,6 +32,7 @@ or just [browse through the documentation](https://docs.fluxcd.io/projects/helm-
 As Flux Helm Operator is Open Source, integrations are very straight-forward. Here are
 a few popular ones you might want to check out:
 
+- [Progressive Delivery workshop (Helm v3 alpha)](https://helm.workshop.flagger.dev/)
 - [Managing Helm releases the GitOps way](https://github.com/fluxcd/helm-operator-get-started)
 - [GitOps for Istio Canary deployments](https://github.com/stefanprodan/gitops-istio)
 

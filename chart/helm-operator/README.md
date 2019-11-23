@@ -6,7 +6,7 @@ a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) p
 ## Prerequisites
 
 * Kubernetes >= v1.11
-* Tiller >= v2.14
+* Tiller >= v2.16
 
 ## Installation
 
@@ -110,9 +110,9 @@ kubectl -n fluxcd create secret generic helm-operator-ssh --from-file=/tmp/ident
 Add `identity.pub` as a read-only deployment key in your Git repo and install Helm Operator:
 
 ```sh
-helm -i helm-operator fluxcd/helm-operator \
+helm upgrade -i helm-operator fluxcd/helm-operator \
 --namespace fluxcd \
---set git.ssh.secret=helm-operator-ssh \
+--set git.ssh.secretName=helm-operator-ssh \
 --set-file git.ssh.known_hosts=/tmp/flux_known_hosts
 ```
 
@@ -149,9 +149,9 @@ helm upgrade -i flux fluxcd/flux \
 when installing Helm Operator, you can refer the Flux deploy key by its Kubernetes Secret name:
 
 ```sh
-helm -i helm-operator fluxcd/helm-operator \
+helm upgrade -i helm-operator fluxcd/helm-operator \
 --namespace fluxcd \
---set git.ssh.secret=flux-git-deploy
+--set git.ssh.secretName=flux-git-deploy
 ```
 
 The deploy key naming convention is `<Flux Release Name>-git-deploy`.
@@ -196,14 +196,22 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `updateChartDeps`                                 | `true`                                               | Update dependencies for charts
 | `git.pollInterval`                                | `git.pollInterval`                                   | Period on which to poll git chart sources for changes
 | `git.timeout`                                     | `git.timeout`                                        | Duration after which git operations time out
+| `git.defaultRef`                                  | `master`                                             | Ref to clone chart from if ref is unspecified in a HelmRelease
 | `git.ssh.secretName`                              | `None`                                               | The name of the kubernetes secret with the SSH private key, supercedes `git.secretName`
 | `git.ssh.known_hosts`                             | `None`                                               | The contents of an SSH `known_hosts` file, if you need to supply host key(s)
-| `chartsSyncInterval`                              | `3m`                                                 | Interval at which to check for changed charts
-| `workers`                                         | `None`                                               | (Experimental) amount of workers processing releases
+| `git.ssh.configMapName`                           | `None`                                               | The name of a kubernetes config map containing the ssh config
+| `git.ssh.configMapKey`                            | `config`                                             | The name of the key in the kubernetes config map specified above
+| `chartsSyncInterval`                              | `3m`                                                 | Period on which to reconcile the Helm releases with `HelmRelease` resources
+| `statusUpdateInterval`                            | `None`                                               | Period on which to update the Helm release status in `HelmRelease` resources
+| `workers`                                         | `None`                                               | Amount of workers processing releases
 | `logFormat`                                       | `fmt`                                                | Log format (fmt or json)
 | `logReleaseDiffs`                                 | `false`                                              | Helm operator should log the diff when a chart release diverges (possibly insecure)
 | `allowNamespace`                                  | `None`                                               | If set, this limits the scope to a single namespace. If not specified, all namespaces will be watched
 | `tillerNamespace`                                 | `kube-system`                                        | Namespace in which the Tiller server can be found
+| `tillerSidecar.enabled`                           | `false`                                              | Whether to deploy Tiller as a sidecar (and listening on `localhost` only).
+| `tillerSidecar.image.repository`                  | `gcr.io/kubernetes-helm/tiller`                      | Image repository to use for the Tiller sidecar.
+| `tillerSidecar.image.tag`                         | `v2.16.1`                                            | Image tag to use for the Tiller sidecar.
+| `tillerSidecar.storage`                           | `secret`                                             | Storage engine to use for the Tiller sidecar.
 | `tls.enable`                                      | `false`                                              | Enable TLS for communicating with Tiller
 | `tls.verify`                                      | `false`                                              | Verify the Tiller certificate, also enables TLS when set to true
 | `tls.secretName`                                  | `helm-client-certs`                                  | Name of the secret containing the TLS client certificates for communicating with Tiller

@@ -1,3 +1,124 @@
+## 1.0.0-rc4 (2019-11-22)
+
+> **Notice:** upgrading to this version from `<=0.10.x` by just
+> updating your Helm Operator image tag is not possible as the
+> CRD domain and version have changed. An upgrade guide can be
+> found [here](./docs/guides/upgrading-to-ga.md).
+
+### Improvements
+
+ - Update Helm to `2.16.1`
+   [fluxcd/helm-operator#107][#107]
+ - Add flag to specify an alternative default Git ref
+   [fluxcd/helm-operator#83][#83]
+
+### Maintenance and documentation
+
+ - Build: use `fluxcd/flux` import in `chartsync` package
+   [fluxcd/helm-operator#101][#101]
+ - Documentation: document `timeout`, `resetValues` and `forceUpgrade`
+   `HelmRelease` fields
+   [fluxcd/helm-operator#882[#82]
+
+### Thanks 
+
+Many thanks to @carnott-snap, @frabar-lancom, @hiddeco, @niall-weedon,
+and @stefanprodan for contributions to this release.
+
+[#82]: https://github.com/fluxcd/helm-operator/pull/82
+[#83]: https://github.com/fluxcd/helm-operator/pull/83
+[#101]: https://github.com/fluxcd/helm-operator/pull/101
+[#107]: https://github.com/fluxcd/helm-operator/pull/107
+
+## 1.0.0-rc3 (2019-10-18)
+
+> **Notice:** upgrading to this version from `<=0.10.x` by just
+> updating your Helm Operator image tag is not possible as the
+> CRD domain and version have changed. An upgrade guide can be
+> found [here](./docs/guides/upgrading-to-ga.md).
+
+This is the third release candidate.
+
+### Improvements
+
+ - Update Helm to `v2.14.3` and kubectl to `v1.14.7`
+   [fluxcd/helm-operator#73][#73]
+ - Add EKS repo to the list of public Helm repositories in the default config
+   [fluxcd/helm-operator#64][#64]
+ - De-experimental-ise `--workers` flag and set the default value to two workers
+   [fluxcd/helm-operator#53][#53]
+
+### Maintenance and documentation
+
+ - Build: Make release build cope with `v` prefixed tags 
+   [fluxcd/helm-operator#61][#61]
+
+### Thanks
+
+Many thanks to @hiddeco and @stefanprodan
+for contributions to this release.
+
+[#73]: https://github.com/fluxcd/helm-operator/pull/73
+[#64]: https://github.com/fluxcd/helm-operator/pull/64
+[#53]: https://github.com/fluxcd/helm-operator/pull/53
+[#61]: https://github.com/fluxcd/helm-operator/pull/61
+
+## 1.0.0-rc2 (2019-10-02)
+
+> **Notice:** upgrading to this version from `<=0.10.x` by just
+> updating your Helm Operator image tag is not possible as the
+> CRD domain and version have changed. An upgrade guide can be
+> found [here](./docs/guides/upgrading-to-ga.md).
+
+This is the second release candidate.
+
+### Bug fixes
+
+ - Fix permissions on chart directory creation for non-root users
+   [fluxcd/helm-operator#31][#31]
+ - Filter out `nil` resources during parsing of released resources,
+   as it caused confusion due to a harmless `Object 'Kind' is missing
+   in 'null'` error being logged
+   [fluxcd/helm-operator#47][#47]
+ - Make `OwnedByHelmRelease` default to `true`, to work around some
+   edge case scenarios where no resources are present for the release,
+   or they are all skipped
+   [fluxcd/helm-operator#56][#56]
+
+### Improvements
+
+ - Add `--status-update-interval` flag, for configuring the interval
+   at which the operator consults Tiller for the status of a release
+   [fluxcd/helm-operator#44][#44]
+ - Expand the list of public Helm repositories in the default config
+   [fluxcd/helm-operator#53][#53]
+
+### Maintenance and documentation
+
+ - Build: avoid spurious diffs in generated files by fixing their
+   modtimes to Unix epoch [fluxcd/helm-operator#50][#50]
+ - Build: update Flux dependency to `v1.15.0`
+   [fluxcd/helm-operator#58][#58]
+ - Documentation: Kustomize installation tutorial and various fixes
+   [fluxcd/helm-operator#32][#32]
+ - Documentation: add Helm v3 (alpha) workshop to `README.md`
+   [fluxcd/helm-operator#52][#52]
+   
+### Thanks
+
+Many thanks to @knackaron, @stefanprodan, @hiddeco, @swade1987
+for contributions to this release.
+
+[#31]: https://github.com/fluxcd/helm-operator/pull/31
+[#32]: https://github.com/fluxcd/helm-operator/pull/32
+[#44]: https://github.com/fluxcd/helm-operator/pull/44
+[#47]: https://github.com/fluxcd/helm-operator/pull/47
+[#50]: https://github.com/fluxcd/helm-operator/pull/50
+[#52]: https://github.com/fluxcd/helm-operator/pull/52
+[#53]: https://github.com/fluxcd/helm-operator/pull/53
+[#56]: https://github.com/fluxcd/helm-operator/pull/56
+[#58]: https://github.com/fluxcd/helm-operator/pull/58
+
 ## 1.0.0-rc1 (2019-08-14)
 
 > **Notice:** upgrading to this version by just updating your Helm

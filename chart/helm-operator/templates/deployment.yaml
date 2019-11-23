@@ -34,7 +34,7 @@ spec:
       {{- end }}
       volumes:
       {{- if .Values.git.ssh.known_hosts }}
-      - name: sshdir
+      - name: sshknownhosts
         configMap:
           name: {{ template "helm-operator.fullname" . }}-ssh-config
           defaultMode: 0600
@@ -43,6 +43,15 @@ spec:
       - name: git-config
         secret:
           secretName: {{ include "git.config.secretName" . }}
+          defaultMode: 0400
+      {{- end }}
+      {{- if .Values.git.ssh.configMapName }}
+      - name: sshconfig
+        configMap:
+          name: {{ .Values.git.ssh.configMapName }}
+          items:
+            - key: {{ .Values.git.ssh.configMapKey | default "config" }}
+              path: config
           defaultMode: 0400
       {{- end }}
       - name: git-key
@@ -93,9 +102,14 @@ spec:
           timeoutSeconds: 5
         volumeMounts:
         {{- if .Values.git.ssh.known_hosts }}
-        - name: sshdir
+        - name: sshknownhosts
           mountPath: /root/.ssh/known_hosts
           subPath: known_hosts
+          readOnly: true
+        {{- end }}
+        {{- if .Values.git.ssh.configMapName }}
+        - name: sshconfig
+          mountPath: /root/.ssh/
           readOnly: true
         {{- end }}
         {{- if .Values.git.config.enabled }}
@@ -128,10 +142,16 @@ spec:
         args:
         {{- if .Values.logFormat }}
         - --log-format={{ .Values.logFormat }}
-        {{end}}
+        {{- end }}
         - --git-timeout={{ .Values.git.timeout }}
         - --git-poll-interval={{ .Values.git.pollInterval }}
+        {{- if .Values.git.defaultRef }}
+        - --git-default-ref={{ .Values.git.defaultRef }}
+        {{- end }}
         - --charts-sync-interval={{ .Values.chartsSyncInterval }}
+        {{- if .Values.statusUpdateInterval }}
+        - --status-update-interval={{ .Values.statusUpdateInterval }}
+        {{- end }}
         - --update-chart-deps={{ .Values.updateChartDeps }}
         - --log-release-diffs={{ .Values.logReleaseDiffs }}
         {{- if .Values.workers }}
@@ -142,6 +162,10 @@ spec:
         {{- else if .Values.allowNamespace }}
         - --allow-namespace={{ .Values.allowNamespace }}
         {{- end }}
+        {{- if .Values.tillerSidecar.enabled }}
+        - --tiller-ip=localhost
+        - --tiller-port=44134
+        {{- else }}
         {{- if .Values.tillerHost }}
         - --tiller-ip={{ .Values.tillerHost }}
         - --tiller-port={{ .Values.tillerPort }}
@@ -160,12 +184,42 @@ spec:
         {{- end }}
         {{- end }}
         {{- end }}
+        {{- end }}
       {{- if .Values.extraEnvs }}
         env:
 {{ toYaml .Values.extraEnvs | indent 8 }}
       {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
+      {{- if .Values.tillerSidecar.enabled }}
+      - name: tiller
+        image: "{{ .Values.tillerSidecar.image.repository }}:{{ .Values.tillerSidecar.image.tag }}"
+        args:
+        - --listen=localhost:44134
+        - --probe-listen=:44135
+        - --storage={{ .Values.tillerSidecar.storage }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 44135
+          name: http
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: 44135
+          initialDelaySeconds: 1
+          timeoutSeconds: 1
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 44135
+          initialDelaySeconds: 1
+          timeoutSeconds: 1
+        env:
+        - name: TILLER_NAMESPACE
+          value: {{ .Release.Namespace }}
+        - name: TILLER_HISTORY_MAX
+          value: "10"
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
