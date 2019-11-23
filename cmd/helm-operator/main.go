@@ -56,12 +56,14 @@ var (
 	tillerTLSCACert   *string
 	tillerTLSHostname *string
 
-	chartsSyncInterval *time.Duration
-	logReleaseDiffs    *bool
-	updateDependencies *bool
+	chartsSyncInterval   *time.Duration
+	statusUpdateInterval *time.Duration
+	logReleaseDiffs      *bool
+	updateDependencies   *bool
 
 	gitTimeout      *time.Duration
 	gitPollInterval *time.Duration
+	gitDefaultRef   *string
 
 	listenAddr *string
 
@@ -94,7 +96,7 @@ func init() {
 	master = fs.String("master", "", "address of the Kubernetes API server; overrides any value in kubeconfig; required if out-of-cluster")
 	namespace = fs.String("allow-namespace", "", "if set, this limits the scope to a single namespace; if not specified, all namespaces will be watched")
 
-	workers = fs.Int("workers", 1, "amount of workers processing releases (experimental)")
+	workers = fs.Int("workers", 2, "amount of workers processing releases")
 
 	listenAddr = fs.StringP("listen", "l", ":3030", "Listen address where /metrics and API will be served")
 
@@ -110,11 +112,13 @@ func init() {
 	tillerTLSHostname = fs.String("tiller-tls-hostname", "", "server name used to verify the hostname on the returned certificates from the server")
 
 	chartsSyncInterval = fs.Duration("charts-sync-interval", 3*time.Minute, "period on which to reconcile the Helm releases with HelmRelease resources")
+	statusUpdateInterval = fs.Duration("status-update-interval", 10*time.Second, "period on which to update the Helm release status in HelmRelease resources")
 	logReleaseDiffs = fs.Bool("log-release-diffs", false, "log the diff when a chart release diverges; potentially insecure")
 	updateDependencies = fs.Bool("update-chart-deps", true, "update chart dependencies before installing/upgrading a release")
 
 	gitTimeout = fs.Duration("git-timeout", 20*time.Second, "duration after which git operations time out")
 	gitPollInterval = fs.Duration("git-poll-interval", 5*time.Minute, "period on which to poll git chart sources for changes")
+	gitDefaultRef = fs.String("git-default-ref", "master", "ref to clone chart from if ref is unspecified in a HelmRelease")
 
 	enabledHelmVersions = fs.StringSlice("enabled-helm-versions", []string{v2.VERSION, v3.VERSION}, "Helm versions supported by this operator instance")
 }
@@ -224,7 +228,7 @@ func main() {
 	gitChartSync := chartsync.NewGitChartSync(
 		log.With(logger, "component", "gitchartsync"),
 		hrInformer.Lister(),
-		chartsync.GitConfig{GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval},
+		chartsync.GitConfig{GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval, GitDefaultRef: *gitDefaultRef},
 		queue,
 	)
 
@@ -261,7 +265,7 @@ func main() {
 	// the status updater, to keep track of the release status for
 	// every HelmRelease
 	statusUpdater := status.New(ifClient, hrInformer.Lister(), helmClients, *defaultHelmVersion)
-	go statusUpdater.Loop(shutdown, log.With(logger, "component", "statusupdater"))
+	go statusUpdater.Loop(shutdown, *statusUpdateInterval, log.With(logger, "component", "statusupdater"))
 
 	// start HTTP server
 	go daemonhttp.ListenAndServe(*listenAddr, gitChartSync, log.With(logger, "component", "daemonhttp"), shutdown)

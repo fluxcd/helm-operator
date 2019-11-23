@@ -32,6 +32,7 @@ type ReleaseQueue interface {
 type GitConfig struct {
 	GitTimeout      time.Duration
 	GitPollInterval time.Duration
+	GitDefaultRef   string
 }
 
 // GitChartSync syncs `sourceRef`s with their mirrors, and queues
@@ -239,7 +240,7 @@ func (c *GitChartSync) sync(hr *v1.HelmRelease, mirrorName string, repo *git.Rep
 
 	var changed bool
 	if !ok || !s.forHelmRelease(hr) {
-		s = sourceRef{mirror: mirrorName, remote: source.GitURL, ref: source.RefOrDefault()}
+		s = sourceRef{mirror: mirrorName, remote: source.GitURL, ref: source.RefOrDefault(c.config.GitDefaultRef)}
 		changed = true
 	}
 

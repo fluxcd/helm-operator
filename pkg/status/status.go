@@ -29,8 +29,6 @@ import (
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
-const period = 10 * time.Second
-
 type Updater struct {
 	hrClient    ifclientset.Interface
 	hrLister    iflister.HelmReleaseLister
@@ -48,8 +46,8 @@ func New(hrClient ifclientset.Interface, hrLister iflister.HelmReleaseLister, he
 	}
 }
 
-func (u *Updater) Loop(stop <-chan struct{}, logger log.Logger) {
-	ticker := time.NewTicker(period)
+func (u *Updater) Loop(stop <-chan struct{}, interval time.Duration, logger log.Logger) {
+	ticker := time.NewTicker(interval)
 	var logErr error
 
 bail:

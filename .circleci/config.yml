@@ -83,9 +83,21 @@ jobs:
       - deploy:
           name: Maybe push release image
           command: |
-            if echo "${CIRCLE_TAG}" | grep -Eq "^[0-9]+(\.[0-9]+)*(-[a-z0-9]+)?$"; then
+            if echo "${CIRCLE_TAG}" | grep -Eq "^v[0-9]+(\.[0-9]+)*(-[a-z0-9]+)?$"; then
               echo "$DOCKER_FLUXCD_PASSWORD" | docker login --username "$DOCKER_FLUXCD_USER" --password-stdin
-              docker push "docker.io/fluxcd/helm-operator:${CIRCLE_TAG}"
+              docker push "docker.io/fluxcd/helm-operator:$(docker/image-tag)"
+
+              # Republish tag _without_ the `v` prefix, for historical reasons
+              git config --global user.email fluxcdbot@users.noreply.github.com
+              git config --global user.name fluxcdbot
+
+              REPOSITORY="https://fluxcdbot:${GITHUB_TOKEN}@github.com/fluxcd/helm-operator.git"
+              git remote set-url origin ${REPOSITORY}
+
+              # Remove `v` prefix using bash string manipulation
+              VLESS_TAG=${CIRCLE_TAG#v}
+              git tag ${VLESS_TAG} $(git rev-list -n1 ${CIRCLE_TAG})
+              git push origin ${VLESS_TAG}
             fi
 
   helm:
@@ -139,7 +151,7 @@ workflows:
       - build:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)*(-[a-z0-9]+)?/
+              only: /v[0-9]+(\.[0-9]+)*(-[a-z0-9]+)?/
   release-helm:
     jobs:
       - helm:
