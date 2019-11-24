@@ -10,3 +10,4 @@ KNOWN_HOSTS=$(cat "${FIXTURES_DIR}/known_hosts")
 export KNOWN_HOSTS
 GITCONFIG=$(cat "${FIXTURES_DIR}/gitconfig")
 export GITCONFIG
+export HELM_VERSION=${HELM_VERSION}

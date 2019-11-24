@@ -6,15 +6,15 @@ source "${E2E_DIR}/lib/defer.bash"
 source "${E2E_DIR}/lib/template.bash"
 
 function install_tiller() {
-  if ! helm version > /dev/null 2>&1; then # only if helm isn't already installed
+  if ! helm2 version > /dev/null 2>&1; then # only if helm isn't already installed
     kubectl --namespace kube-system create sa tiller
     kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-    helm init --service-account tiller --upgrade --wait
+    helm2 init --service-account tiller --upgrade --wait
   fi
 }
 
 function uninstall_tiller() {
-  helm reset --force
+  helm2 reset --force
   kubectl delete clusterrolebinding tiller-cluster-rule
   kubectl --namespace kube-system delete sa tiller
 }
@@ -26,9 +26,10 @@ function install_helm_operator_with_helm() {
     create_crds='false'
   fi
 
-  helm install --name helm-operator --wait \
+  helm2 install --name helm-operator --wait \
     --namespace "${E2E_NAMESPACE}" \
     --set createCRD="${create_crds}" \
+    --set chartsSyncInterval=10s \
     --set image.repository=docker.io/fluxcd/helm-operator \
     --set image.tag=latest \
     --set git.pollInterval=10s \
@@ -40,11 +41,13 @@ function install_helm_operator_with_helm() {
     --set configureRepositories.enable=true \
     --set configureRepositories.repositories[0].name="podinfo" \
     --set configureRepositories.repositories[0].url="https://stefanprodan.github.io/podinfo" \
+    --set extraEnvs[0].name="HELM_VERSION" \
+    --set extraEnvs[0].value="${HELM_VERSION:-v2\,v3}" \
     "${ROOT_DIR}/chart/helm-operator"
 }
 
 function uninstall_helm_operator_with_helm() {
-  helm delete --purge helm-operator > /dev/null 2>&1
+  helm2 delete --purge helm-operator > /dev/null 2>&1
   kubectl delete crd helmreleases.helm.fluxcd.io > /dev/null 2>&1
 }
 
