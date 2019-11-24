@@ -2,6 +2,7 @@ package v3
 
 import (
 	"helm.sh/helm/pkg/chart"
+	"helm.sh/helm/pkg/chartutil"
 	"helm.sh/helm/pkg/release"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
@@ -15,7 +16,7 @@ func releaseToGenericRelease(r *release.Release) *helm.Release {
 		Namespace: r.Namespace,
 		Chart:     chartToGenericChart(r.Chart),
 		Info:      infoToGenericInfo(r.Info),
-		Values:    r.Config,
+		Values:    configToGenericValues(r.Config),
 		Manifest:  r.Manifest,
 		Version:   r.Version,
 	}
@@ -39,6 +40,24 @@ func infoToGenericInfo(i *release.Info) *helm.Info {
 		Description:  i.Description,
 		Status:       lookUpGenericStatus(i.Status),
 	}
+}
+
+// configToGenericValues forces the `chartutil.Values` to be parsed
+// as YAML so that the value types of the nested map always equal to
+// what they would be when returned from storage, as a dry-run release
+// seems to skip this step, resulting in differences for e.g. float
+// values (as they will be string values when returned from storage).
+// TODO(hidde): this may not be necessary for v3.0.0 (stable).
+func configToGenericValues(c chartutil.Values) map[string]interface{} {
+	s, err := c.YAML()
+	if err != nil {
+		return c.AsMap()
+	}
+	gv, err := chartutil.ReadValues([]byte(s))
+	if err != nil {
+		return c.AsMap()
+	}
+	return gv.AsMap()
 }
 
 // formatVersion formats the chart version, while taking
