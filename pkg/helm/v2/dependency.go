@@ -50,13 +50,13 @@ func (h *HelmV2) DependencyUpdate(chartPath string) error {
 		defer os.Remove(lockfilePath)
 	}
 
-	cmd := exec.Command("helm", "repo", "update")
+	cmd := exec.Command("helm2", "repo", "update")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("could not update repo: %s", string(out))
 	}
 
-	cmd = exec.Command("helm", "dep", "build", ".")
+	cmd = exec.Command("helm2", "dep", "build", ".")
 	cmd.Dir = chartPath
 
 	out, err = cmd.CombinedOutput()
