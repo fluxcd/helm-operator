@@ -10,7 +10,8 @@ SHELLCHECK_VERSION := 0.7.0
 SHFMT_VERSION := 2.6.4
 
 include docker/kubectl.version
-include docker/helm.version
+include docker/helm2.version
+include docker/helm3.version
 
 # NB default target architecture is amd64. If you would like to try the
 # other one -- pass an ARCH variable, e.g.,
@@ -36,15 +37,15 @@ all: $(GOBIN)/bin/helm-operator build/.helm-operator.done
 clean:
 	go clean ./cmd/helm-operator
 	rm -rf ./build
-	rm -f test/bin/kubectl test/bin/helm test/bin/kind
+	rm -f test/bin/kubectl test/bin/helm2 test/bin/helm3 test/bin/kind
 
 realclean: clean
 	rm -rf ./cache
 
-test: test/bin/helm
+test: test/bin/helm2 test/bin/helm3
 	PATH="${PWD}/bin:${PWD}/test/bin:${PATH}" go test ${TEST_FLAGS} $(shell go list ./... | grep -v "^github.com/weaveworks/flux/vendor" | sort -u)
 
-e2e: test/bin/helm test/bin/kubectl test/e2e/bats build/.helm-operator.done
+e2e: test/bin/helm2 test/bin/helm3 test/bin/kubectl test/e2e/bats build/.helm-operator.done
 	PATH="${PWD}/test/bin:${PATH}" CURRENT_OS_ARCH=$(CURRENT_OS_ARCH) test/e2e/run.bash
 
 E2E_BATS_FILES := test/e2e/*.bats
@@ -68,7 +69,7 @@ build/.%.done: docker/Dockerfile.%
 		-f build/docker/$*/Dockerfile.$* ./build/docker/$*
 	touch $@
 
-build/.helm-operator.done: build/helm-operator build/kubectl build/helm docker/ssh_config docker/known_hosts.sh docker/helm-repositories.yaml
+build/.helm-operator.done: build/helm-operator build/kubectl build/helm2 build/helm3 docker/ssh_config docker/known_hosts.sh docker/helm-repositories.yaml
 
 build/helm-operator: $(HELM_OPERATOR_DEPS)
 build/helm-operator: cmd/helm-operator/*.go
@@ -76,11 +77,13 @@ build/helm-operator: cmd/helm-operator/*.go
 
 build/kubectl: cache/linux-$(ARCH)/kubectl-$(KUBECTL_VERSION)
 test/bin/kubectl: cache/$(CURRENT_OS_ARCH)/kubectl-$(KUBECTL_VERSION)
-build/helm: cache/linux-$(ARCH)/helm-$(HELM_VERSION)
-test/bin/helm: cache/$(CURRENT_OS_ARCH)/helm-$(HELM_VERSION)
+build/helm2: cache/linux-$(ARCH)/helm-$(HELM2_VERSION)
+build/helm3: cache/linux-$(ARCH)/helm-$(HELM3_VERSION)
+test/bin/helm2: cache/$(CURRENT_OS_ARCH)/helm-$(HELM2_VERSION)
+test/bin/helm3: cache/$(CURRENT_OS_ARCH)/helm-$(HELM3_VERSION)
 test/bin/shellcheck: cache/$(CURRENT_OS_ARCH)/shellcheck-$(SHELLCHECK_VERSION)
 test/bin/shfmt: cache/$(CURRENT_OS_ARCH)/shfmt-$(SHFMT_VERSION)
-build/kubectl test/bin/kubectl build/helm test/bin/helm test/bin/shellcheck test/bin/shfmt:
+build/kubectl test/bin/kubectl build/helm2 build/helm3 test/bin/helm2 test/bin/helm3 test/bin/shellcheck test/bin/shfmt:
 	mkdir -p build
 	cp $< $@
 	if [ `basename $@` = "build" -a $(CURRENT_OS_ARCH) = "linux-$(ARCH)" ]; then strip $@; fi
@@ -93,11 +96,18 @@ cache/%/kubectl-$(KUBECTL_VERSION): docker/kubectl.version
 	tar -m --strip-components 3 -C ./cache/$* -xzf cache/$*/kubectl-$(KUBECTL_VERSION).tar.gz kubernetes/client/bin/kubectl
 	mv ./cache/$*/kubectl $@
 
-cache/%/helm-$(HELM_VERSION): docker/helm.version
+cache/%/helm-$(HELM2_VERSION): docker/helm2.version
 	mkdir -p cache/$*
-	curl --fail -L -o cache/$*/helm-$(HELM_VERSION).tar.gz "https://storage.googleapis.com/kubernetes-helm/helm-v$(HELM_VERSION)-$*.tar.gz"
-	[ $* != "linux-$(ARCH)" ] || echo "$(HELM_CHECKSUM_$(ARCH))  cache/$*/helm-$(HELM_VERSION).tar.gz" | shasum -a 256 -c
-	tar -m -C ./cache -xzf cache/$*/helm-$(HELM_VERSION).tar.gz $*/helm
+	curl --fail -L -o cache/$*/helm-$(HELM2_VERSION).tar.gz "https://storage.googleapis.com/kubernetes-helm/helm-v$(HELM2_VERSION)-$*.tar.gz"
+	[ $* != "linux-$(ARCH)" ] || echo "$(HELM2_CHECKSUM_$(ARCH))  cache/$*/helm-$(HELM2_VERSION).tar.gz" | shasum -a 256 -c
+	tar -m -C ./cache -xzf cache/$*/helm-$(HELM2_VERSION).tar.gz $*/helm
+	mv cache/$*/helm $@
+
+cache/%/helm-$(HELM3_VERSION): docker/helm3.version
+	mkdir -p cache/$*
+	curl --fail -L -o cache/$*/helm-$(HELM3_VERSION).tar.gz "https://get.helm.sh/helm-v$(HELM3_VERSION)-$*.tar.gz"
+	[ $* != "linux-$(ARCH)" ] || echo "$(HELM3_CHECKSUM_$(ARCH))  cache/$*/helm-$(HELM3_VERSION).tar.gz" | shasum -a 256 -c
+	tar -m -C ./cache -xzf cache/$*/helm-$(HELM3_VERSION).tar.gz $*/helm
 	mv cache/$*/helm $@
 
 $(GOBIN)/bin/helm-operator: $(HELM_OPERATOR_DEPS)

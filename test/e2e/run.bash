@@ -45,8 +45,10 @@ fi
 echo '>>> Running the tests'
 # Run all tests by default but let users specify which ones to run, e.g. with E2E_TESTS='11_*' make e2e
 E2E_TESTS=${E2E_TESTS:-.}
+HELM_VERSION=${HELM_VERSION:-}
 (
   cd "${E2E_DIR}"
+  export HELM_VERSION=${HELM_VERSION}
   # shellcheck disable=SC2086
   "${E2E_DIR}/bats/bin/bats" -t ${E2E_TESTS}
 )
