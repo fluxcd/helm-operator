@@ -12,7 +12,7 @@ import (
 func (h *HelmV2) History(releaseName string, opts helm.HistoryOptions) ([]*helm.Release, error) {
 	res, err := h.client.ReleaseHistory(releaseName, helmv2.WithMaxHistory(int32(opts.Max)))
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to retrieve history for [%s]", releaseName)
+		return nil, errors.Wrapf(statusMessageErr(err), "failed to retrieve history for [%s]", releaseName)
 	}
 	return getReleaseHistory(res.Releases), nil
 }

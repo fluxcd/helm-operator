@@ -1,9 +1,6 @@
 package v2
 
 import (
-	"github.com/pkg/errors"
-	"google.golang.org/grpc/status"
-
 	helmv2 "k8s.io/helm/pkg/helm"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
@@ -21,10 +18,7 @@ func (h *HelmV2) Rollback(releaseName string, opts helm.RollbackOptions) (*helm.
 		helmv2.RollbackForce(opts.Force),
 	)
 	if err != nil {
-		if s, ok := status.FromError(err); ok {
-			return nil, errors.New(s.Message())
-		}
-		return nil, err
+		return nil, statusMessageErr(err)
 	}
 	return releaseToGenericRelease(res.Release), nil
 }

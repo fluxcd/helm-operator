@@ -213,10 +213,6 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		// If this is the first release, or rollbacks are not enabled;
 		// return and wait for the next signal to retry...
 		if curRel == nil || !hr.Spec.Rollback.Enable {
-			// TODO(hidde): for Helm v2, mimic the v3 `--atomic` behaviour which automatically
-			// deletes the release on installation failure.
-			client.Uninstall(hr.GetReleaseName(), helm.UninstallOptions{Namespace: hr.GetTargetNamespace()})
-
 			return hr, err
 		}
 
