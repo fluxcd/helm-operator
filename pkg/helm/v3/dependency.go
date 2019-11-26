@@ -5,8 +5,8 @@ import (
 
 	"github.com/go-kit/kit/log"
 
-	"helm.sh/helm/pkg/downloader"
-	"helm.sh/helm/pkg/helmpath"
+	"helm.sh/helm/v3/pkg/downloader"
+	"helm.sh/helm/v3/pkg/helmpath"
 )
 
 func (h *HelmV3) DependencyUpdate(chartPath string) error {
