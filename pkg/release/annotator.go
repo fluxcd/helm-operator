@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	fluxk8s "github.com/fluxcd/flux/pkg/cluster/kubernetes"
 	"github.com/fluxcd/flux/pkg/resource"
 	"github.com/ghodss/yaml"
 	"github.com/go-kit/kit/log"
@@ -19,6 +18,13 @@ import (
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
+// AntecedentAnnotation is an annotation on a resource indicating that
+// the cause of that resource is a HelmRelease. We use this rather than
+// the `OwnerReference` type built into Kubernetes so that there are no
+// garbage-collection implications. The value is expected to be a
+// serialised `resource.ID`.
+const AntecedentAnnotation = "helm.fluxcd.io/antecedent"
+
 // managedByHelmRelease determines if the given `helm.Release` is
 // managed by the given `v1.HelmRelease`. A release is managed when
 // the resources contain a antecedent annotation with the resource ID
@@ -28,7 +34,7 @@ import (
 func managedByHelmRelease(release *helm.Release, hr v1.HelmRelease) (bool, string) {
 	objs := releaseManifestToUnstructured(release.Manifest, log.NewNopLogger())
 
-	escapedAnnotation := strings.ReplaceAll(fluxk8s.AntecedentAnnotation, ".", `\.`)
+	escapedAnnotation := strings.ReplaceAll(AntecedentAnnotation, ".", `\.`)
 	args := []string{"-o", "jsonpath={.metadata.annotations." + escapedAnnotation + "}", "get"}
 
 	for ns, res := range namespacedResourceMap(objs, release.Namespace) {
@@ -62,7 +68,7 @@ func annotateResources(logger log.Logger, rel *helm.Release, resourceID resource
 		args := []string{"annotate", "--overwrite"}
 		args = append(args, "--namespace", namespace)
 		args = append(args, res...)
-		args = append(args, fluxk8s.AntecedentAnnotation+"="+resourceID.String())
+		args = append(args, AntecedentAnnotation+"="+resourceID.String())
 
 		// The timeout is set to a high value as it may take some time
 		// to annotate large umbrella charts.
