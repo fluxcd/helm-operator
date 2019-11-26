@@ -45,11 +45,3 @@ replace github.com/docker/docker => github.com/docker/docker v0.7.3-0.2019032701
 //         +-> github.com/weaveworks/flux@v0.0.0-20190729133003-c78ccd3706b5
 //             +-> k8s.io/client-go@v11.0.0+incompatible
 replace k8s.io/client-go => k8s.io/client-go v0.0.0-20191016111102-bec269661e48 // kubernetes-1.16.2
-
-// Force downgrade because of a transitive upgrade.
-// github.com/fluxcd/helm-operator
-// +-> github.com/fluxcd/flux@v1.15.0
-//     +-> github.com/fluxcd/helm-operator@v1.0.0-rc1
-//         +-> github.com/weaveworks/flux@v0.0.0-20190729133003-c78ccd3706b5
-//             +-> k8s.io/code-generator@v0.0.0-20190511023357-639c964206c2
-replace k8s.io/code-generator => k8s.io/code-generator v0.0.0-20190311093542-50b561225d70
