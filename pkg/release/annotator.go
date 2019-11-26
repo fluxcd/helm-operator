@@ -10,7 +10,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/go-kit/kit/log"
 
-	"helm.sh/helm/pkg/releaseutil"
+	"helm.sh/helm/v3/pkg/releaseutil"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 

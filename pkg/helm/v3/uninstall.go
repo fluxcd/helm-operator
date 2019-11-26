@@ -4,7 +4,7 @@ import (
 	"github.com/fluxcd/helm-operator/pkg/helm"
 	"github.com/pkg/errors"
 
-	"helm.sh/helm/pkg/action"
+	"helm.sh/helm/v3/pkg/action"
 )
 
 func (h *HelmV3) Uninstall(releaseName string, opts helm.UninstallOptions) error {

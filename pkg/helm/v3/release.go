@@ -1,9 +1,9 @@
 package v3
 
 import (
-	"helm.sh/helm/pkg/chart"
-	"helm.sh/helm/pkg/chartutil"
-	"helm.sh/helm/pkg/release"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chartutil"
+	"helm.sh/helm/v3/pkg/release"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
@@ -36,7 +36,7 @@ func chartToGenericChart(c *chart.Chart) *helm.Chart {
 // a generic `helm.Info`
 func infoToGenericInfo(i *release.Info) *helm.Info {
 	return &helm.Info{
-		LastDeployed: i.LastDeployed,
+		LastDeployed: i.LastDeployed.Time,
 		Description:  i.Description,
 		Status:       lookUpGenericStatus(i.Status),
 	}

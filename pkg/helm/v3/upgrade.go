@@ -3,10 +3,10 @@ package v3
 import (
 	"github.com/pkg/errors"
 
-	"helm.sh/helm/pkg/action"
-	"helm.sh/helm/pkg/chart/loader"
-	"helm.sh/helm/pkg/chartutil"
-	"helm.sh/helm/pkg/release"
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/chartutil"
+	"helm.sh/helm/v3/pkg/release"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )

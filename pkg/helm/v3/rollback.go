@@ -3,7 +3,7 @@ package v3
 import (
 	"github.com/pkg/errors"
 
-	"helm.sh/helm/pkg/action"
+	"helm.sh/helm/v3/pkg/action"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )

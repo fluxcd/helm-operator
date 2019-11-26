@@ -10,14 +10,15 @@ import (
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/klog"
-	"k8s.io/kubernetes/cmd/kubeadm/app/util/kubeconfig"
-	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kubectl/pkg/cmd/util"
 
-	"helm.sh/helm/pkg/action"
-	"helm.sh/helm/pkg/kube"
-	"helm.sh/helm/pkg/storage"
-	"helm.sh/helm/pkg/storage/driver"
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/kube"
+	"helm.sh/helm/v3/pkg/storage"
+	"helm.sh/helm/v3/pkg/storage/driver"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
@@ -68,7 +69,7 @@ func initActionConfig(kubeConfig *rest.Config, opts HelmOptions) (*action.Config
 	// to prevent concurrency issues due to the `AddToScheme` call it
 	// makes.
 	kc := &kube.Client{
-		Factory: cmdutil.NewFactory(cfgFlags),
+		Factory: util.NewFactory(cfgFlags),
 		Log:     klog.Infof,
 	}
 
@@ -111,18 +112,46 @@ func initActionConfig(kubeConfig *rest.Config, opts HelmOptions) (*action.Config
 func writeTempKubeConfig(kc *rest.Config) (string, string, func(), error) {
 	tmpDir, err := ioutil.TempDir("", "helmv3")
 	if err != nil {
-		return "", "", func() {}, err
+		return "", "", func(){}, err
 	}
 	cleanup := func() { os.RemoveAll(tmpDir) }
 
-	token, err := ioutil.ReadFile(kc.CAFile)
+	caData, err := ioutil.ReadFile(kc.CAFile)
 	if err != nil {
 		return "", "", cleanup, err
 	}
-	c := kubeconfig.CreateWithToken(kc.Host, defaultClusterName, kc.Username, token, kc.BearerToken)
+
+	c := newConfig(kc.Host, kc.Username, kc.BearerToken, caData)
 	tmpFullPath := tmpDir + "/config"
-	if err := kubeconfig.WriteToDisk(tmpFullPath, c); err != nil {
+	if err := clientcmd.WriteToFile(c, tmpFullPath); err != nil {
 		return "", "", cleanup, err
 	}
-	return tmpFullPath, fmt.Sprintf("%s@%s", kc.Username, defaultClusterName), cleanup, nil
+
+	return tmpFullPath, c.CurrentContext, cleanup, nil
+}
+
+func newConfig(host, username, token string, caCert []byte) clientcmdapi.Config {
+
+	contextName := fmt.Sprintf("%s@%s", username, defaultClusterName)
+
+	return clientcmdapi.Config{
+		Clusters: map[string]*clientcmdapi.Cluster{
+			defaultClusterName: {
+				Server:                   host,
+				CertificateAuthorityData: caCert,
+			},
+		},
+		Contexts: map[string]*clientcmdapi.Context{
+			contextName: {
+				Cluster:  defaultClusterName,
+				AuthInfo: username,
+			},
+		},
+		AuthInfos:      map[string]*clientcmdapi.AuthInfo{
+			username: {
+				Token: token,
+			},
+		},
+		CurrentContext: contextName,
+	}
 }

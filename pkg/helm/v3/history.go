@@ -3,9 +3,9 @@ package v3
 import (
 	"github.com/pkg/errors"
 
-	"helm.sh/helm/pkg/action"
-	"helm.sh/helm/pkg/release"
-	"helm.sh/helm/pkg/releaseutil"
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v3/pkg/releaseutil"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
