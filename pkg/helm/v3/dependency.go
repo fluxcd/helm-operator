@@ -6,16 +6,18 @@ import (
 	"github.com/go-kit/kit/log"
 
 	"helm.sh/helm/v3/pkg/downloader"
-	"helm.sh/helm/v3/pkg/helmpath"
 )
 
 func (h *HelmV3) DependencyUpdate(chartPath string) error {
+	repositoryConfigLock.RLock()
+	defer repositoryConfigLock.RUnlock()
+
 	out := &logWriter{h.logger}
 	man := &downloader.Manager{
 		Out:              out,
 		ChartPath:        chartPath,
-		RepositoryConfig: helmpath.ConfigPath("repositories.yaml"),
-		RepositoryCache:  helmpath.CachePath("repository"),
+		RepositoryConfig: repositoryConfig,
+		RepositoryCache:  repositoryCache,
 	}
 	return man.Update()
 }

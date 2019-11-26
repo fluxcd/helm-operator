@@ -205,7 +205,12 @@ func main() {
 				TLSHostname: *tillerTLSHostname,
 			}))
 		case v3.VERSION:
-			helmClients.Add(v3.VERSION, v3.New(log.With(logger, "component", "helm", "version", "v3"), cfg))
+			client := v3.New(log.With(logger, "component", "helm", "version", "v3"), cfg)
+			// TODO(hidde): remove hardcoded path
+			if err := client.(*v3.HelmV3).RepositoryImport("/var/fluxd/helm/repository/repositories.yaml"); err != nil {
+				mainLogger.Log("warning", "failed to import Helm chart repositories from path", "err", err)
+			}
+			helmClients.Add(v3.VERSION, client)
 		default:
 			mainLogger.Log("error", fmt.Sprintf("%s is not a supported Helm version, ignoring...", v))
 			continue
