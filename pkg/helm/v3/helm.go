@@ -16,6 +16,7 @@ import (
 	"k8s.io/kubectl/pkg/cmd/util"
 
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/helmpath"
 	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/storage"
 	"helm.sh/helm/v3/pkg/storage/driver"
@@ -25,7 +26,11 @@ import (
 
 const VERSION = "v3"
 
-var defaultClusterName = "in-cluster"
+var (
+	defaultClusterName = "in-cluster"
+	repositoryConfig   = helmpath.ConfigPath("repositories.yaml")
+	repositoryCache    = helmpath.CachePath("repository")
+)
 
 type HelmOptions struct {
 	Driver    string
@@ -147,7 +152,7 @@ func newConfig(host, username, token string, caCert []byte) clientcmdapi.Config 
 				AuthInfo: username,
 			},
 		},
-		AuthInfos:      map[string]*clientcmdapi.AuthInfo{
+		AuthInfos: map[string]*clientcmdapi.AuthInfo{
 			username: {
 				Token: token,
 			},
