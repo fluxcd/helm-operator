@@ -162,6 +162,8 @@ nodeSelector: {}
 annotations: {}
 tolerations: []
 affinity: {}
+extraVolumeMounts: []
+extraVolumes: []
 resources:
   requests:
     cpu: 50m
