@@ -18,6 +18,7 @@ func (h *HelmV3) DependencyUpdate(chartPath string) error {
 		ChartPath:        chartPath,
 		RepositoryConfig: repositoryConfig,
 		RepositoryCache:  repositoryCache,
+		Getters:          getters,
 	}
 	return man.Update()
 }
