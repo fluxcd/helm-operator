@@ -11,7 +11,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 
-	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	v1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/chartsync"
 	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/helm"
@@ -113,7 +113,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		chartPath = filepath.Join(export.Dir(), hr.Spec.GitChartSource.Path)
 
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
-			v1.HelmReleaseChartFetched, corev1.ConditionTrue, ReasonGitCloned, "successfully cloned chart revision: " + revision))
+			v1.HelmReleaseChartFetched, corev1.ConditionTrue, ReasonGitCloned, "successfully cloned chart revision: "+revision))
 
 		if r.config.UpdateDeps && !hr.Spec.GitChartSource.SkipDepUpdate {
 			// Attempt to update chart dependencies, if it fails we
@@ -202,8 +202,8 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		// We only set this during installation to delete a failed
 		// release, but not during upgrades, as we ourselves want
 		// to be in control of rollbacks.
-		Atomic:      curRel == nil,
-		Wait:		 hr.Spec.Rollback.Enable,
+		Atomic: curRel == nil,
+		Wait:   hr.Spec.Rollback.Enable,
 	})
 	if err != nil {
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
@@ -283,12 +283,12 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 	}
 
 	if ok, resourceID := managedByHelmRelease(curRel, *hr); !ok {
-		logger.Log("warning", "release appears to be managed by " + resourceID + "; skipping")
+		logger.Log("warning", "release appears to be managed by "+resourceID+"; skipping")
 		return false, nil
 	}
 
 	if s := curRel.Info.Status; !s.Syncable() {
-		logger.Log("warning", "unable to sync release with status " + s.String() +"; skipping")
+		logger.Log("warning", "unable to sync release with status "+s.String()+"; skipping")
 		return false, nil
 	}
 
@@ -322,7 +322,7 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 
 	// Perform the dry-run so that we can compare what we ought to be
 	// running matches what is defined in the `v1.HelmRelease`.
-	desRel, err := client.UpgradeFromPath(chartPath, dryRunRelName, b, helm.UpgradeOptions{Install: true, DryRun: true})
+	desRel, err := client.UpgradeFromPath(chartPath, dryRunRelName, b, helm.UpgradeOptions{ClientOnly: true, Install: true, DryRun: true})
 	if err != nil {
 		return false, err
 	}

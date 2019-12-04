@@ -15,6 +15,7 @@ type UpgradeOptions struct {
 	Install      bool          `json:"install,omitempty"`
 	DisableHooks bool          `json:"disableHooks,omitempty"`
 	DryRun       bool          `json:"dryRun,omitempty"`
+	ClientOnly   bool          `json:"clientOnly,omitempty"`
 	Force        bool          `json:"force,omitempty"`
 	ResetValues  bool          `json:"resetValues,omitempty"`
 	ReuseValues  bool          `json:"reuseValues,omitempty"`

@@ -44,6 +44,7 @@ func (h *HelmV3) UpgradeFromPath(chartPath string, releaseName string, values []
 		client.Atomic = opts.Atomic
 		client.DisableHooks = opts.DisableHooks
 		client.DryRun = opts.DryRun
+		client.ClientOnly = opts.ClientOnly
 		client.Timeout = opts.Timeout
 		client.Wait = opts.Wait
 
