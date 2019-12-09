@@ -3,7 +3,7 @@ module github.com/fluxcd/helm-operator
 go 1.12
 
 require (
-	github.com/fluxcd/flux v1.15.0
+	github.com/fluxcd/flux v1.16.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-kit/kit v0.9.0
 	github.com/golang/protobuf v1.3.2
@@ -15,11 +15,10 @@ require (
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.3.0
-	k8s.io/api v0.0.0-20190313235455-40a48860b5ab
+	k8s.io/api v0.0.0-20190708174958-539a33f6e817
 	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator v0.0.0-20190511023357-639c964206c2
-	k8s.io/gengo v0.0.0-20190907103519-ebc107f98eab // indirect
 	k8s.io/helm v2.16.1+incompatible
 	k8s.io/klog v0.3.3
 )
