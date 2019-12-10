@@ -30,6 +30,10 @@ type Client interface {
 	History(releaseName string, opts HistoryOptions) ([]*Release, error)
 	Rollback(releaseName string, opts RollbackOptions) (*Release, error)
 	DependencyUpdate(chartPath string) error
+	RepositoryIndex() error
+	RepositoryAdd(name, url, username, password, certFile, keyFile, caFile string) error
+	RepositoryRemove(name string) error
+	RepositoryImport(path string) error
 	Uninstall(releaseName string, opts UninstallOptions) error
 	Version() string
 }
