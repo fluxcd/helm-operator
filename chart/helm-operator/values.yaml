@@ -9,6 +9,10 @@ image:
   pullPolicy: IfNotPresent
   pullSecret:
 
+service:
+  type: ClusterIP
+  port: 3030
+
 # Include the HelmRelease definition on install
 createCRD: false
 # Limit the operator scope to a single namespace
@@ -150,6 +154,13 @@ kube:
 
 prometheus:
   enabled: false
+  serviceMonitor:
+    # Enables ServiceMonitor creation for the Prometheus Operator
+    create: false
+    interval:
+    scrapeTimeout:
+    namespace:
+    additionalLabels: {}
 
 # Additional environment variables to set
 extraEnvs: []
