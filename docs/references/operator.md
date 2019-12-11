@@ -26,6 +26,9 @@ take action accordingly.
 | `--kubeconfig`              |                               | Path to a kubeconfig. Only required if out-of-cluster.
 | `--master`                  |                               | The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.
 | `--allow-namespace`         |                               | If set, this limits the scope to a single namespace. if not specified, all namespaces will be watched.
+| **Helm options**
+| `--enabled-helm-versions`   | `v2,v3`                       | The Helm client versions supported by this operator instance
+| `--helm-repository-import`  |                               | Targeted version and the path of the Helm repository index to import, i.e. `v3:/tmp/v3/index.yaml,v2:/tmp/v2/index.yaml`
 | **Tiller options**
 | `--tiller-ip`               |                               | Tiller IP address. Only required if out-of-cluster.
 | `--tiller-port`             |                               | Tiller port.

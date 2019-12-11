@@ -3,6 +3,7 @@ package v2
 import (
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -11,12 +12,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	helmv2 "k8s.io/helm/pkg/helm"
+	"k8s.io/helm/pkg/helm/environment"
+	"k8s.io/helm/pkg/helm/helmpath"
 	"k8s.io/helm/pkg/tlsutil"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
 const VERSION = "v2"
+
+var (
+	repositoryConfig   = helmHome().RepositoryFile()
+	repositoryCache    = helmHome().Cache()
+)
 
 // TillerOptions holds configuration options for tiller
 type TillerOptions struct {
@@ -31,7 +39,7 @@ type TillerOptions struct {
 	TLSHostname string
 }
 
-// HelmV2 provides access to the Client client, while adhering
+// HelmV2 provides access to the Helm v2 client, while adhering
 // to the generic Client interface
 type HelmV2 struct {
 	client *helmv2.Client
@@ -97,11 +105,11 @@ func newHelmClient(kubeClient *kubernetes.Clientset, opts TillerOptions) (*helmv
 		if opts.TLSHostname != "" {
 			tlsopts.ServerName = opts.TLSHostname
 		}
-		tlscfg, err := tlsutil.ClientConfig(tlsopts)
+		tlsCfg, err := tlsutil.ClientConfig(tlsopts)
 		if err != nil {
 			return nil, "", err
 		}
-		options = append(options, helmv2.WithTLS(tlscfg))
+		options = append(options, helmv2.WithTLS(tlsCfg))
 	}
 
 	return helmv2.NewClient(options...), host, nil
@@ -127,4 +135,11 @@ func statusMessageErr(err error) error {
 		return errors.New(s.Message())
 	}
 	return err
+}
+
+func helmHome() helmpath.Home {
+	if v, ok := os.LookupEnv("HELM_HOME"); ok {
+		return helmpath.Home(v)
+	}
+	return helmpath.Home(environment.DefaultHelmHome)
 }

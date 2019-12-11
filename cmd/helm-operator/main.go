@@ -67,6 +67,8 @@ var (
 
 	listenAddr *string
 
+	versionedHelmRepositoryIndexes *[]string
+
 	enabledHelmVersions *[]string
 	defaultHelmVersion  *string
 )
@@ -120,11 +122,13 @@ func init() {
 	gitPollInterval = fs.Duration("git-poll-interval", 5*time.Minute, "period on which to poll git chart sources for changes")
 	gitDefaultRef = fs.String("git-default-ref", "master", "ref to clone chart from if ref is unspecified in a HelmRelease")
 
+	versionedHelmRepositoryIndexes = fs.StringSlice("helm-repository-import", nil, "Targeted version and the path of the Helm repository index to import, i.e. v3:/tmp/v3/index.yaml,v2:/tmp/v2/index.yaml")
+
 	enabledHelmVersions = fs.StringSlice("enabled-helm-versions", []string{v2.VERSION, v3.VERSION}, "Helm versions supported by this operator instance")
 }
 
 func main() {
-	// Explicitly initialize klog to enable stderr logging,
+	// explicitly initialize klog to enable stderr logging,
 	// and parse our own flags.
 	klog.InitFlags(nil)
 	fs.Parse(os.Args)
@@ -134,7 +138,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Support enabling the Helm supported versions through an
+	// support enabling the Helm supported versions through an
 	// environment variable.
 	helmVersionEnv := getEnvAsSlice("HELM_VERSION", []string{})
 	if len(helmVersionEnv) > 0 && !fs.Changed("enabled-helm-versions") {
@@ -171,6 +175,7 @@ func main() {
 
 	mainLogger := log.With(logger, "component", "helm-operator")
 
+	// build Kubernetes clients
 	cfg, err := clientcmd.BuildConfigFromFlags(*master, *kubeconfig)
 	if err != nil {
 		mainLogger.Log("error", fmt.Sprintf("error building kubeconfig: %v", err))
@@ -189,11 +194,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	// initialize versioned Helm clients
 	helmClients := &helm.Clients{}
 	for _, v := range *enabledHelmVersions {
+		versionedLogger := log.With(logger, "component", "helm", "version", v)
+
 		switch v {
 		case v2.VERSION:
-			helmClients.Add(v2.VERSION, v2.New(log.With(logger, "component", "helm", "version", "v2"), kubeClient, v2.TillerOptions{
+			helmClients.Add(v2.VERSION, v2.New(versionedLogger, kubeClient, v2.TillerOptions{
 				Host:        *tillerIP,
 				Port:        *tillerPort,
 				Namespace:   *tillerNamespace,
@@ -205,20 +213,34 @@ func main() {
 				TLSHostname: *tillerTLSHostname,
 			}))
 		case v3.VERSION:
-			client := v3.New(log.With(logger, "component", "helm", "version", "v3"), cfg)
-			// TODO(hidde): remove hardcoded path
-			if err := client.(*v3.HelmV3).RepositoryImport("/var/fluxd/helm/repository/repositories.yaml"); err != nil {
-				mainLogger.Log("warning", "failed to import Helm chart repositories from path", "err", err)
-			}
+			client := v3.New(versionedLogger, cfg)
 			helmClients.Add(v3.VERSION, client)
 		default:
-			mainLogger.Log("error", fmt.Sprintf("%s is not a supported Helm version, ignoring...", v))
+			mainLogger.Log("error", fmt.Sprintf("unsupported Helm version: %s", v))
 			continue
 		}
 
 		if defaultHelmVersion == nil {
 			defaultVersion := v
 			defaultHelmVersion = &defaultVersion
+		}
+	}
+
+	// import Helm chart repositories from provided indexes
+	for _, i := range *versionedHelmRepositoryIndexes {
+		parts := strings.Split(i, ":")
+		if len(parts) != 2 {
+			mainLogger.Log("error", fmt.Sprintf("invalid version/path pair: %s, expected format is [version]:[path]", i))
+			continue
+		}
+		v, p := parts[0], parts[1]
+		client, ok := helmClients.Load(v)
+		if !ok {
+			mainLogger.Log("error", fmt.Sprintf("no Helm client found for version: %s", v))
+			continue
+		}
+		if err := client.RepositoryImport(p); err != nil {
+			mainLogger.Log("error", fmt.Sprintf("failed to import Helm chart repositories for %s from %s: %v", v, p, err))
 		}
 	}
 
