@@ -50,6 +50,29 @@ func (h *HelmV2) Version() string {
 	return VERSION
 }
 
+// New attempts to setup a Helm client
+func New(logger log.Logger, kubeClient *kubernetes.Clientset, opts TillerOptions) helm.Client {
+	var h *HelmV2
+	for {
+		client, host, err := newHelmClient(kubeClient, opts)
+		if err != nil {
+			logger.Log("error", fmt.Sprintf("error creating Client (v2) client: %s", err.Error()))
+			time.Sleep(20 * time.Second)
+			continue
+		}
+		h = &HelmV2{client: client, logger: logger}
+		version, err := h.getVersion()
+		if err != nil {
+			logger.Log("warning", "unable to connect to Tiller", "err", err, "host", host, "options", fmt.Sprintf("%+v", opts))
+			time.Sleep(20 * time.Second)
+			continue
+		}
+		logger.Log("info", "connected to Tiller", "version", version, "host", host, "options", fmt.Sprintf("%+v", opts))
+		break
+	}
+	return h
+}
+
 // getVersion retrieves the Tiller version. This is a _V2 only_  method
 // and used internally during the setup of the client.
 func (h *HelmV2) getVersion() (string, error) {
@@ -60,30 +83,7 @@ func (h *HelmV2) getVersion() (string, error) {
 	return v.GetVersion().String(), nil
 }
 
-// New creates a new HelmV2 client
-func New(logger log.Logger, kubeClient *kubernetes.Clientset, opts TillerOptions) helm.Client {
-	var helm *HelmV2
-	for {
-		client, host, err := newHelmClient(kubeClient, opts)
-		if err != nil {
-			logger.Log("error", fmt.Sprintf("error creating Client (v2) client: %s", err.Error()))
-			time.Sleep(20 * time.Second)
-			continue
-		}
-		helm = &HelmV2{client: client, logger: logger}
-		version, err := helm.getVersion()
-		if err != nil {
-			logger.Log("warning", "unable to connect to Tiller", "err", err, "host", host, "options", fmt.Sprintf("%+v", opts))
-			time.Sleep(20 * time.Second)
-			continue
-		}
-		logger.Log("info", "connected to Tiller", "version", version, "host", host, "options", fmt.Sprintf("%+v", opts))
-		break
-	}
-	return helm
-}
-
-// newHelmClient creates a new Client v2 client
+// newHelmClient creates a new Helm v2 client
 func newHelmClient(kubeClient *kubernetes.Clientset, opts TillerOptions) (*helmv2.Client, string, error) {
 	host, err := tillerHost(kubeClient, opts)
 	if err != nil {
