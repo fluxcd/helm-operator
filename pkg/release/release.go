@@ -128,7 +128,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	case hr.Spec.RepoChartSource != nil:
 		var err error
 
-		chartPath, err = chartsync.EnsureChartFetched(r.config.ChartCache, hr.Spec.RepoChartSource)
+		chartPath, err = chartsync.EnsureChartFetched(client, r.config.ChartCache, hr.Spec.RepoChartSource)
 		revision = hr.Spec.RepoChartSource.Version
 
 		if err != nil {
