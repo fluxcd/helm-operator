@@ -126,9 +126,10 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 			}
 		}
 	case hr.Spec.RepoChartSource != nil:
+		var fetched bool
 		var err error
 
-		chartPath, err = chartsync.EnsureChartFetched(client, r.config.ChartCache, hr.Spec.RepoChartSource)
+		chartPath, fetched, err = chartsync.EnsureChartFetched(client, r.config.ChartCache, hr.Spec.RepoChartSource)
 		revision = hr.Spec.RepoChartSource.Version
 
 		if err != nil {
@@ -137,9 +138,10 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 			logger.Log("error", err.Error())
 			return hr, err
 		}
-
-		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
-			v1.HelmReleaseChartFetched, corev1.ConditionTrue, ReasonDownloaded, "chart fetched: "+filepath.Base(chartPath)))
+		if fetched {
+			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+				v1.HelmReleaseChartFetched, corev1.ConditionTrue, ReasonDownloaded, "chart fetched: "+filepath.Base(chartPath)))
+		}
 	default:
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
 			v1.HelmReleaseChartFetched, corev1.ConditionFalse, ReasonDownloadFailed, ErrNoChartSource.Error()))
