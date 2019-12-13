@@ -279,18 +279,18 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 	chartPath string, values values, logDiffs bool) (bool, error) {
 
 	if curRel == nil {
-		logger.Log("info", "no existing release; installing")
+		logger.Log("info", "no existing release", "action", "install")
 		// If there is no existing release, we should simply sync.
 		return true, nil
 	}
 
 	if ok, resourceID := managedByHelmRelease(curRel, *hr); !ok {
-		logger.Log("warning", "release appears to be managed by "+resourceID+"; skipping")
+		logger.Log("warning", "release appears to be managed by "+resourceID, "action", "skip")
 		return false, nil
 	}
 
 	if s := curRel.Info.Status; !s.AllowsUpgrade() {
-		logger.Log("warning", "unable to sync release with status "+s.String()+"; skipping")
+		logger.Log("warning", "unable to sync release with status "+s.String(), "action", "skip")
 		return false, nil
 	}
 
@@ -299,10 +299,10 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 			// The release has been rolled back but the values have
 			// changed. We should attempt a new sync to see if the
 			// change resolved the issue that triggered the rollback.
-			logger.Log("info", "values appear to have changed since rollback; attempting upgrade")
+			logger.Log("info", "values appear to have changed since rollback", "action", "upgrade")
 			return true, nil
 		}
-		logger.Log("warning", "release has been rolled back; skipping")
+		logger.Log("warning", "release has been rolled back", "action", "skip")
 		return false, nil
 	}
 
