@@ -9,6 +9,8 @@ spec:
   timeout: 300
   resetValues: false
   forceUpgrade: false
+  rollback:
+    enable: true
   chart:
     git: ssh://git@gitsrv/git-server/repos/cluster.git
     ref: master

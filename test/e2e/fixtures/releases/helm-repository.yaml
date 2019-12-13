@@ -9,6 +9,8 @@ spec:
   timeout: 300
   resetValues: false
   forceUpgrade: false
+  rollback:
+    enable: true
   chart:
     repository: https://stefanprodan.github.io/podinfo
     name: podinfo
