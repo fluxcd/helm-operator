@@ -289,7 +289,7 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 		return false, nil
 	}
 
-	if s := curRel.Info.Status; !s.Syncable() {
+	if s := curRel.Info.Status; !s.AllowsUpgrade() {
 		logger.Log("warning", "unable to sync release with status "+s.String()+"; skipping")
 		return false, nil
 	}
