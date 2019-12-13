@@ -22,11 +22,6 @@ func (h *HelmV2) UpgradeFromPath(chartPath string, releaseName string, values []
 		return nil, errors.Wrapf(err, "failed to load chart from path [%s] for release [%s]", chartPath, releaseName)
 	}
 
-	// Validate the configured options
-	if err := opts.Validate([]string{"atomic", "maxHistory"}); err != nil {
-		h.logger.Log("warning", err.Error())
-	}
-
 	var res releaseResponse
 	if opts.Install {
 		res, err = h.client.InstallReleaseFromChart(
