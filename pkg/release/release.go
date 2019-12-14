@@ -312,19 +312,15 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 		return true, nil
 	}
 
-	// We use the UID as dry-run release name, as this value is unique,
-	// causes no collision with releases that may exist, and does not
-	// exceed the max release name length of 53 characters.
-	dryRunRelName := string(hr.UID)
 	b, err := values.YAML()
 	if err != nil {
 		// Without valid YAML values we are unable to sync.
 		return false, ErrComposingValues
 	}
 
-	// Perform the dry-run so that we can compare what we ought to be
-	// running matches what is defined in the `v1.HelmRelease`.
-	desRel, err := client.UpgradeFromPath(chartPath, dryRunRelName, b, helm.UpgradeOptions{ClientOnly: true, Install: true, DryRun: true})
+	// Perform a dry-run upgrade so that we can compare what we ought
+	// to be running matches what is defined in the `v1.HelmRelease`.
+	desRel, err := client.UpgradeFromPath(chartPath, hr.GetReleaseName(), b, helm.UpgradeOptions{DryRun: true})
 	if err != nil {
 		return false, err
 	}
