@@ -11,3 +11,8 @@ export KNOWN_HOSTS
 GITCONFIG=$(cat "${FIXTURES_DIR}/gitconfig")
 export GITCONFIG
 export HELM_VERSION=${HELM_VERSION}
+
+# Wire the test to the right cluster when tests are run in parallel
+if eval [ -n '$KUBECONFIG_SLOT_'"${BATS_JOB_SLOT}" ]; then
+  eval export KUBECONFIG='$KUBECONFIG_SLOT_'"${BATS_JOB_SLOT}"
+fi
