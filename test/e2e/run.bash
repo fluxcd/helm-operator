@@ -10,7 +10,7 @@ ROOT_DIR="$(git rev-parse --show-toplevel)"
 E2E_DIR="${ROOT_DIR}/test/e2e"
 CACHE_DIR="${ROOT_DIR}/cache/$CURRENT_OS_ARCH"
 
-KIND_VERSION="v0.5.1"
+KIND_VERSION="v0.6.1"
 KIND_CACHE_PATH="${CACHE_DIR}/kind-$KIND_VERSION"
 KIND_CLUSTER_PREFIX=helm-operator-e2e
 
