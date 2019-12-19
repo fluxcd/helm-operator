@@ -12,12 +12,12 @@ import (
 )
 
 // EnsureChartFetched returns the path to a downloaded chart, fetching
-// it first if necessary. It always returns the expected path to the
-// chart, and either an error or nil.
-func EnsureChartFetched(client helm.Client, base string, source *helmfluxv1.RepoChartSource) (string, error) {
+// it first if necessary. It returns the (expected) path to the chart,
+// a boolean indicating a fetch, and either an error or nil.
+func EnsureChartFetched(client helm.Client, base string, source *helmfluxv1.RepoChartSource) (string, bool, error) {
 	repoPath, filename, err := makeChartPath(base, client.Version(), source)
 	if err != nil {
-		return "", ChartUnavailableError{err}
+		return "", false, ChartUnavailableError{err}
 	}
 	chartPath := filepath.Join(repoPath, filename)
 	stat, err := os.Stat(chartPath)
@@ -25,15 +25,15 @@ func EnsureChartFetched(client helm.Client, base string, source *helmfluxv1.Repo
 	case os.IsNotExist(err):
 		chartPath, err = downloadChart(client, repoPath, source)
 		if err != nil {
-			return chartPath, ChartUnavailableError{err}
+			return chartPath, false, ChartUnavailableError{err}
 		}
-		return chartPath, nil
+		return chartPath, true, nil
 	case err != nil:
-		return chartPath, ChartUnavailableError{err}
+		return chartPath, false, ChartUnavailableError{err}
 	case stat.IsDir():
-		return chartPath, ChartUnavailableError{errors.New("path to chart exists but is a directory")}
+		return chartPath, false, ChartUnavailableError{errors.New("path to chart exists but is a directory")}
 	}
-	return chartPath, nil
+	return chartPath, false, nil
 }
 
 // makeChartPath gives the expected filesystem location for a chart,

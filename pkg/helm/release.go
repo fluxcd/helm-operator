@@ -52,22 +52,14 @@ type Release struct {
 // Status holds the status of a release
 type Status string
 
+// AllowsUpgrade returns true if the status allows the release
+// to be upgraded. This is currently only the case if it equals
+// `StatusDeployed`.
+func (s Status) AllowsUpgrade() bool {
+	return s == StatusDeployed
+}
+
 // String returns the Status as a string
 func (s Status) String() string {
 	return string(s)
-}
-
-// Syncable returns if the Status allows a sync
-func (s Status) Syncable() bool {
-	switch s {
-	case StatusUnknown,
-		 StatusFailed,
-		 StatusUninstalling,
-		 StatusPendingInstall,
-		 StatusPendingUpgrade,
-		 StatusPendingRollback:
-		 return false
-	default:
-		return true
-	}
 }

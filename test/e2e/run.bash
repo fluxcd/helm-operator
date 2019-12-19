@@ -13,6 +13,7 @@ CACHE_DIR="${ROOT_DIR}/cache/$CURRENT_OS_ARCH"
 KIND_VERSION="v0.6.1"
 KIND_CACHE_PATH="${CACHE_DIR}/kind-$KIND_VERSION"
 KIND_CLUSTER_PREFIX=helm-operator-e2e
+BATS_EXTRA_ARGS=""
 
 # shellcheck disable=SC1090
 source "${E2E_DIR}/lib/defer.bash"
@@ -37,11 +38,13 @@ if ! kubectl version > /dev/null 2>&1; then
   install_kind
 
   echo '>>> Creating Kind Kubernetes cluster(s)'
-  seq 1 "${E2E_KIND_CLUSTER_NUM}" | time parallel -- kind create cluster --name "${KIND_CLUSTER_PREFIX}-{}" --wait 5m
+  KIND_CONFIG_PREFIX="${HOME}/.kube/kind-config-${KIND_CLUSTER_PREFIX}"
+  seq 1 "${E2E_KIND_CLUSTER_NUM}" | time parallel -- env KUBECONFIG="${KIND_CONFIG_PREFIX}-{}" kind create cluster --name "${KIND_CLUSTER_PREFIX}-{}" --wait 5m
   for I in $(seq 1 "${E2E_KIND_CLUSTER_NUM}"); do
     defer kind --name "${KIND_CLUSTER_PREFIX}-${I}" delete cluster > /dev/null 2>&1 || true
+    defer rm -rf "${KIND_CONFIG_PREFIX}-${I}"
     # Wire tests with the right cluster based on their BATS_JOB_SLOT env variable
-    eval export KUBECONFIG_SLOT_"${I}"="$(kind --name="${KIND_CLUSTER_PREFIX}-${I}" get kubeconfig-path)"
+    eval export "KUBECONFIG_SLOT_${I}=${KIND_CONFIG_PREFIX}-${I}"
   done
 
   echo '>>> Loading images into the Kind cluster(s)'
@@ -59,5 +62,5 @@ HELM_VERSION=${HELM_VERSION:-}
   cd "${E2E_DIR}"
   export HELM_VERSION=${HELM_VERSION}
   # shellcheck disable=SC2086
-  "${E2E_DIR}/bats/bin/bats" --tap -t ${BATS_EXTRA_ARGS} ${E2E_TESTS}
+  "${E2E_DIR}/bats/bin/bats" -t ${BATS_EXTRA_ARGS} ${E2E_TESTS}
 )

@@ -6,12 +6,19 @@ metadata:
   namespace: demo
 spec:
   releaseName: podinfo-helm-repository
-  timeout: 300
+  timeout: 10
   resetValues: false
   forceUpgrade: false
+  rollback:
+    enable: true
   chart:
     repository: https://stefanprodan.github.io/podinfo
     name: podinfo
     version: 3.1.4
   values:
     replicaCount: 1
+
+    service:
+      enabled: true
+      type: NodePort
+      nodePort: 31199

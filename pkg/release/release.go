@@ -126,9 +126,10 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 			}
 		}
 	case hr.Spec.RepoChartSource != nil:
+		var fetched bool
 		var err error
 
-		chartPath, err = chartsync.EnsureChartFetched(client, r.config.ChartCache, hr.Spec.RepoChartSource)
+		chartPath, fetched, err = chartsync.EnsureChartFetched(client, r.config.ChartCache, hr.Spec.RepoChartSource)
 		revision = hr.Spec.RepoChartSource.Version
 
 		if err != nil {
@@ -137,9 +138,10 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 			logger.Log("error", err.Error())
 			return hr, err
 		}
-
-		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
-			v1.HelmReleaseChartFetched, corev1.ConditionTrue, ReasonDownloaded, "chart fetched: "+filepath.Base(chartPath)))
+		if fetched {
+			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
+				v1.HelmReleaseChartFetched, corev1.ConditionTrue, ReasonDownloaded, "chart fetched: "+filepath.Base(chartPath)))
+		}
 	default:
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
 			v1.HelmReleaseChartFetched, corev1.ConditionFalse, ReasonDownloadFailed, ErrNoChartSource.Error()))
@@ -216,6 +218,30 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 			return hr, err
 		}
 
+		// Determine if a release actually happened, as with Helm v3
+		// it is possible an i.e. validation error was returned while
+		// attempting to make a release, rolling back on this would
+		// either result in going back to a wrong version, or the
+		// complete removal of the Helm release.
+		//
+		// TODO(hidde): it would be better if we were able to act on
+		// the returned error. Doing this would however mean that we
+		// need to be able to match the errors with certainty, which
+		// is currently not possible as all returned errors are
+		// flattened and 'type checking' is thus only possible by
+		// performing string matches; a fairly insecure operation.
+		// With a bit of luck the upstream libraries will eventually
+		// move to the '%w' error wrapping added in Golang 1.13,
+		// making all of this a lot easier.
+		newRel, rErr := client.Status(hr.GetReleaseName(), helm.StatusOptions{Namespace: hr.GetTargetNamespace()})
+		if rErr != nil {
+			logger.Log("error", "failed to determine if Helm release can be rolled back", "err", err.Error())
+			return hr, rErr
+		}
+		if newRel.Version != (curRel.Version + 1) {
+			return hr, err
+		}
+
 		performRollback = true
 	} else {
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
@@ -226,6 +252,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 
 	// The upgrade attempt failed, rollback if instructed...
 	if performRollback {
+		logger.Log("info", "rolling back failed Helm release")
 		rel, err = client.Rollback(hr.GetReleaseName(), helm.RollbackOptions{
 			Namespace: hr.GetTargetNamespace(),
 			Timeout:   hr.GetTimeout(),
@@ -277,18 +304,18 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 	chartPath string, values values, logDiffs bool) (bool, error) {
 
 	if curRel == nil {
-		logger.Log("info", "no existing release; installing")
+		logger.Log("info", "no existing release", "action", "install")
 		// If there is no existing release, we should simply sync.
 		return true, nil
 	}
 
 	if ok, resourceID := managedByHelmRelease(curRel, *hr); !ok {
-		logger.Log("warning", "release appears to be managed by "+resourceID+"; skipping")
+		logger.Log("warning", "release appears to be managed by "+resourceID, "action", "skip")
 		return false, nil
 	}
 
-	if s := curRel.Info.Status; !s.Syncable() {
-		logger.Log("warning", "unable to sync release with status "+s.String()+"; skipping")
+	if s := curRel.Info.Status; !s.AllowsUpgrade() {
+		logger.Log("warning", "unable to sync release with status "+s.String(), "action", "skip")
 		return false, nil
 	}
 
@@ -297,10 +324,10 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 			// The release has been rolled back but the values have
 			// changed. We should attempt a new sync to see if the
 			// change resolved the issue that triggered the rollback.
-			logger.Log("info", "values appear to have changed since rollback; attempting upgrade")
+			logger.Log("info", "values appear to have changed since rollback", "action", "upgrade")
 			return true, nil
 		}
-		logger.Log("warning", "release has been rolled back; skipping")
+		logger.Log("warning", "release has been rolled back", "action", "skip")
 		return false, nil
 	}
 
@@ -310,19 +337,15 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 		return true, nil
 	}
 
-	// We use the UID as dry-run release name, as this value is unique,
-	// causes no collision with releases that may exist, and does not
-	// exceed the max release name length of 53 characters.
-	dryRunRelName := string(hr.UID)
 	b, err := values.YAML()
 	if err != nil {
 		// Without valid YAML values we are unable to sync.
 		return false, ErrComposingValues
 	}
 
-	// Perform the dry-run so that we can compare what we ought to be
-	// running matches what is defined in the `v1.HelmRelease`.
-	desRel, err := client.UpgradeFromPath(chartPath, dryRunRelName, b, helm.UpgradeOptions{ClientOnly: true, Install: true, DryRun: true})
+	// Perform a dry-run upgrade so that we can compare what we ought
+	// to be running matches what is defined in the `v1.HelmRelease`.
+	desRel, err := client.UpgradeFromPath(chartPath, hr.GetReleaseName(), b, helm.UpgradeOptions{DryRun: true})
 	if err != nil {
 		return false, err
 	}
