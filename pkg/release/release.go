@@ -218,6 +218,30 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 			return hr, err
 		}
 
+		// Determine if a release actually happened, as with Helm v3
+		// it is possible an i.e. validation error was returned while
+		// attempting to make a release, rolling back on this would
+		// either result in going back to a wrong version, or the
+		// complete removal of the Helm release.
+		//
+		// TODO(hidde): it would be better if we were able to act on
+		// the returned error. Doing this would however mean that we
+		// need to be able to match the errors with certainty, which
+		// is currently not possible as all returned errors are
+		// flattened and 'type checking' is thus only possible by
+		// performing string matches; a fairly insecure operation.
+		// With a bit of luck the upstream libraries will eventually
+		// move to the '%w' error wrapping added in Golang 1.13,
+		// making all of this a lot easier.
+		newRel, rErr := client.Status(hr.GetReleaseName(), helm.StatusOptions{Namespace: hr.GetTargetNamespace()})
+		if rErr != nil {
+			logger.Log("error", "failed to determine if Helm release can be rolled back", "err", err.Error())
+			return hr, rErr
+		}
+		if newRel.Version != (curRel.Version + 1) {
+			return hr, err
+		}
+
 		performRollback = true
 	} else {
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
@@ -228,6 +252,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 
 	// The upgrade attempt failed, rollback if instructed...
 	if performRollback {
+		logger.Log("info", "rolling back failed Helm release")
 		rel, err = client.Rollback(hr.GetReleaseName(), helm.RollbackOptions{
 			Namespace: hr.GetTargetNamespace(),
 			Timeout:   hr.GetTimeout(),

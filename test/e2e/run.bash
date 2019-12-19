@@ -41,7 +41,7 @@ if ! kubectl version > /dev/null 2>&1; then
   for I in $(seq 1 "${E2E_KIND_CLUSTER_NUM}"); do
     defer kind --name "${KIND_CLUSTER_PREFIX}-${I}" delete cluster > /dev/null 2>&1 || true
     # Wire tests with the right cluster based on their BATS_JOB_SLOT env variable
-    eval export KUBECONFIG_SLOT_"${I}"="$(kind --name="${KIND_CLUSTER_PREFIX}-${I}" get kubeconfig-path)"
+    eval export "KUBECONFIG_SLOT_${I}=${KIND_CONFIG_PREFIX}-${I}"
   done
 
   echo '>>> Loading images into the Kind cluster(s)'
