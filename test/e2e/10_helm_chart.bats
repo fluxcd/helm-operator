@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
 function setup() {
+  # Load libraries in setup() to access BATS_* variables 
   load lib/env
   load lib/install
   load lib/poll

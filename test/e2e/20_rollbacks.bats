@@ -1,10 +1,11 @@
 #!/usr/bin/env bats
 
-load lib/env
-load lib/install
-load lib/poll
-
 function setup() {
+  # Load libraries in setup() to access BATS_* variables
+  load lib/env
+  load lib/install
+  load lib/poll
+
   kubectl create namespace "$E2E_NAMESPACE"
   install_git_srv
   install_tiller

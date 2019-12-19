@@ -34,8 +34,10 @@ jobs:
             sudo killall apt-get || true
 
             sudo apt-get update
+            sudo apt-get install jq
             git version
             docker version
+            jq --version
       - restore_cache:
           keys:
             - cache-{{ checksum "Makefile" }}

@@ -21,3 +21,4 @@ spec:
     service:
       enabled: true
       type: NodePort
+      nodePort: 31198
