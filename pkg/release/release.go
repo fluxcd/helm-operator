@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/fluxcd/flux/pkg/git"
 	"github.com/go-kit/kit/log"
 	"github.com/google/go-cmp/cmp"
 
@@ -95,7 +96,10 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	var chartPath, revision string
 	switch {
 	case hr.Spec.GitChartSource != nil:
-		export, revision, err := r.gitChartSync.GetMirrorCopy(hr)
+		var export *git.Export
+		var err error
+
+		export, revision, err = r.gitChartSync.GetMirrorCopy(hr)
 		if err != nil {
 			switch err.(type) {
 			case chartsync.ChartUnavailableError:
