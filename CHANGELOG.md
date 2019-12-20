@@ -1,3 +1,85 @@
+## 1.0.0-rc5 (2019-12-23)
+
+> **Notice:** upgrading to this version from `<=0.10.x` by just
+> updating your Helm Operator image tag is not possible as the
+> CRD domain and version have changed. An upgrade guide can be
+> found [here](./docs/guides/upgrading-to-ga.md).
+
+> **Notice:**  due to the added `helmVersion` field, you need
+> to re-apply the `HelmRelease` CRD.
+
+This release brings Helm v3 support to the release candidate,
+Helm v3 functionalities should be considered _beta_. Support for
+Helm v2 and v3 is enabled by default. To target Helm v3, set the
+`.spec.helmVersion` in a `HelmRelease` to `v3`.
+
+Enabling _just_ Helm v3 is possible by configuring
+`--enabled-helm-versions=v3`, this will also make the
+`.spec.helmVersion` default to `v3`.
+
+To be able to support multiple Helm versions large parts of the
+operator had to be rewritten, which lead to several improvements
+around release deciscion making and keeping track of charts from
+Git sources. We also no longer shell out to the `helm` binary
+to achieve certain functionalities but instead make directly use
+of the available Helm packages, this will also ease the support
+of charts from OCI sources in upcoming releases.
+
+Extensive documentation will be added in the next release candidate,
+which will likely also be the last RC before moving to GA.
+
+### Improvements
+
+ - Helm v3 support (`v3.0.1`)
+   [fluxcd/helm-operator#156][#156]
+
+   With a subset of notable PRs:
+   - Include of `helm2` and `helm3` binaries in Docker image
+     [fluxcd/helm-operator#118][#118]
+   - Support for importing Helm v2 and v3 repositories using
+     the `--helm-repository-import` flag
+     [fluxcd/helm-operator#141][#141]
+   - Refactor of downloads from Helm chart repositories; it
+     now uses the download manager from Helm instead of our
+     own logic
+     [fluxcd/helm-operator#145][#145]
+   - Refactor of dependency updates; it now uses the download
+     manager from Helm instead of shelling out to the `helm`
+     binary
+     [fluxcd/helm-operator#145][#145]
+ - Decoupling of release reconciliation from chart source sync
+   [fluxcd/helm-operator#99][#99]
+
+### Maintenance and documentation
+
+ - Build: upgrade Go to `1.13.3`
+   [fluxcd/helm-operator#104][#90]
+ - Pkg: only use `fluxcd/flux`
+   [fluxcd/helm-operator#104][#104]
+ - Build: end-to-end tests
+   [fluxcd/helm-operator#]{[#110][], [#118][], [#148][], [#150][]}
+
+### Thanks
+
+Thanks @carnott-snap, @karuppiah7890, @hiddeco, @stefanprodan,
+@2opremio and @stefansedich for contributions to this release.
+
+Plus a special thanks to users testing the alpha version with Helm
+v3 support, notably @gsf, @dminca, @rowecharles, @eschereisin,
+@stromvirvel, @timja, @dragonsmith, @maxstepanov, @jan-schumacher,
+@StupidScience, @brew, and all others that may have gone unnoticed.
+
+[#90]: https://github.com/fluxcd/helm-operator/pull/90
+[#99]: https://github.com/fluxcd/helm-operator/pull/99
+[#104]: https://github.com/fluxcd/helm-operator/pull/104
+[#110]: https://github.com/fluxcd/helm-operator/pull/110
+[#118]: https://github.com/fluxcd/helm-operator/pull/118
+[#141]: https://github.com/fluxcd/helm-operator/pull/141
+[#145]: https://github.com/fluxcd/helm-operator/pull/145
+[#148]: https://github.com/fluxcd/helm-operator/pull/148
+[#150]: https://github.com/fluxcd/helm-operator/pull/150
+[#156]: https://github.com/fluxcd/helm-operator/pull/156
+
 ## 1.0.0-rc4 (2019-11-22)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
@@ -18,7 +100,7 @@
    [fluxcd/helm-operator#101][#101]
  - Documentation: document `timeout`, `resetValues` and `forceUpgrade`
    `HelmRelease` fields
-   [fluxcd/helm-operator#882[#82]
+   [fluxcd/helm-operator#82][#82]
 
 ### Thanks 
 
