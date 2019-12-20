@@ -22,8 +22,8 @@ import (
 const VERSION = "v2"
 
 var (
-	repositoryConfig   = helmHome().RepositoryFile()
-	repositoryCache    = helmHome().Cache()
+	repositoryConfig = helmHome().RepositoryFile()
+	repositoryCache  = helmHome().Cache()
 )
 
 // TillerOptions holds configuration options for tiller

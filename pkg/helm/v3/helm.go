@@ -117,7 +117,7 @@ func initActionConfig(kubeConfig *rest.Config, opts HelmOptions) (*action.Config
 func writeTempKubeConfig(kc *rest.Config) (string, string, func(), error) {
 	tmpDir, err := ioutil.TempDir("", "helmv3")
 	if err != nil {
-		return "", "", func(){}, err
+		return "", "", func() {}, err
 	}
 	cleanup := func() { os.RemoveAll(tmpDir) }
 
