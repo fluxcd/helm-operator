@@ -1,6 +1,10 @@
 package v3
 
 import (
+	"sort"
+
+	"github.com/ncabatoff/go-seq/seq"
+
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/release"
@@ -26,10 +30,39 @@ func releaseToGenericRelease(r *release.Release) *helm.Release {
 // a generic `helm.Chart`
 func chartToGenericChart(c *chart.Chart) *helm.Chart {
 	return &helm.Chart{
-		Name:       c.Name(),
-		Version:    formatVersion(c),
-		AppVersion: c.AppVersion(),
+		Name:         c.Name(),
+		Version:      formatVersion(c),
+		AppVersion:   c.AppVersion(),
+		Files:        filesToGenericFiles(c.Files),
+		Templates:    filesToGenericFiles(c.Templates),
+		Dependencies: dependenciesToGenericDependencies(c.Dependencies()),
 	}
+}
+
+// filesToGenericFiles transforms a `chart.File` slice into
+// an stable sorted slice with generic `helm.File`s
+func filesToGenericFiles(f []*chart.File) []*helm.File {
+	gf := make([]*helm.File, len(f))
+	for i, ff := range f {
+		gf[i] = &helm.File{Name: ff.Name, Data: ff.Data}
+	}
+	sort.SliceStable(gf, func(i, j int) bool {
+		return seq.Compare(gf[i], gf[j]) > 0
+	})
+	return gf
+}
+
+// dependenciesToGenericDependencies transforms a `chart.Chart` dependency
+// slice into a stable sorted slice with generic `helm.Chart` dependencies.
+func dependenciesToGenericDependencies(d []*chart.Chart) []*helm.Chart {
+	gd := make([]*helm.Chart, len(d))
+	for i, dd := range d {
+		gd[i] = chartToGenericChart(dd)
+	}
+	sort.SliceStable(gd, func(i, j int) bool {
+		return seq.Compare(gd[i], gd[j]) > 0
+	})
+	return gd
 }
 
 // infoToGenericInfo transforms a v3 info structure into

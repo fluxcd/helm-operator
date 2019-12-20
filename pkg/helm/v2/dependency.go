@@ -12,10 +12,10 @@ func (h *HelmV2) DependencyUpdate(chartPath string) error {
 
 	out := helm.NewLogWriter(h.logger)
 	man := downloader.Manager{
-		Out: out,
+		Out:       out,
 		ChartPath: chartPath,
-		HelmHome: helmHome(),
-		Getters: getters,
+		HelmHome:  helmHome(),
+		Getters:   getters,
 	}
 	return man.Update()
 }

@@ -7,11 +7,13 @@ require (
 	github.com/fluxcd/flux v1.15.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-kit/kit v0.9.0
+	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.3.1
 	github.com/gorilla/handlers v1.4.2 // indirect
 	github.com/gorilla/mux v1.7.1
 	github.com/gosuri/uitable v0.0.3 // indirect
 	github.com/instrumenta/kubeval v0.0.0-20190804145309-805845b47dfc
+	github.com/ncabatoff/go-seq v0.0.0-20180805175032-b08ef85ed833
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.2.1
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749

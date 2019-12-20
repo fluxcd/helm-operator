@@ -14,7 +14,7 @@ var (
 	repositoryConfigLock sync.RWMutex
 	getters              = getter.Providers{{
 		Schemes: []string{"http", "https"},
-		New:     func(URL, CertFile, KeyFile, CAFile string) (getter.Getter, error) {
+		New: func(URL, CertFile, KeyFile, CAFile string) (getter.Getter, error) {
 			return getter.NewHTTPGetter(URL, CertFile, KeyFile, CAFile)
 		},
 	}}

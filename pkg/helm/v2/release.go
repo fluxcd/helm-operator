@@ -1,7 +1,11 @@
 package v2
 
 import (
+	"sort"
 	"time"
+
+	"github.com/golang/protobuf/ptypes/any"
+	"github.com/ncabatoff/go-seq/seq"
 
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/proto/hapi/chart"
@@ -33,10 +37,52 @@ func chartToGenericChart(c *chart.Chart) *helm.Chart {
 		return nil
 	}
 	return &helm.Chart{
-		Name:       c.Metadata.Name,
-		Version:    c.Metadata.Version,
-		AppVersion: c.Metadata.AppVersion,
+		Name:         c.Metadata.Name,
+		Version:      c.Metadata.Version,
+		AppVersion:   c.Metadata.AppVersion,
+		Files:        filesToGenericFiles(c.Files),
+		Templates:    templatesToGenericFiles(c.Templates),
+		Dependencies: dependenciesToGenericDependencies(c.Dependencies),
 	}
+}
+
+// filesToGenericFiles transforms an `any.Any` slice into a
+// stable sorted slice with generic `helm.File`s
+func filesToGenericFiles(f []*any.Any) []*helm.File {
+	gf := make([]*helm.File, len(f))
+	for i, ff := range f {
+		gf[i] = &helm.File{Name: ff.TypeUrl, Data: ff.Value}
+	}
+	sort.SliceStable(gf, func(i, j int) bool {
+		return seq.Compare(gf[i], gf[j]) > 0
+	})
+	return gf
+}
+
+// filesToGenericFiles transforms a `chart.Template` slice into
+// a stable sorted slice with generic `helm.File`s
+func templatesToGenericFiles(t []*chart.Template) []*helm.File {
+	gf := make([]*helm.File, len(t))
+	for i, tf := range t {
+		gf[i] = &helm.File{Name: tf.Name, Data: tf.Data}
+	}
+	sort.SliceStable(gf, func(i, j int) bool {
+		return seq.Compare(gf[i], gf[j]) > 0
+	})
+	return gf
+}
+
+// dependenciesToGenericDependencies transforms a `chart.Chart` dependency
+// slice into a stable sorted slice with generic `helm.Chart` dependencies.
+func dependenciesToGenericDependencies(d []*chart.Chart) []*helm.Chart {
+	gd := make([]*helm.Chart, len(d))
+	for i, dd := range d {
+		gd[i] = chartToGenericChart(dd)
+	}
+	sort.SliceStable(gd, func(i, j int) bool {
+		return seq.Compare(gd[i], gd[j]) > 0
+	})
+	return gd
 }
 
 // infoToGenericInfo transforms a v2 info structure into

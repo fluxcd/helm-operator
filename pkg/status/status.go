@@ -30,10 +30,10 @@ import (
 )
 
 type Updater struct {
-	hrClient    ifclientset.Interface
-	hrLister    iflister.HelmReleaseLister
-	kube        kube.Interface
-	helmClients *helm.Clients
+	hrClient           ifclientset.Interface
+	hrLister           iflister.HelmReleaseLister
+	kube               kube.Interface
+	helmClients        *helm.Clients
 	defaultHelmVersion string
 }
 
