@@ -7,24 +7,19 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	"k8s.io/helm/pkg/chartutil"
 
 	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 )
 
-func TestValues(t *testing.T) {
+func TestComposeValues(t *testing.T) {
+	namespace := "flux"
 	falseVal := false
-
-	chartValues, _ := chartutil.ReadValues([]byte(`image:
-  tag: 1.1.1
-valuesDict:
-  chart: true`))
 
 	client := fake.NewSimpleClientset(
 		&corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "release-configmap",
-				Namespace: "flux",
+				Namespace: namespace,
 			},
 			Data: map[string]string{
 				"values.yaml": `valuesDict:
@@ -34,7 +29,7 @@ valuesDict:
 		&corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "release-secret",
-				Namespace: "flux",
+				Namespace: namespace,
 			},
 			Data: map[string][]byte{
 				"values.yaml": []byte(`valuesDict:
@@ -69,10 +64,15 @@ valuesDict:
 			ChartFileRef:      nil,
 		}}
 
-	values, err := Values(client.CoreV1(), "flux", "", valuesFromSource, chartValues)
+	hr := &helmfluxv1.HelmRelease{
+		Spec: helmfluxv1.HelmReleaseSpec{
+			ValuesFrom: valuesFromSource,
+		},
+	}
+	hr.Namespace = namespace
+
+	values, err := composeValues(client.CoreV1(), hr, "")
 	assert.NoError(t, err)
-	assert.Equal(t, "1.1.1", values["image"].(map[string]interface{})["tag"])
-	assert.NotNil(t, values["valuesDict"].(map[string]interface{})["chart"])
 	assert.NotNil(t, values["valuesDict"].(map[string]interface{})["configmap"])
 	assert.NotNil(t, values["valuesDict"].(map[string]interface{})["secret"])
 }

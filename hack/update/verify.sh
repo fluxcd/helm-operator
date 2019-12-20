@@ -14,15 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
+set -o errexit -o nounset -o pipefail
 
-SCRIPT_ROOT=$(dirname "${BASH_SOURCE}")/..
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 
-DIFFROOT="${SCRIPT_ROOT}/pkg"
-TMP_DIFFROOT="${SCRIPT_ROOT}/_tmp/pkg"
-_tmp="${SCRIPT_ROOT}/_tmp"
+DIFFROOT="${REPO_ROOT}/pkg"
+TMP_DIFFROOT="${REPO_ROOT}/_tmp/pkg"
+_tmp="${REPO_ROOT}/_tmp"
 
 cleanup() {
   rm -rf "${_tmp}"
@@ -34,7 +32,7 @@ cleanup
 mkdir -p "${TMP_DIFFROOT}"
 cp -a "${DIFFROOT}"/* "${TMP_DIFFROOT}"
 
-"${SCRIPT_ROOT}/hack/update-codegen.sh"
+"${REPO_ROOT}/hack/update/generated.sh"
 echo "diffing ${DIFFROOT} against freshly generated codegen"
 ret=0
 diff -Naupr "${DIFFROOT}" "${TMP_DIFFROOT}" || ret=$?
@@ -43,6 +41,6 @@ if [[ $ret -eq 0 ]]
 then
   echo "${DIFFROOT} up to date."
 else
-  echo "${DIFFROOT} is out of date. Please run hack/update-codegen.sh"
+  echo "${DIFFROOT} is out of date. Please run hack/update/generated.sh"
   exit 1
 fi
