@@ -21,6 +21,7 @@ and the Helm Operator makes sure Helm charts are released as specified in the re
 * automated chart upgrades based on container image tag policies (requires Flux)
 * automatic purging on chart install failures
 * automatic rollback on chart upgrade failures
+* supports both Helm v2 and v3
 
 ## Get started with the Helm Operator
 
