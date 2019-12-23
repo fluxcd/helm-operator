@@ -30,6 +30,10 @@ statusUpdateInterval:
 # Amount of workers processing releases
 workers: 2
 
+# Helm versions supported by this operator instance
+helm:
+  versions: "v2,v3"
+
 # Tiller settings
 # If a hostname or IP is given here, that will be combined with the
 # tillerPort and used for connecting to Tiller. Otherwise, the
