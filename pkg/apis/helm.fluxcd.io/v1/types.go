@@ -3,13 +3,17 @@ package v1
 import (
 	"fmt"
 	"strings"
-
-	"github.com/ghodss/yaml"
-	"k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/helm/pkg/chartutil"
+	"time"
 
 	"github.com/fluxcd/flux/pkg/resource"
+	"github.com/ghodss/yaml"
+
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"k8s.io/helm/pkg/chartutil"
+
+	"github.com/fluxcd/helm-operator/pkg/helm/v2"
 )
 
 // +genclient
@@ -31,12 +35,12 @@ func (hr HelmRelease) ResourceID() resource.ID {
 	return resource.MakeID(hr.Namespace, "HelmRelease", hr.Name)
 }
 
-// ReleaseName returns the configured release name, or constructs and
+// GetReleaseName returns the configured release name, or constructs and
 // returns one based on the namespace and name of the HelmRelease.
 // When the HelmRelease's metadata.namespace and spec.targetNamespace
 // differ, both are used in the generated name.
 // This name is used for naming and operating on the release in Helm.
-func (hr HelmRelease) ReleaseName() string {
+func (hr HelmRelease) GetReleaseName() string {
 	if hr.Spec.ReleaseName == "" {
 		namespace := hr.GetDefaultedNamespace()
 		targetNamespace := hr.GetTargetNamespace()
@@ -150,16 +154,17 @@ type Rollback struct {
 	Wait         bool   `json:"wait,omitempty"`
 }
 
-func (r Rollback) GetTimeout() int64 {
+func (r Rollback) GetTimeout() time.Duration {
 	if r.Timeout == nil {
-		return 300
+		return 300 * time.Second
 	}
-	return *r.Timeout
+	return time.Duration(*r.Timeout) * time.Second
 }
 
 // HelmReleaseSpec is the spec for a HelmRelease resource
 type HelmReleaseSpec struct {
 	ChartSource      `json:"chart"`
+	HelmVersion      string                    `json:"helmVersion,omitempty"`
 	ReleaseName      string                    `json:"releaseName,omitempty"`
 	ValueFileSecrets []v1.LocalObjectReference `json:"valueFileSecrets,omitempty"`
 	ValuesFrom       []ValuesFromSource        `json:"valuesFrom,omitempty"`
@@ -181,12 +186,22 @@ type HelmReleaseSpec struct {
 	Rollback Rollback `json:"rollback,omitempty"`
 }
 
-// GetTimeout returns the install or upgrade timeout (defaults to 300s)
-func (hr HelmRelease) GetTimeout() int64 {
-	if hr.Spec.Timeout == nil {
-		return 300
+func (hr HelmRelease) GetHelmVersion(defaultVersion string) string {
+	if hr.Spec.HelmVersion != "" {
+		return hr.Spec.HelmVersion
 	}
-	return *hr.Spec.Timeout
+	if defaultVersion != "" {
+		return defaultVersion
+	}
+	return v2.VERSION
+}
+
+// GetTimeout returns the install or upgrade timeout (defaults to 300s)
+func (hr HelmRelease) GetTimeout() time.Duration {
+	if hr.Spec.Timeout == nil {
+		return 300 * time.Second
+	}
+	return time.Duration(*hr.Spec.Timeout) * time.Second
 }
 
 // GetValuesFromSources maintains backwards compatibility with

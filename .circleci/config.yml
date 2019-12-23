@@ -4,11 +4,12 @@ jobs:
     working_directory: /home/circleci/go/src/github.com/fluxcd/helm-operator
     machine:
       image: ubuntu-1604:201903-01
+    resource_class: large
     environment:
-      GO_VERSION: 1.12.5
+      GO_VERSION: 1.13.3
       # We don't need a GOPATH but CircleCI defines it, so we override it
       GOPATH: /home/circleci/go
-      GO111MODULE: 'on'
+      GOPROXY: https://proxy.golang.org
       PATH: /bin:/usr/bin:/usr/local/go/bin:/home/circleci/go/bin
     steps:
       - checkout
@@ -33,8 +34,10 @@ jobs:
             sudo killall apt-get || true
 
             sudo apt-get update
+            sudo apt-get install jq
             git version
             docker version
+            jq --version
       - restore_cache:
           keys:
             - cache-{{ checksum "Makefile" }}
@@ -52,7 +55,16 @@ jobs:
       - run: make test TEST_FLAGS="-race -timeout 60s"
       - run: make all
       - run: make test-docs
-      - run: make e2e
+      - run:
+          name: End-to-end Helm v2
+          command: E2E_KIND_CLUSTER_NUM=4 make e2e
+          environment:
+            HELM_VERSION: v2
+      - run:
+          name: End-to-end Helm v3
+          command: E2E_KIND_CLUSTER_NUM=4 make e2e
+          environment:
+            HELM_VERSION: v3
       - save_cache:
           key: cache-{{ checksum "Makefile" }}
           paths:
@@ -69,6 +81,12 @@ jobs:
           name: Maybe push prerelease images
           command: |
             if [ -z "${CIRCLE_TAG}" -a "${CIRCLE_BRANCH}" == "master" ]; then
+              echo "$DOCKER_FLUXCD_PASSWORD" | docker login --username "$DOCKER_FLUXCD_USER" --password-stdin
+
+              docker tag "docker.io/fluxcd/helm-operator:$(docker/image-tag)" "docker.io/fluxcd/helm-operator-prerelease:$(docker/image-tag)"
+              docker push "docker.io/fluxcd/helm-operator-prerelease:$(docker/image-tag)"
+            fi
+            if [ -z "${CIRCLE_TAG}" -a "${CIRCLE_BRANCH}" == "helm-v3-dev" ]; then
               echo "$DOCKER_FLUXCD_PASSWORD" | docker login --username "$DOCKER_FLUXCD_USER" --password-stdin
 
               docker tag "docker.io/fluxcd/helm-operator:$(docker/image-tag)" "docker.io/fluxcd/helm-operator-prerelease:$(docker/image-tag)"
@@ -96,7 +114,7 @@ jobs:
 
   helm:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
     steps:
       - checkout
       - run:
