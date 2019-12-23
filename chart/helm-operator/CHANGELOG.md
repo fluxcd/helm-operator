@@ -1,3 +1,16 @@
+## 0.4.0 (2019-12-23)
+
+### Improvements
+
+ - Add `helm.versions` option to chart values
+   [fluxcd/helm-operator#159](https://github.com/fluxcd/helm-operator/pull/159)
+ - Update Helm Operator to `1.0.0-rc5`
+   [fluxcd/helm-operator#157](https://github.com/fluxcd/helm-operator/pull/157)
+ - Add Service and ServiceMonitor templates
+   [fluxcd/helm-operator#139](https://github.com/fluxcd/helm-operator/pull/139)
+ - Add extraVolumes and extraVolumeMounts
+   [fluxcd/helm-operator#125](https://github.com/fluxcd/helm-operator/pull/125)
+
 ## 0.3.0 (2019-11-22)
 
 ### Improvements
