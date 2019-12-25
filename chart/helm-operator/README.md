@@ -33,7 +33,7 @@ Install Helm Operator for Helm v3 only:
 ```sh
 helm upgrade -i helm-operator fluxcd/helm-operator \
 --namespace fluxcd \
---set helm.version=v3
+--set helm.versions=v3
 ```
 
 By default the `helm.versions` is set to `v2,v3`, in this mode Tiller is required.
