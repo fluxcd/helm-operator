@@ -2,6 +2,7 @@ package v3
 
 import (
 	"helm.sh/helm/v3/pkg/downloader"
+	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
 	"k8s.io/helm/pkg/urlutil"
 
@@ -9,6 +10,10 @@ import (
 )
 
 func (h *HelmV3) Pull(ref, version, dest string) (string, error) {
+	return h.PullWithOptions(ref, version, dest, []getter.Option{})
+}
+
+func (h *HelmV3) PullWithOptions(ref, version, dest string, options []getter.Option) (string, error) {
 	repositoryConfigLock.RLock()
 	defer repositoryConfigLock.RUnlock()
 
@@ -19,6 +24,7 @@ func (h *HelmV3) Pull(ref, version, dest string) (string, error) {
 		RepositoryConfig: repositoryConfig,
 		RepositoryCache:  repositoryCache,
 		Getters:          getters,
+		Options:          options,
 	}
 	d, _, err := c.DownloadTo(ref, version, dest)
 	return d, err
@@ -61,5 +67,5 @@ func (h *HelmV3) PullWithRepoURL(repoURL, name, version, dest string) (string, e
 		return "", err
 	}
 
-	return h.Pull(chartURL, version, dest)
+	return h.PullWithOptions(chartURL, version, dest, []getter.Option{getter.WithBasicAuth(repoEntry.Username, repoEntry.Password)})
 }
