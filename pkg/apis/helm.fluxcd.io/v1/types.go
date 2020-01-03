@@ -129,9 +129,10 @@ type ChartSource struct {
 }
 
 type GitChartSource struct {
-	GitURL string `json:"git"`
-	Ref    string `json:"ref"`
-	Path   string `json:"path"`
+	GitURL  string   `json:"git"`
+	Ref     string   `json:"ref"`
+	Path    string   `json:"path"`
+	GitAuth *GitAuth `json:"auth,omitempty"`
 	// Do not run 'dep' update (assume requirements.yaml is already fulfilled)
 	// +optional
 	SkipDepUpdate bool `json:"skipDepUpdate,omitempty"`
@@ -144,6 +145,18 @@ func (s GitChartSource) RefOrDefault(defaultGitRef string) string {
 		return defaultGitRef
 	}
 	return s.Ref
+}
+
+type GitAuth struct {
+	Username *AuthVar `json:"username,omitempty"`
+	Password *AuthVar `json:"password,omitempty"`
+}
+
+type AuthVar struct {
+	// +optional
+	Value string `json:"value,omitempty"`
+	// +optional
+	ValueFrom *corev1.SecretKeySelector `json:"valueFrom,omitempty"`
 }
 
 type RepoChartSource struct {

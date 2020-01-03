@@ -3,13 +3,18 @@ package chartsync
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net/url"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/fluxcd/flux/pkg/git"
 	"github.com/go-kit/kit/log"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
@@ -41,6 +46,7 @@ type GitChartSync struct {
 	logger log.Logger
 	config GitConfig
 
+	coreV1Client corev1client.CoreV1Interface
 	lister lister.HelmReleaseLister
 
 	mirrors *git.Mirrors
@@ -78,11 +84,12 @@ func (c sourceRef) forHelmRelease(hr *v1.HelmRelease) bool {
 }
 
 func NewGitChartSync(logger log.Logger,
-	lister lister.HelmReleaseLister, cfg GitConfig, queue ReleaseQueue) *GitChartSync {
+	coreV1Client corev1client.CoreV1Interface, lister lister.HelmReleaseLister, cfg GitConfig, queue ReleaseQueue) *GitChartSync {
 
 	return &GitChartSync{
 		logger:             logger,
 		config:             cfg,
+		coreV1Client: 		coreV1Client,
 		lister:             lister,
 		mirrors:            git.NewMirrors(),
 		releaseSourcesByID: make(map[string]sourceRef),
@@ -121,7 +128,7 @@ func (c *GitChartSync) Run(stopCh <-chan struct{}, errCh chan error, wg *sync.Wa
 
 						c.logger.Log("warning", ErrNoMirror.Error(), "mirror", mirrorName)
 						for _, hr := range hrs {
-							c.maybeMirror(mirrorName, hr.Spec.GitChartSource.GitURL)
+							c.maybeMirror(mirrorName, hr.Spec.GitChartSource, hr.Namespace)
 						}
 						// Wait for the signal from the newly requested mirror...
 						continue
@@ -155,7 +162,7 @@ func (c *GitChartSync) GetMirrorCopy(hr *v1.HelmRelease) (*git.Export, string, e
 	if !ok {
 		// We did not find a mirror; request one, return, and wait for
 		// signal.
-		c.maybeMirror(mirror, hr.Spec.GitURL)
+		c.maybeMirror(mirror, hr.Spec.GitChartSource, hr.Namespace)
 		return nil, "", ChartNotReadyError{ErrNoMirror}
 	}
 
@@ -284,12 +291,17 @@ func (c *GitChartSync) sync(hr *v1.HelmRelease, mirrorName string, repo *git.Rep
 // maybeMirror requests a new mirror for the given remote. The return value
 // indicates whether the repo was already present (`true` if so,
 // `false` otherwise).
-func (c *GitChartSync) maybeMirror(mirrorName string, remote string) bool {
+func (c *GitChartSync) maybeMirror(mirrorName string, source *v1.GitChartSource, namespace string) bool {
+	gitURL := source.GitURL
+	if source.GitAuth != nil {
+		gitURL, _ = c.addAuthForHTTPS(gitURL, source.GitAuth, namespace)
+	}
+
 	ok := c.mirrors.Mirror(
-		mirrorName, git.Remote{URL: remote}, git.Timeout(c.config.GitTimeout),
+		mirrorName, git.Remote{URL: gitURL}, git.Timeout(c.config.GitTimeout),
 		git.PollInterval(c.config.GitPollInterval), git.ReadOnly)
 	if !ok {
-		c.logger.Log("info", "started mirroring new remote", "remote", remote, "mirror", mirrorName)
+		c.logger.Log("info", "started mirroring new remote", "remote", source.GitURL, "mirror", mirrorName)
 	}
 	return ok
 }
@@ -320,4 +332,53 @@ func mirrorName(hr *v1.HelmRelease) string {
 		return hr.Spec.GitURL
 	}
 	return ""
+}
+
+func (c *GitChartSync) addAuthForHTTPS(gitURL string, auth *v1.GitAuth, namespace string) (string, error) {
+	if auth == nil {
+		return gitURL, nil
+	}
+
+	if !strings.HasPrefix(gitURL, "https") {
+		return gitURL, nil
+	}
+
+	modifiedURL, err := url.Parse(gitURL)
+	if err != nil {
+		return "", err
+	}
+
+	username, err := c.getAuthValue(auth.Username, namespace)
+	if err != nil {
+		return "", err
+	}
+	password, err := c.getAuthValue(auth.Password, namespace)
+	if err != nil {
+		return "", err
+	}
+
+	modifiedURL.User = url.UserPassword(username, password)
+
+	return modifiedURL.String(), nil
+}
+
+func (c *GitChartSync) getAuthValue(authVal *v1.AuthVar, ns string) (string, error) {
+	switch {
+	case authVal.Value != "":
+		return authVal.Value, nil
+	case authVal.ValueFrom != nil:
+		name := authVal.ValueFrom.Name
+		key := authVal.ValueFrom.Key
+		secret, err := c.coreV1Client.Secrets(ns).Get(name, metav1.GetOptions{})
+		if err != nil {
+			return "", err
+		}
+		d, ok := secret.Data[key]
+		if !ok {
+			return "", fmt.Errorf("could not find key %s in Secret %s/%s", key, ns, name)
+		}
+		return string(d), nil
+	default:
+		return "", fmt.Errorf("unable to get value for auth value")
+	}
 }
