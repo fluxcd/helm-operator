@@ -29,6 +29,13 @@ func (h *HelmV2) PullWithRepoURL(repoURL, name, version, dest string) (string, e
 	// version to a URL, we have to have the index file; and to have
 	// that, we may need to authenticate. The credentials will be in
 	// the repository config.
+
+	// Ensure we have all repo indexes as this is needed by Helm v2 downloader
+	err := h.RepositoryIndex()
+	if err != nil {
+		return "", err
+	}
+
 	repositoryConfigLock.RLock()
 	repoFile, err := loadRepositoryConfig()
 	repositoryConfigLock.RUnlock()
@@ -43,11 +50,6 @@ func (h *HelmV2) PullWithRepoURL(repoURL, name, version, dest string) (string, e
 	for _, entry := range repoFile.Repositories {
 		if urlutil.Equal(repoEntry.URL, entry.URL) {
 			repoEntry = entry
-			// Ensure we have the repository index as this is
-			// later used by Helm.
-			if r, err := repo.NewChartRepository(repoEntry, getters); err == nil {
-				r.DownloadIndexFile(repositoryCache)
-			}
 			break
 		}
 	}
