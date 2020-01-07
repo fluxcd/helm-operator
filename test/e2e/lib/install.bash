@@ -78,7 +78,7 @@ function install_git_srv() {
     read -r local_port <&"${COPROC[0]}"-
     # shellcheck disable=SC2001
     local_port=$(echo "$local_port" | sed 's%.*:\([0-9]*\).*%\1%')
-    local ssh_cmd="ssh -o UserKnownHostsFile=/dev/null  -o StrictHostKeyChecking=no -i $gen_dir/id_rsa -p $local_port"
+    local ssh_cmd="ssh -o UserKnownHostsFile=/dev/null  -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i $gen_dir/id_rsa -p $local_port"
     # return the ssh command needed for git, and the PID of the port-forwarding PID into a variable of choice
     eval "${external_access_result_var}=('$ssh_cmd' '$COPROC_PID')"
   fi
