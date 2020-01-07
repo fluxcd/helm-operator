@@ -22,7 +22,7 @@ function setup() {
   kubectl create namespace "$DEMO_NAMESPACE"
 }
 
-@test "Git mituation causes upgrade" {
+@test "Git mutation causes upgrade" {
   # Apply the HelmRelease fixtures
   kubectl apply -f "$FIXTURES_DIR/releases/git.yaml" >&3
 
