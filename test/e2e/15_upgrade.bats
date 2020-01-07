@@ -51,7 +51,7 @@ function setup() {
 }
 
 function teardown() {
-  run_deffered
+  run_deferred
 
   # Removing the operator also takes care of the global resources it installs.
   uninstall_helm_operator_with_helm
