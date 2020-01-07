@@ -41,8 +41,7 @@ function install_helm_operator_with_helm() {
     --set configureRepositories.enable=true \
     --set configureRepositories.repositories[0].name="podinfo" \
     --set configureRepositories.repositories[0].url="https://stefanprodan.github.io/podinfo" \
-    --set extraEnvs[0].name="HELM_VERSION" \
-    --set extraEnvs[0].value="${HELM_VERSION:-v2\,v3}" \
+    --set helm.versions="${HELM_VERSION:-v2\,v3}" \
     "${ROOT_DIR}/chart/helm-operator"
 }
 

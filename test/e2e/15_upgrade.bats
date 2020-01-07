@@ -22,7 +22,7 @@ function setup() {
   kubectl create namespace "$DEMO_NAMESPACE"
 }
 
-@test "Git mituation causes upgrade" {
+@test "Git mutation causes upgrade" {
   # Apply the HelmRelease fixtures
   kubectl apply -f "$FIXTURES_DIR/releases/git.yaml" >&3
 
@@ -51,7 +51,7 @@ function setup() {
 }
 
 function teardown() {
-  run_deffered
+  run_deferred
 
   # Removing the operator also takes care of the global resources it installs.
   uninstall_helm_operator_with_helm
