@@ -50,6 +50,34 @@ function setup() {
   poll_until_equals 'podinfo-git HelmRelease revision matches' "$head_hash" "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.revision}'"
 }
 
+@test "Git values.yaml change causes upgrade" {
+  # Apply the HelmRelease fixtures
+  kubectl apply -f "$FIXTURES_DIR/releases/git.yaml" >&3
+
+  # Wait for it to be deployed
+  poll_until_equals 'podinfo-git HelmRelease' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o 'custom-columns=status:status.releaseStatus' --no-headers"
+
+  # Clone the charts repository
+  local clone_dir
+  clone_dir="$(mktemp -d)"
+  defer rm -rf "'$clone_dir'"
+  git clone -b master ssh://git@localhost/git-server/repos/cluster.git "$clone_dir"
+  cd "$clone_dir"
+
+  # Make a values.yaml mutation in Git
+  sed -i 's%replicaCount: 1%replicaCount: 2%' charts/podinfo/values.yaml
+  git add charts/podinfo/values.yaml
+  git -c 'user.email=foo@bar.com' -c 'user.name=Foo' commit -m "Change replicaCount to 2"
+
+  # Record new HEAD and push change
+  head_hash=$(git rev-list -n 1 HEAD)
+  git push >&3
+
+  # Assert change is rolled out
+  poll_until_equals 'podinfo-git HelmRelease chart update' "successfully cloned chart revision: $head_hash" "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.type==\"ChartFetched\")].message}'"
+  poll_until_equals 'podinfo-git HelmRelease revision matches' "$head_hash" "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.revision}'"
+}
+
 function teardown() {
   run_deferred
 

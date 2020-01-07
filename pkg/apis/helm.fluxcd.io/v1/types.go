@@ -8,12 +8,11 @@ import (
 	"github.com/fluxcd/flux/pkg/resource"
 	"github.com/ghodss/yaml"
 
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"k8s.io/helm/pkg/chartutil"
-
-	"github.com/fluxcd/helm-operator/pkg/helm/v2"
+	"github.com/fluxcd/helm-operator/pkg/helm"
+	helmv2 "github.com/fluxcd/helm-operator/pkg/helm/v2"
 )
 
 // +genclient
@@ -78,10 +77,10 @@ func (hr HelmRelease) GetTargetNamespace() string {
 type ValuesFromSource struct {
 	// Selects a key of a ConfigMap.
 	// +optional
-	ConfigMapKeyRef *v1.ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
+	ConfigMapKeyRef *corev1.ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
 	// Selects a key of a Secret.
 	// +optional
-	SecretKeyRef *v1.SecretKeySelector `json:"secretKeyRef,omitempty"`
+	SecretKeyRef *corev1.SecretKeySelector `json:"secretKeyRef,omitempty"`
 	// Selects an URL.
 	// +optional
 	ExternalSourceRef *ExternalSourceSelector `json:"externalSourceRef,omitempty"`
@@ -136,7 +135,7 @@ type RepoChartSource struct {
 	Version string `json:"version"`
 	// An authentication secret for accessing the chart repo
 	// +optional
-	ChartPullSecret *v1.LocalObjectReference `json:"chartPullSecret,omitempty"`
+	ChartPullSecret *corev1.LocalObjectReference `json:"chartPullSecret,omitempty"`
 }
 
 // CleanRepoURL returns the RepoURL but ensures it ends with a trailing slash
@@ -166,7 +165,7 @@ type HelmReleaseSpec struct {
 	ChartSource      `json:"chart"`
 	HelmVersion      string                    `json:"helmVersion,omitempty"`
 	ReleaseName      string                    `json:"releaseName,omitempty"`
-	ValueFileSecrets []v1.LocalObjectReference `json:"valueFileSecrets,omitempty"`
+	ValueFileSecrets []corev1.LocalObjectReference `json:"valueFileSecrets,omitempty"`
 	ValuesFrom       []ValuesFromSource        `json:"valuesFrom,omitempty"`
 	HelmValues       `json:",inline"`
 	// Override the target namespace, defaults to metadata.namespace
@@ -193,7 +192,7 @@ func (hr HelmRelease) GetHelmVersion(defaultVersion string) string {
 	if defaultVersion != "" {
 		return defaultVersion
 	}
-	return v2.VERSION
+	return helmv2.VERSION
 }
 
 // GetTimeout returns the install or upgrade timeout (defaults to 300s)
@@ -212,7 +211,7 @@ func (hr HelmRelease) GetValuesFromSources() []ValuesFromSource {
 	if hr.Spec.ValueFileSecrets != nil {
 		var secretKeyRefs []ValuesFromSource
 		for _, ref := range hr.Spec.ValueFileSecrets {
-			s := &v1.SecretKeySelector{LocalObjectReference: ref}
+			s := &corev1.SecretKeySelector{LocalObjectReference: ref}
 			secretKeyRefs = append(secretKeyRefs, ValuesFromSource{SecretKeyRef: s})
 		}
 		valuesFrom = append(secretKeyRefs, valuesFrom...)
@@ -252,7 +251,7 @@ type HelmReleaseStatus struct {
 
 type HelmReleaseCondition struct {
 	Type   HelmReleaseConditionType `json:"type"`
-	Status v1.ConditionStatus       `json:"status"`
+	Status corev1.ConditionStatus       `json:"status"`
 	// +optional
 	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty"`
 	// +optional
@@ -280,7 +279,7 @@ const (
 // FluxHelmValues embeds chartutil.Values so we can implement deepcopy on map[string]interface{}
 // +k8s:deepcopy-gen=false
 type HelmValues struct {
-	chartutil.Values `json:"values,omitempty"`
+	helm.Values `json:"values,omitempty"`
 }
 
 // DeepCopyInto implements deepcopy-gen method for use in generated code
@@ -293,7 +292,7 @@ func (in *HelmValues) DeepCopyInto(out *HelmValues) {
 	if err != nil {
 		return
 	}
-	var values chartutil.Values
+	var values helm.Values
 	err = yaml.Unmarshal(b, &values)
 	if err != nil {
 		return

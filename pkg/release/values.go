@@ -1,14 +1,13 @@
 package release
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path/filepath"
 
+	"github.com/fluxcd/helm-operator/pkg/helm"
 	"github.com/ghodss/yaml"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -18,36 +17,15 @@ import (
 	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 )
 
-// values represents a collection of (Helm) values.
-// We define our own type to avoid working with two `chartutil`
-// versions.
-type values map[string]interface{}
-
-// YAML encodes the values into YAML bytes.
-func (v values) YAML() ([]byte, error) {
-	b, err := yaml.Marshal(v)
-	return b, err
-}
-
-// Checksum calculates and returns the SHA256 checksum of the YAML
-// encoded values.
-func (v values) Checksum() string {
-	b, _ := v.YAML()
-
-	hasher := sha256.New()
-	hasher.Write(b)
-	return hex.EncodeToString(hasher.Sum(nil))
-}
-
 // values attempts to compose the final values for the given
 // `HelmRelease`. It returns the values as bytes and a checksum,
 // or an error in case anything went wrong.
-func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, chartPath string) (values, error) {
-	result := values{}
+func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, chartPath string) (helm.Values, error) {
+	result := helm.Values{}
 	ns := hr.Namespace
 
 	for _, v := range hr.GetValuesFromSources() {
-		var valueFile values
+		var valueFile helm.Values
 
 		switch {
 		case v.ConfigMapKeyRef != nil:
