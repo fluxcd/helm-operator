@@ -95,6 +95,10 @@ func releaseManifestToUnstructured(manifest string, logger log.Logger) []unstruc
 			continue
 		}
 
+		if len(bytes) == 0 {
+			continue
+		}
+
 		var u unstructured.Unstructured
 		if err := u.UnmarshalJSON(bytes); err != nil {
 			logger.Log("err", err)
