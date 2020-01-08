@@ -147,11 +147,13 @@ func (s GitChartSource) RefOrDefault(defaultGitRef string) string {
 	return s.Ref
 }
 
+// GitAuth represents authentication details for git (using https)
 type GitAuth struct {
 	Username *AuthVar `json:"username,omitempty"`
 	Password *AuthVar `json:"password,omitempty"`
 }
 
+// AuthVar represents a authentication value that can be literal or from a secret
 type AuthVar struct {
 	// +optional
 	Value string `json:"value,omitempty"`

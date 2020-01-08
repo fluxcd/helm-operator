@@ -28,3 +28,17 @@ func (err ChartNotReadyError) Unwrap() error {
 func (err ChartNotReadyError) Error() string {
 	return "chart not ready: " + err.Err.Error()
 }
+
+// GitAuthError presents a error that has occured when handling
+// the git auth details
+type GitAuthError struct {
+	Err error
+}
+
+func (err GitAuthError) Unwrap() error {
+	return err.Err
+}
+
+func (err GitAuthError) Error() string {
+	return "git auth error: " + err.Err.Error()
+}

@@ -47,7 +47,7 @@ type GitChartSync struct {
 	config GitConfig
 
 	coreV1Client corev1client.CoreV1Interface
-	lister lister.HelmReleaseLister
+	lister       lister.HelmReleaseLister
 
 	mirrors *git.Mirrors
 
@@ -89,7 +89,7 @@ func NewGitChartSync(logger log.Logger,
 	return &GitChartSync{
 		logger:             logger,
 		config:             cfg,
-		coreV1Client: 		coreV1Client,
+		coreV1Client:       coreV1Client,
 		lister:             lister,
 		mirrors:            git.NewMirrors(),
 		releaseSourcesByID: make(map[string]sourceRef),
@@ -294,7 +294,12 @@ func (c *GitChartSync) sync(hr *v1.HelmRelease, mirrorName string, repo *git.Rep
 func (c *GitChartSync) maybeMirror(mirrorName string, source *v1.GitChartSource, namespace string) bool {
 	gitURL := source.GitURL
 	if source.GitAuth != nil {
-		gitURL, _ = c.addAuthForHTTPS(gitURL, source.GitAuth, namespace)
+		ammendURL, err := c.addAuthForHTTPS(gitURL, source.GitAuth, namespace)
+		if err != nil {
+			c.logger.Log("error", GitAuthError{err}.Error(), "err", err)
+			return false
+		}
+		gitURL = ammendURL
 	}
 
 	ok := c.mirrors.Mirror(
@@ -334,6 +339,7 @@ func mirrorName(hr *v1.HelmRelease) string {
 	return ""
 }
 
+// addAuthForHTTPS will add basic auth to a git url that uses https and where auth values are supplied
 func (c *GitChartSync) addAuthForHTTPS(gitURL string, auth *v1.GitAuth, namespace string) (string, error) {
 	if auth == nil {
 		return gitURL, nil
@@ -362,6 +368,7 @@ func (c *GitChartSync) addAuthForHTTPS(gitURL string, auth *v1.GitAuth, namespac
 	return modifiedURL.String(), nil
 }
 
+// getAuthValue will get the value of an AuthVar from a literall value or a secret
 func (c *GitChartSync) getAuthValue(authVal *v1.AuthVar, ns string) (string, error) {
 	switch {
 	case authVal.Value != "":
