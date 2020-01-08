@@ -14,7 +14,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	v1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
@@ -89,19 +89,9 @@ func releaseManifestToUnstructured(manifest string, logger log.Logger) []unstruc
 	manifests := releaseutil.SplitManifests(manifest)
 	var objs []unstructured.Unstructured
 	for _, manifest := range manifests {
-		bytes, err := yaml.YAMLToJSON([]byte(manifest))
-		if err != nil {
-			logger.Log("err", err)
-			continue
-		}
-
-		if len(bytes) == 0 {
-			continue
-		}
-
 		var u unstructured.Unstructured
-		if err := u.UnmarshalJSON(bytes); err != nil {
-			logger.Log("err", err)
+
+		if err := yaml.Unmarshal([]byte(manifest), &u); err != nil {
 			continue
 		}
 
