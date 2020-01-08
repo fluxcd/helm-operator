@@ -39,10 +39,11 @@ function install_helm_operator_with_helm() {
     --set git.ssh.secretName=flux-git-deploy \
     --set-string git.ssh.known_hosts="${KNOWN_HOSTS}" \
     --set configureRepositories.enable=true \
-    --set configureRepositories.repositories[0].name="podinfo" \
-    --set configureRepositories.repositories[0].url="https://stefanprodan.github.io/podinfo" \
-    --set extraEnvs[0].name="HELM_VERSION" \
-    --set extraEnvs[0].value="${HELM_VERSION:-v2\,v3}" \
+    --set configureRepositories.repositories[0].name="stable" \
+    --set configureRepositories.repositories[0].url="https://kubernetes-charts.storage.googleapis.com" \
+    --set configureRepositories.repositories[1].name="podinfo" \
+    --set configureRepositories.repositories[1].url="https://stefanprodan.github.io/podinfo" \
+    --set helm.versions="${HELM_VERSION:-v2\,v3}" \
     "${ROOT_DIR}/chart/helm-operator"
 }
 
@@ -79,7 +80,7 @@ function install_git_srv() {
     read -r local_port <&"${COPROC[0]}"-
     # shellcheck disable=SC2001
     local_port=$(echo "$local_port" | sed 's%.*:\([0-9]*\).*%\1%')
-    local ssh_cmd="ssh -o UserKnownHostsFile=/dev/null  -o StrictHostKeyChecking=no -i $gen_dir/id_rsa -p $local_port"
+    local ssh_cmd="ssh -o UserKnownHostsFile=/dev/null  -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i $gen_dir/id_rsa -p $local_port"
     # return the ssh command needed for git, and the PID of the port-forwarding PID into a variable of choice
     eval "${external_access_result_var}=('$ssh_cmd' '$COPROC_PID')"
   fi

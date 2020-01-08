@@ -52,7 +52,7 @@ jobs:
             - go-mod-{{ checksum "go.mod" }}
             - go-mod-
       - run: make check-generated
-      - run: make test TEST_FLAGS="-race -timeout 60s"
+      - run: make test TEST_FLAGS="-race -timeout 5m"
       - run: make all
       - run: make test-docs
       - run:

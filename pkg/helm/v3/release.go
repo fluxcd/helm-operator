@@ -33,6 +33,7 @@ func chartToGenericChart(c *chart.Chart) *helm.Chart {
 		Name:         c.Name(),
 		Version:      formatVersion(c),
 		AppVersion:   c.AppVersion(),
+		Values:       c.Values,
 		Files:        filesToGenericFiles(c.Files),
 		Templates:    filesToGenericFiles(c.Templates),
 		Dependencies: dependenciesToGenericDependencies(c.Dependencies()),

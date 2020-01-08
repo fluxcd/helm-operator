@@ -146,6 +146,9 @@ spec:
 {{ toYaml .Values.extraVolumeMounts | indent 8 }}
         {{- end }}
         args:
+        {{- if .Values.helm.versions }}
+        - --enabled-helm-versions={{ .Values.helm.versions }}
+        {{- end }}
         {{- if .Values.logFormat }}
         - --log-format={{ .Values.logFormat }}
         {{- end }}

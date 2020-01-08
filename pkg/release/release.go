@@ -305,7 +305,7 @@ func (r *Release) Uninstall(client helm.Client, hr *v1.HelmRelease) {
 // before running the dry-run release to determine if any undefined
 // mutations have occurred.
 func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRel *helm.Release,
-	chartPath string, values values, logDiffs bool) (bool, error) {
+	chartPath string, values helm.Values, logDiffs bool) (bool, error) {
 
 	if curRel == nil {
 		logger.Log("info", "no existing release", "action", "install")

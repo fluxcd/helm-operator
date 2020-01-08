@@ -47,6 +47,7 @@ type Chart struct {
 	Name         string
 	Version      string
 	AppVersion   string
+	Values       Values
 	Files        []*File
 	Templates    []*File
 	Dependencies []*Chart

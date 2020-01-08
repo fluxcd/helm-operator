@@ -1,12 +1,11 @@
 # Flux Helm Operator
 
-This chart bootstraps a [Helm Operator](https://github.com/fluxcd/helm-operator) deployment on
+This chart bootstraps Flux [Helm Operator](https://github.com/fluxcd/helm-operator) on
 a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
 ## Prerequisites
 
 * Kubernetes >= v1.11
-* Tiller >= v2.16
 
 ## Installation
 
@@ -22,13 +21,22 @@ Install the HelmRelease CRD:
 kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/master/deploy/flux-helm-release-crd.yaml
 ```
 
-Install Helm Operator`in the fluxcd namespace:
+Install Helm Operator for Tiller in the fluxcd namespace:
 
 ```sh
-helm install --wait --name helm-operator \
---namespace fluxcd \
-fluxcd/helm-operator
+helm upgrade -i helm-operator fluxcd/helm-operator \
+--namespace fluxcd
 ```
+
+Install Helm Operator for Helm v3 only:
+
+```sh
+helm upgrade -i helm-operator fluxcd/helm-operator \
+--namespace fluxcd \
+--set helm.versions=v3
+```
+
+By default the `helm.versions` is set to `v2,v3`, in this mode Tiller is required.
 
 ## Use a custom Helm repository
 
@@ -209,6 +217,7 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `logFormat`                                       | `fmt`                                                | Log format (fmt or json)
 | `logReleaseDiffs`                                 | `false`                                              | Helm operator should log the diff when a chart release diverges (possibly insecure)
 | `allowNamespace`                                  | `None`                                               | If set, this limits the scope to a single namespace. If not specified, all namespaces will be watched
+| `helm.versions`                                   | `v2,v3`                                              | Helm versions supported by this operator instance, if v2 is specified then Tiller is required
 | `tillerNamespace`                                 | `kube-system`                                        | Namespace in which the Tiller server can be found
 | `tillerSidecar.enabled`                           | `false`                                              | Whether to deploy Tiller as a sidecar (and listening on `localhost` only).
 | `tillerSidecar.image.repository`                  | `gcr.io/kubernetes-helm/tiller`                      | Image repository to use for the Tiller sidecar.
