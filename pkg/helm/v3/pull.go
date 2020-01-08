@@ -67,5 +67,8 @@ func (h *HelmV3) PullWithRepoURL(repoURL, name, version, dest string) (string, e
 		return "", err
 	}
 
-	return h.PullWithOptions(chartURL, version, dest, []getter.Option{getter.WithBasicAuth(repoEntry.Username, repoEntry.Password)})
+	return h.PullWithOptions(chartURL, version, dest, []getter.Option{
+		getter.WithBasicAuth(repoEntry.Username, repoEntry.Password),
+		getter.WithTLSClientConfig(repoEntry.CertFile, repoEntry.KeyFile, repoEntry.CAFile),
+	})
 }
