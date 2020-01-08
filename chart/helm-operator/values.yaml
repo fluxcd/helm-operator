@@ -72,6 +72,9 @@ configureRepositories:
     #   url: https://charts.bitnami.com
     #   username:
     #   password:
+    #   caFile:
+    #   certFile:
+    #   keyFile:
 
 # For charts stored in Git repos set the SSH private key secret
 git:
