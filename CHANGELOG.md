@@ -1,3 +1,47 @@
+## 1.0.0-rc6 (2019-01-08)
+
+> **Notice:** upgrading to this version from `<=0.10.x` by just
+> updating your Helm Operator image tag is not possible as the
+> CRD domain and version have changed. An upgrade guide can be
+> found [here](./docs/guides/upgrading-to-ga.md).
+
+This release fixes some (but not all) of the more critical bugs
+reported since Helm v3 was introduced in the last release.
+
+### Bug fixes
+
+ - helm/v3: include available credentials when pulling chart
+   [fluxcd/helm-operator#171][#171]
+ - helm/v2: index repositories before pulling chart
+   [fluxcd/helm-operator#181][#181]
+ - release: detect change of chart base values
+   [fluxcd/helm-operator#182][#182]
+ - release: filter out nil release resources during parsing
+   [fluxcd/helm-operator#182][#185]
+   
+### Maintenance and documentation
+
+ - Pkg: update Helm packages to `3.0.2` and `2.16.1`
+   [fluxcd/helm-operator#177][#177]
+ - Build: fix flakiness of various end-to-end tests
+   [fluxcd/helm-operator#178][#178]
+ - Build: fix authentication issue on `git clone` in end-to-end tests
+   [fluxcd/helm-operator#180][#180]
+   
+### Thanks
+
+Thanks to @PaulFarver, @stefansedich, @richardcase, @stefanprodan, @hiddeco,
+and others for their contributions to this release, feedback, and reporting
+issues.
+
+[#171]: https://github.com/fluxcd/helm-operator/pull/171
+[#177]: https://github.com/fluxcd/helm-operator/pull/177
+[#178]: https://github.com/fluxcd/helm-operator/pull/178
+[#180]: https://github.com/fluxcd/helm-operator/pull/180
+[#181]: https://github.com/fluxcd/helm-operator/pull/181
+[#182]: https://github.com/fluxcd/helm-operator/pull/182
+[#185]: https://github.com/fluxcd/helm-operator/pull/185
+
 ## 1.0.0-rc5 (2019-12-23)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
