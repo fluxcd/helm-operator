@@ -64,9 +64,9 @@ repositories:
 - name: {{ required "Please specify a name for the Helm repo" .name }}
   url: {{ required "Please specify a URL for the Helm repo" .url }}
   cache: /var/fluxd/helm/repository/cache/{{ .name }}-index.yaml
-  caFile: ""
-  certFile: ""
-  keyFile: ""
+  caFile: "{{ .caFile | default "" }}"
+  certFile: "{{ .certFile | default "" }}"
+  keyFile: "{{ .keyFile | default "" }}"
   password: "{{ .password | default "" }}"
   username: "{{ .username | default "" }}"
 {{- end }}
