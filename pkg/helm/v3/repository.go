@@ -37,8 +37,6 @@ func (h *HelmV3) RepositoryIndex() error {
 		go func(r *repo.ChartRepository) {
 			if _, err := r.DownloadIndexFile(); err != nil {
 				h.logger.Log("error", "unable to get an update from the chart repository", "url", r.Config.URL, "err", err)
-			} else {
-				h.logger.Log("info", "successfully got an update from the chart repository", "url", r.Config.URL)
 			}
 			wg.Done()
 		}(r)
