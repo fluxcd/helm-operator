@@ -136,11 +136,19 @@ spec:
         {{- end }}
         {{- if .Values.configureRepositories.enable }}
         - name: {{ .Values.configureRepositories.volumeName | quote }}
-          mountPath: /var/fluxd/helm/repository/repositories.yaml
+          mountPath: /root/.helm/repository/repositories.yaml
           subPath: repositories.yaml
           readOnly: true
+        {{- if contains "v2" .Values.helm.versions }}
         - name: {{ .Values.configureRepositories.cacheVolumeName | quote }}
           mountPath: /var/fluxd/helm/repository/cache
+          subPath: v2
+        {{- end }}
+        {{- if contains "v3" .Values.helm.versions }}
+        - name: {{ .Values.configureRepositories.cacheVolumeName | quote }}
+          mountPath: /root/.cache/helm/repository
+          subPath: v3
+        {{- end }}
         {{- end }}
         {{- if .Values.extraVolumeMounts }}
 {{ toYaml .Values.extraVolumeMounts | indent 8 }}
@@ -148,6 +156,11 @@ spec:
         args:
         {{- if .Values.helm.versions }}
         - --enabled-helm-versions={{ .Values.helm.versions }}
+        {{- if .Values.configureRepositories.enable }}
+        {{- range $version := splitList "," .Values.helm.versions }}
+        - --helm-repository-import={{ $version }}:/root/.helm/repository/repositories.yaml
+        {{- end }}
+        {{- end }}
         {{- end }}
         {{- if .Values.logFormat }}
         - --log-format={{ .Values.logFormat }}
