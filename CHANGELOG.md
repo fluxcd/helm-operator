@@ -1,3 +1,45 @@
+## 1.0.0-rc7 (2019-01-10)
+
+> **Notice:** upgrading to this version from `<=0.10.x` by just
+> updating your Helm Operator image tag is not possible as the
+> CRD domain and version have changed. An upgrade guide can be
+> found [here](./docs/guides/upgrading-to-ga.md).
+
+### Bug fixes
+
+ - release: ignore manifest in annotator if we fail to unmarshal
+   [fluxcd/helm-operator#190][#190]
+ - helm/v2: if present, use alias to pull a chart so that the
+   configured credentials are used
+   [fluxcd/helm-operator#193][#193]
+ - helm/v3: if present, use alias to pull a chart so that the
+   configured credentials are used
+   [fluxcd/helm-operator#193][#193]
+ - helm/v3: prevent spurious upgrades due to missing dependencies
+   in chart metadata
+   [fluxcd/helm-operator#196][#196]
+  
+### Enhancements
+
+ - helm: only log errors on repository index
+   [fluxcd/helm-operator#193][#193]
+   
+### Maintenance and documentation
+
+ - Pkg: update Flux package to `v1.17.0` (`kube-1.16` branch)
+   [fluxcd/helm-operator#177][#177]
+
+### Thanks
+
+Thanks to @stefansedich, @domg123, @gaieges, @PaulFarver, @rowecharles,
+@apenney, @stefanprodan, @hiddeco, and others for their contributions
+to this release, feedback, and reporting issues.
+
+[#177]: https://github.com/fluxcd/helm-operator/pull/177
+[#190]: https://github.com/fluxcd/helm-operator/pull/190
+[#193]: https://github.com/fluxcd/helm-operator/pull/193
+[#196]: https://github.com/fluxcd/helm-operator/pull/196
+
 ## 1.0.0-rc6 (2019-01-08)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
