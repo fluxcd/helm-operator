@@ -9,22 +9,22 @@ import (
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
-func (h *HelmV3) Status(releaseName string, opts helm.StatusOptions) (*helm.Release, error) {
+func (h *HelmV3) Get(releaseName string, opts helm.GetOptions) (*helm.Release, error) {
 	cfg, cleanup, err := initActionConfig(h.kc, HelmOptions{Namespace: opts.Namespace})
 	defer cleanup()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to setup Helm client")
 	}
 
-	client := action.NewStatus(cfg)
+	client := action.NewGet(cfg)
 	client.Version = opts.Version
 
-	rls, err := client.Run(releaseName)
+	res, err := client.Run(releaseName)
 	if err != nil {
 		if err == driver.ErrReleaseNotFound {
 			return nil, nil
 		}
-		return nil, errors.Wrapf(err, "failed to retrieve status for release [%s]", releaseName)
+		return nil, errors.Wrapf(err, "failed to retrieve release [%s]", releaseName)
 	}
-	return releaseToGenericRelease(rls), nil
+	return releaseToGenericRelease(res), err
 }
