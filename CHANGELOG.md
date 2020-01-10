@@ -1,4 +1,4 @@
-## 1.0.0-rc7 (2019-01-10)
+## 1.0.0-rc7 (2020-01-10)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
@@ -40,7 +40,7 @@ to this release, feedback, and reporting issues.
 [#193]: https://github.com/fluxcd/helm-operator/pull/193
 [#196]: https://github.com/fluxcd/helm-operator/pull/196
 
-## 1.0.0-rc6 (2019-01-08)
+## 1.0.0-rc6 (2020-01-08)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
