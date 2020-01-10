@@ -31,8 +31,9 @@ func (h *HelmV3) Rollback(releaseName string, opts helm.RollbackOptions) (*helm.
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to perform rollback for release [%s]", releaseName)
 	}
+
 	// As rolling back does no longer return information about
-	// the release in v3 we need to make an additional call to
+	// the release in v3, we need to make an additional call to
 	// get the release we rolled back to.
-	return h.Status(releaseName, helm.StatusOptions{Namespace: opts.Namespace})
+	return h.Get(releaseName, helm.GetOptions{Namespace: opts.Namespace})
 }

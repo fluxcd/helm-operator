@@ -70,7 +70,7 @@ bail:
 			if !ok {
 				continue
 			}
-			rel, _ := c.Status(hr.GetReleaseName(), helm.StatusOptions{})
+			rel, _ := c.Get(hr.GetReleaseName(), helm.GetOptions{Namespace: hr.GetTargetNamespace()})
 			// If we are unable to get the status, we do not care why
 			if rel == nil {
 				continue

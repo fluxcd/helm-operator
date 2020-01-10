@@ -2,7 +2,6 @@ package v3
 
 import (
 	"helm.sh/helm/v3/pkg/downloader"
-	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
 	"k8s.io/helm/pkg/urlutil"
 
@@ -10,10 +9,6 @@ import (
 )
 
 func (h *HelmV3) Pull(ref, version, dest string) (string, error) {
-	return h.PullWithOptions(ref, version, dest, []getter.Option{})
-}
-
-func (h *HelmV3) PullWithOptions(ref, version, dest string, options []getter.Option) (string, error) {
 	repositoryConfigLock.RLock()
 	defer repositoryConfigLock.RUnlock()
 
@@ -24,18 +19,21 @@ func (h *HelmV3) PullWithOptions(ref, version, dest string, options []getter.Opt
 		RepositoryConfig: repositoryConfig,
 		RepositoryCache:  repositoryCache,
 		Getters:          getters,
-		Options:          options,
 	}
 	d, _, err := c.DownloadTo(ref, version, dest)
 	return d, err
 }
 
 func (h *HelmV3) PullWithRepoURL(repoURL, name, version, dest string) (string, error) {
-	// This resolves the repo URL, chart name and chart version to a
-	// URL for the chart. To be able to resolve the chart name and
-	// version to a URL, we have to have the index file; and to have
-	// that, we may need to authenticate. The credentials will be in
-	// the repository config.
+	// This first attempts to look up the repository name by the given
+	// `repoURL`, if found the repository name and given chart name
+	// are used to construct a `chartRef` Helm understands.
+	//
+	// If no repository is found it attempts to resolve the absolute
+	// URL to the chart by making a request to the given `repoURL`,
+	// this absolute URL is then used to instruct Helm to pull the
+	// chart.
+
 	repositoryConfigLock.RLock()
 	repoFile, err := loadRepositoryConfig()
 	repositoryConfigLock.RUnlock()
@@ -43,32 +41,38 @@ func (h *HelmV3) PullWithRepoURL(repoURL, name, version, dest string) (string, e
 		return "", err
 	}
 
-	// Now find the entry for the repository, if there is one. If not,
-	// we'll assume there's no auth needed.
-	repoEntry := &repo.Entry{}
-	repoEntry.URL = repoURL
+	// Here we attempt to find an entry for the repository. If found the
+	// entry's name is used to construct a `chartRef` Helm understands.
+	var chartRef string
 	for _, entry := range repoFile.Repositories {
-		if urlutil.Equal(repoEntry.URL, entry.URL) {
-			repoEntry = entry
+		if urlutil.Equal(repoURL, entry.URL) {
+			chartRef = entry.Name + "/" + name
 			// Ensure we have the repository index as this is
 			// later used by Helm.
-			if r, err := repo.NewChartRepository(repoEntry, getters); err == nil {
+			if r, err := repo.NewChartRepository(entry, getters); err == nil {
 				r.DownloadIndexFile()
 			}
 			break
 		}
 	}
 
-	// Look up the full URL of the chart with the collected credentials
-	// and given chart name and version.
-	chartURL, err := repo.FindChartInAuthRepoURL(repoEntry.URL, repoEntry.Username, repoEntry.Password, name, version,
-		repoEntry.CertFile, repoEntry.KeyFile, repoEntry.CAFile, getters)
-	if err != nil {
-		return "", err
+	if chartRef == "" {
+		// We were unable to find an entry so we need to make a request
+		// to the repository to get the absolute URL of the chart.
+		chartRef, err = repo.FindChartInRepoURL(repoURL, name, version, "", "", "", getters)
+		if err != nil {
+			return "", err
+		}
+
+		// As Helm also attempts to find credentials for the absolute URL
+		// we give to it, and does not ignore missing index files, we need
+		// to be sure all indexes files are present, and we are only able
+		// to do so by updating our indexes.
+		err := h.RepositoryIndex()
+		if err != nil {
+			return "", err
+		}
 	}
 
-	return h.PullWithOptions(chartURL, version, dest, []getter.Option{
-		getter.WithBasicAuth(repoEntry.Username, repoEntry.Password),
-		getter.WithTLSClientConfig(repoEntry.CertFile, repoEntry.KeyFile, repoEntry.CAFile),
-	})
+	return h.Pull(chartRef, version, dest)
 }

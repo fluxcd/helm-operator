@@ -156,7 +156,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	// Check if a release already exists, this is used to determine
 	// if and how we should sync, and what actions we should take
 	// if the sync fails.
-	curRel, err := client.Status(hr.GetReleaseName(), helm.StatusOptions{Namespace: hr.GetTargetNamespace()})
+	curRel, err := client.Get(hr.GetReleaseName(), helm.GetOptions{Namespace: hr.GetTargetNamespace()})
 	if err != nil {
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
 			v1.HelmReleaseReleased, corev1.ConditionFalse, ReasonClientError, err.Error()))
@@ -237,7 +237,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		// With a bit of luck the upstream libraries will eventually
 		// move to the '%w' error wrapping added in Golang 1.13,
 		// making all of this a lot easier.
-		newRel, rErr := client.Status(hr.GetReleaseName(), helm.StatusOptions{Namespace: hr.GetTargetNamespace()})
+		newRel, rErr := client.Get(hr.GetReleaseName(), helm.GetOptions{Namespace: hr.GetTargetNamespace()})
 		if rErr != nil {
 			logger.Log("error", "failed to determine if Helm release can be rolled back", "err", err.Error())
 			return hr, rErr
