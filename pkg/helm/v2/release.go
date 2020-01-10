@@ -44,7 +44,6 @@ func chartToGenericChart(c *chart.Chart) *helm.Chart {
 		Values:       valuesToGenericValues(c.Values),
 		Files:        filesToGenericFiles(c.Files),
 		Templates:    templatesToGenericFiles(c.Templates),
-		Dependencies: dependenciesToGenericDependencies(c.Dependencies),
 	}
 }
 
@@ -72,19 +71,6 @@ func templatesToGenericFiles(t []*chart.Template) []*helm.File {
 		return seq.Compare(gf[i], gf[j]) > 0
 	})
 	return gf
-}
-
-// dependenciesToGenericDependencies transforms a `chart.Chart` dependency
-// slice into a stable sorted slice with generic `helm.Chart` dependencies.
-func dependenciesToGenericDependencies(d []*chart.Chart) []*helm.Chart {
-	gd := make([]*helm.Chart, len(d))
-	for i, dd := range d {
-		gd[i] = chartToGenericChart(dd)
-	}
-	sort.SliceStable(gd, func(i, j int) bool {
-		return seq.Compare(gd[i], gd[j]) > 0
-	})
-	return gd
 }
 
 // infoToGenericInfo transforms a v2 info structure into

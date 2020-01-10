@@ -50,7 +50,6 @@ type Chart struct {
 	Values       Values
 	Files        []*File
 	Templates    []*File
-	Dependencies []*Chart
 }
 
 // File represents a file as a name/value pair.
