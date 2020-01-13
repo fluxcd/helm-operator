@@ -336,6 +336,8 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 	}
 
 	if !status.HasSynced(*hr) {
+		logger.Log("info", "release has not yet been processed", "action", "upgrade")
+
 		// The generation of this `v1.HelmRelease` has not been
 		// processed, we should simply sync.
 		return true, nil
@@ -346,6 +348,8 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 		// Without valid YAML values we are unable to sync.
 		return false, ErrComposingValues
 	}
+
+	logger.Log("info", "performing dry-run upgrade to see if release has diverged")
 
 	// Perform a dry-run upgrade so that we can compare what we ought
 	// to be running matches what is defined in the `v1.HelmRelease`.
