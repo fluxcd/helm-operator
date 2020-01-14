@@ -46,3 +46,6 @@ replace k8s.io/client-go => k8s.io/client-go v0.0.0-20191016111102-bec269661e48 
 
 // Pin Flux to kube-1.16 branch to break weaveworks/flux circular dependency (to be removed on Flux 1.18)
 replace github.com/fluxcd/flux => github.com/fluxcd/flux v1.17.1-0.20200109130101-ca3e8f451dd0
+
+// Force Helm to patched version with non-global Scheme
+replace helm.sh/helm/v3 => github.com/hiddeco/helm/v3 v3.0.0-beta.5.0.20200114180229-e4e671a7a375
