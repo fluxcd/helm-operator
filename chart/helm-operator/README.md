@@ -46,10 +46,10 @@ You can add Helm repositories using the `configureRepositories` settings:
 helm upgrade -i helm-operator fluxcd/helm-operator \
 --namespace fluxcd \
 --set configureRepositories.enable=true \
---set configureRepositories.repositories[0].name=stable \
---set configureRepositories.repositories[0].url=https://kubernetes-charts.storage.googleapis.com \
---set configureRepositories.repositories[1].name=podinfo \
---set configureRepositories.repositories[1].url=https://stefanprodan.github.io/podinfo
+--set 'configureRepositories.repositories[0].name=stable' \
+--set 'configureRepositories.repositories[0].url=https://kubernetes-charts.storage.googleapis.com' \
+--set 'configureRepositories.repositories[1].name=podinfo' \
+--set 'configureRepositories.repositories[1].url=https://stefanprodan.github.io/podinfo'
 ```
 
 Install podinfo by referring to its Helm repository:
