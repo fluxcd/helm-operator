@@ -12,6 +12,7 @@ import (
 	"github.com/fluxcd/flux/pkg/git"
 	"github.com/go-kit/kit/log"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -293,8 +294,8 @@ func (c *GitChartSync) sync(hr *v1.HelmRelease, mirrorName string, repo *git.Rep
 // `false` otherwise).
 func (c *GitChartSync) maybeMirror(mirrorName string, source *v1.GitChartSource, namespace string) bool {
 	gitURL := source.GitURL
-	if source.GitAuth != nil {
-		ammendURL, err := c.addAuthForHTTPS(gitURL, source.GitAuth, namespace)
+	if source.SecretRef != nil {
+		ammendURL, err := c.addAuthForHTTPS(gitURL, source.SecretRef, namespace)
 		if err != nil {
 			c.logger.Log("error", GitAuthError{err}.Error(), "err", err)
 			return false
@@ -340,25 +341,21 @@ func mirrorName(hr *v1.HelmRelease) string {
 }
 
 // addAuthForHTTPS will add basic auth to a git url that uses https and where auth values are supplied
-func (c *GitChartSync) addAuthForHTTPS(gitURL string, auth *v1.GitAuth, namespace string) (string, error) {
-	if auth == nil {
+func (c *GitChartSync) addAuthForHTTPS(gitURL string, secretRef *corev1.LocalObjectReference, namespace string) (string, error) {
+	if secretRef == nil {
 		return gitURL, nil
 	}
 
-	if !strings.HasPrefix(gitURL, "https") {
-		return gitURL, nil
-	}
-
-	modifiedURL, err := url.Parse(gitURL)
+	modifiedURL, err := url.Parse(strings.ToLower(gitURL))
 	if err != nil {
 		return "", err
 	}
 
-	username, err := c.getAuthValue(auth.Username, namespace)
-	if err != nil {
-		return "", err
+	if modifiedURL.Scheme != "https" {
+		return gitURL, nil
 	}
-	password, err := c.getAuthValue(auth.Password, namespace)
+
+	username, password, err := c.getAuthFromSecret(secretRef, namespace)
 	if err != nil {
 		return "", err
 	}
@@ -368,24 +365,26 @@ func (c *GitChartSync) addAuthForHTTPS(gitURL string, auth *v1.GitAuth, namespac
 	return modifiedURL.String(), nil
 }
 
-// getAuthValue will get the value of an AuthVar from a literall value or a secret
-func (c *GitChartSync) getAuthValue(authVal *v1.AuthVar, ns string) (string, error) {
-	switch {
-	case authVal.Value != "":
-		return authVal.Value, nil
-	case authVal.ValueFrom != nil:
-		name := authVal.ValueFrom.Name
-		key := authVal.ValueFrom.Key
-		secret, err := c.coreV1Client.Secrets(ns).Get(name, metav1.GetOptions{})
-		if err != nil {
-			return "", err
-		}
-		d, ok := secret.Data[key]
-		if !ok {
-			return "", fmt.Errorf("could not find key %s in Secret %s/%s", key, ns, name)
-		}
-		return string(d), nil
-	default:
-		return "", fmt.Errorf("unable to get value for auth value")
+// getAuthFromSecret will get a username/password from a secret
+func (c *GitChartSync) getAuthFromSecret(secretRef *corev1.LocalObjectReference, ns string) (string, string, error) {
+	secretName := secretRef.Name
+
+	secret, err := c.coreV1Client.Secrets(ns).Get(secretName, metav1.GetOptions{})
+	if err != nil {
+		return "", "", err
 	}
+
+	d, ok := secret.Data["username"]
+	if !ok {
+		return "", "", fmt.Errorf("could not find username key in secret %s/%s", ns, secretName)
+	}
+	username := string(d)
+
+	d, ok = secret.Data["password"]
+	if !ok {
+		return "", "", fmt.Errorf("could not find password key in secret %s/%s", ns, secretName)
+	}
+	password := string(d)
+
+	return username, password, nil
 }

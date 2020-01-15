@@ -9,6 +9,7 @@ import (
 	"github.com/ghodss/yaml"
 
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
@@ -129,10 +130,10 @@ type ChartSource struct {
 }
 
 type GitChartSource struct {
-	GitURL  string   `json:"git"`
-	Ref     string   `json:"ref"`
-	Path    string   `json:"path"`
-	GitAuth *GitAuth `json:"auth,omitempty"`
+	GitURL    string                   `json:"git"`
+	Ref       string                   `json:"ref"`
+	Path      string                   `json:"path"`
+	SecretRef *v1.LocalObjectReference `json:"secretRef,omitempty"`
 	// Do not run 'dep' update (assume requirements.yaml is already fulfilled)
 	// +optional
 	SkipDepUpdate bool `json:"skipDepUpdate,omitempty"`
@@ -145,20 +146,6 @@ func (s GitChartSource) RefOrDefault(defaultGitRef string) string {
 		return defaultGitRef
 	}
 	return s.Ref
-}
-
-// GitAuth represents authentication details for git (using https)
-type GitAuth struct {
-	Username *AuthVar `json:"username,omitempty"`
-	Password *AuthVar `json:"password,omitempty"`
-}
-
-// AuthVar represents a authentication value that can be literal or from a secret
-type AuthVar struct {
-	// +optional
-	Value string `json:"value,omitempty"`
-	// +optional
-	ValueFrom *corev1.SecretKeySelector `json:"valueFrom,omitempty"`
 }
 
 type RepoChartSource struct {
