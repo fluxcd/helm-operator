@@ -18,7 +18,7 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// FluxHelmRelease represents custom resource associated with a Helm Chart
+// HelmRelease represents custom resource associated with a Helm Chart
 type HelmRelease struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
@@ -241,6 +241,11 @@ type HelmReleaseStatus struct {
 	// +optional
 	Revision string `json:"revision,omitempty"`
 
+	// PrevRevision would define what Git hash or Chart version had previously
+	// been deployed.
+	// +optional
+	PrevRevision string `json:"prevRevision,omitempty"`
+
 	// Conditions contains observations of the resource's state, e.g.,
 	// has the chart which it refers to been fetched.
 	// +optional
@@ -302,7 +307,7 @@ func (in *HelmValues) DeepCopyInto(out *HelmValues) {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// HelmReleaseList is a list of FluxHelmRelease resources
+// HelmReleaseList is a list of HelmRelease resources
 type HelmReleaseList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`

@@ -117,8 +117,8 @@ func SetReleaseStatus(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmR
 	return err
 }
 
-// SetReleaseRevision updates the status of the HelmRelease to the
-// given revision.
+// SetReleaseRevision updates the revision in the status of the HelmRelease
+// to the given revision, and sets the current revision as the previous one.
 func SetReleaseRevision(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease, revision string) error {
 
 	firstTry := true
@@ -136,7 +136,37 @@ func SetReleaseRevision(client v1client.HelmReleaseInterface, hr *helmfluxv1.Hel
 		}
 
 		cHr := hr.DeepCopy()
+		cHr.Status.PrevRevision = cHr.Status.Revision
 		cHr.Status.Revision = revision
+
+		_, err = client.UpdateStatus(cHr)
+		firstTry = false
+		return
+	})
+	return err
+}
+
+// SetReleaseRevision updates the previous revision in the status of the
+// HelmRelease to the given revision, its main purpose is to be able to
+// record the revision of a failed release.
+func SetPrevReleaseRevision(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease, revision string) error {
+
+	firstTry := true
+	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
+		if !firstTry {
+			var getErr error
+			hr, getErr = client.Get(hr.Name, metav1.GetOptions{})
+			if getErr != nil {
+				return getErr
+			}
+		}
+
+		if revision == "" || hr.Status.PrevRevision == revision {
+			return
+		}
+
+		cHr := hr.DeepCopy()
+		cHr.Status.PrevRevision = revision
 
 		_, err = client.UpdateStatus(cHr)
 		firstTry = false
@@ -208,7 +238,7 @@ func HasSynced(hr helmfluxv1.HelmRelease) bool {
 
 // HasRolledBack returns if the current generation of the HelmRelease
 // has been rolled back.
-func HasRolledBack(hr helmfluxv1.HelmRelease) bool {
+func HasRolledBack(hr helmfluxv1.HelmRelease, revision string) bool {
 	if !HasSynced(hr) {
 		return false
 	}
@@ -224,14 +254,8 @@ func HasRolledBack(hr helmfluxv1.HelmRelease) bool {
 		// each other, on which we both want to act, we _must_ compare
 		// the update timestamps as the transition timestamp will only
 		// change on a status shift.
-		// TODO(hidde): in case of a pod restart the last update time
-		// will actually refresh because of the pruned cache;
-		// triggering a rollout that should not happen. A solution for
-		// this may be to look at the revision we also record, as this
-		// will tell us if we already attempted a release for this
-		// revision (but failed to do so).
 		if chartFetched.Status == v1.ConditionTrue && rolledBack.LastUpdateTime.Before(&chartFetched.LastUpdateTime) {
-			return false
+			return hr.Status.PrevRevision == revision
 		}
 	}
 
