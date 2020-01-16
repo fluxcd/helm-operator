@@ -181,7 +181,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	}
 	defer status.SetValuesChecksum(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, composedValues.Checksum())
 
-	if ok, err := shouldSync(logger, client, hr, curRel, chartPath, composedValues, r.config.LogDiffs); !ok {
+	if ok, err := shouldSync(logger, client, hr, curRel, chartPath, revision, composedValues, r.config.LogDiffs); !ok {
 		if err != nil {
 			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
 				v1.HelmReleaseReleased, corev1.ConditionFalse, failReason, err.Error()))
@@ -270,6 +270,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		}
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
 			v1.HelmReleaseRolledBack, corev1.ConditionTrue, ReasonSuccess, "Helm rollback succeeded"))
+		status.SetPrevReleaseRevision(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, revision)
 		logger.Log("info", "Helm rollback succeeded")
 
 		// We should still report failure.
@@ -305,7 +306,7 @@ func (r *Release) Uninstall(client helm.Client, hr *v1.HelmRelease) {
 // before running the dry-run release to determine if any undefined
 // mutations have occurred.
 func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRel *helm.Release,
-	chartPath string, values helm.Values, logDiffs bool) (bool, error) {
+	chartPath, revision string, values helm.Values, logDiffs bool) (bool, error) {
 
 	if curRel == nil {
 		logger.Log("info", "no existing release", "action", "install")
@@ -323,7 +324,7 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 		return false, nil
 	}
 
-	if status.HasRolledBack(*hr) {
+	if status.HasRolledBack(*hr, revision) {
 		if hr.Status.ValuesChecksum != values.Checksum() {
 			// The release has been rolled back but the values have
 			// changed. We should attempt a new sync to see if the
