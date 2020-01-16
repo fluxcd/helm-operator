@@ -184,7 +184,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	if ok, err := shouldSync(logger, client, hr, curRel, chartPath, composedValues, r.config.LogDiffs); !ok {
 		if err != nil {
 			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), *hr, status.NewCondition(
-				v1.HelmReleaseReleased, corev1.ConditionFalse, failReason, ErrComposingValues.Error()))
+				v1.HelmReleaseReleased, corev1.ConditionFalse, failReason, err.Error()))
 			logger.Log("error", ErrShouldSync.Error(), "err", err.Error())
 		}
 		return hr, ErrShouldSync
