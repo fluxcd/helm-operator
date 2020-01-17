@@ -122,6 +122,9 @@ spec:
                       optional:
                         description: If set, successful retrieval of the values file is no longer mandatory
                         type: boolean
+                      namespace:
+                        description: The namespace in which the configmap exists
+                        type: string
                   secretKeyRef:
                     type: object
                     required: ['name']
@@ -135,6 +138,9 @@ spec:
                       optional:
                         description: If set, successful retrieval of the values file is no longer mandatory
                         type: boolean
+                      namespace:
+                        description: The namespace in which the secret exists
+                        type: string
                   externalSourceRef:
                     type: object
                     required: ['url']

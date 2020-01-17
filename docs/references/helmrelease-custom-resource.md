@@ -134,7 +134,8 @@ spec:
 ### `.spec.valuesFrom`
 
 This is a list of secrets, config maps (in the same namespace as the
-`HelmRelease`) or external sources (URLs) from which to take values.
+`HelmRelease` by default, or in a configured namespace) or external
+sources (URLs) from which to take values.
 
 The values are merged in the order given, with later values
 overwriting earlier. These values always have a lower priority than
@@ -151,9 +152,10 @@ spec:
   # chart: ...
   valuesFrom:
   - configMapKeyRef:
-      # Name of the config map, must be in the same namespace as the
-      # HelmRelease
+      # Name of the config map
       name: default-values  # mandatory
+      # Namespace of the config map
+      namespace: my-ns      # optional; defaults to HelmRelease namespace
       # Key in the config map to get the values from
       key: values.yaml      # optional; defaults to values.yaml
       # If set to true successful retrieval of the values file is no
@@ -168,9 +170,10 @@ spec:
   # chart: ...
   valuesFrom:
   - secretKeyRef:
-      # Name of the secret, must be in the same namespace as the
-      # HelmRelease
+      # Name of the secret
       name: default-values # mandatory
+      # Namespace of the secret
+      namespace: my-ns      # optional; defaults to HelmRelease namespace
       # Key in the secret to get thre values from
       key: values.yaml     # optional; defaults to values.yaml
       # If set to true successful retrieval of the values file is no
