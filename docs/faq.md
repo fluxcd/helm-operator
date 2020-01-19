@@ -7,14 +7,10 @@ more details [here](./tutorials/get-started.md).
 
 ### I've deleted a HelmRelease file from Git. Why is the Helm release still running on my cluster?
 
-Flux doesn't delete resources, there is an [issue](https://github.com/fluxcd/flux/issues/738) opened about this topic on GitHub.
-In order to delete a Helm release first remove the file from Git and afterwards run:
+Flux doesn't delete resources by default, you can enable Flux garbage collection feature
+by passing the command-line flag `--sync-garbage-collection` to `fluxd`.
 
-```yaml
-kubectl delete helmrelease/my-release
-```
-
-The Helm operator will receive the delete event and will purge the Helm release.
+With Flux garbage collection enabled, Helm operator will receive the delete event and will purge the Helm release.
 
 ### I've manually deleted a Helm release. Why is Flux not able to restore it?
 
