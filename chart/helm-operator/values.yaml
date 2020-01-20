@@ -184,5 +184,5 @@ extraVolumeMounts: []
 extraVolumes: []
 resources:
   requests:
-    cpu: 50m
-    memory: 64Mi
+    cpu: 200m
+    memory: 128Mi
