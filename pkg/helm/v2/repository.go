@@ -21,10 +21,10 @@ var (
 )
 
 func (h *HelmV2) RepositoryIndex() error {
-	repositoryConfigLock.RLock()
-	defer repositoryConfigLock.RUnlock()
 
+	repositoryConfigLock.RLock()
 	f, err := loadRepositoryConfig()
+	repositoryConfigLock.RUnlock()
 	if err != nil {
 		return err
 	}
