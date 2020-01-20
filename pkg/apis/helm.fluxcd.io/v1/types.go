@@ -77,16 +77,33 @@ func (hr HelmRelease) GetTargetNamespace() string {
 type ValuesFromSource struct {
 	// Selects a key of a ConfigMap.
 	// +optional
-	ConfigMapKeyRef *corev1.ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
+	ConfigMapKeyRef *NamespacedConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
 	// Selects a key of a Secret.
 	// +optional
-	SecretKeyRef *corev1.SecretKeySelector `json:"secretKeyRef,omitempty"`
+	SecretKeyRef *NamespacedSecretKeySelector `json:"secretKeyRef,omitempty"`
 	// Selects an URL.
 	// +optional
 	ExternalSourceRef *ExternalSourceSelector `json:"externalSourceRef,omitempty"`
 	// Selects a file from git source helm chart.
 	// +optional
 	ChartFileRef *ChartFileSelector `json:"chartFileRef,omitempty"`
+}
+
+type NamespacedConfigMapKeySelector struct {
+	Name string `json:"name"`
+	Key  string `json:"key"`
+	// +optional
+	Optional *bool `json:"optional,omitempty`
+	// +optional
+	Namespace string `json:"optional,omitempty"`
+}
+type NamespacedSecretKeySelector struct {
+	Name string `json:"name"`
+	Key  string `json:"key"`
+	// +optional
+	Optional *bool `json:"optional,omitempty"`
+	// +optional
+	Namespace string `json:"optional,omitempty"`
 }
 
 type ChartFileSelector struct {
@@ -163,10 +180,10 @@ func (r Rollback) GetTimeout() time.Duration {
 // HelmReleaseSpec is the spec for a HelmRelease resource
 type HelmReleaseSpec struct {
 	ChartSource      `json:"chart"`
-	HelmVersion      string                    `json:"helmVersion,omitempty"`
-	ReleaseName      string                    `json:"releaseName,omitempty"`
+	HelmVersion      string                        `json:"helmVersion,omitempty"`
+	ReleaseName      string                        `json:"releaseName,omitempty"`
 	ValueFileSecrets []corev1.LocalObjectReference `json:"valueFileSecrets,omitempty"`
-	ValuesFrom       []ValuesFromSource        `json:"valuesFrom,omitempty"`
+	ValuesFrom       []ValuesFromSource            `json:"valuesFrom,omitempty"`
 	HelmValues       `json:",inline"`
 	// Override the target namespace, defaults to metadata.namespace
 	// +optional
@@ -211,7 +228,7 @@ func (hr HelmRelease) GetValuesFromSources() []ValuesFromSource {
 	if hr.Spec.ValueFileSecrets != nil {
 		var secretKeyRefs []ValuesFromSource
 		for _, ref := range hr.Spec.ValueFileSecrets {
-			s := &corev1.SecretKeySelector{LocalObjectReference: ref}
+			s := &NamespacedSecretKeySelector{Name: ref.Name}
 			secretKeyRefs = append(secretKeyRefs, ValuesFromSource{SecretKeyRef: s})
 		}
 		valuesFrom = append(secretKeyRefs, valuesFrom...)
@@ -256,7 +273,7 @@ type HelmReleaseStatus struct {
 
 type HelmReleaseCondition struct {
 	Type   HelmReleaseConditionType `json:"type"`
-	Status corev1.ConditionStatus       `json:"status"`
+	Status corev1.ConditionStatus   `json:"status"`
 	// +optional
 	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty"`
 	// +optional
