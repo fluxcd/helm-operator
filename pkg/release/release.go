@@ -95,7 +95,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	// to the chart, and record the revision.
 	var chartPath, revision string
 	switch {
-	case hr.Spec.GitChartSource != nil:
+	case hr.Spec.GitChartSource != nil && hr.Spec.GitURL != "" && hr.Spec.Path != "":
 		var export *git.Export
 		var err error
 
