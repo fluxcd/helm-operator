@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
 )
@@ -19,10 +18,10 @@ var (
 )
 
 func (h *HelmV3) RepositoryIndex() error {
-	repositoryConfigLock.RLock()
-	defer repositoryConfigLock.RUnlock()
 
+	repositoryConfigLock.RLock()
 	f, err := loadRepositoryConfig()
+	repositoryConfigLock.RUnlock()
 	if err != nil {
 		return err
 	}

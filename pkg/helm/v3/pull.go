@@ -1,7 +1,12 @@
 package v3
 
 import (
+	"os"
+	"path/filepath"
+	"sync"
+
 	"helm.sh/helm/v3/pkg/downloader"
+	"helm.sh/helm/v3/pkg/helmpath"
 	"helm.sh/helm/v3/pkg/repo"
 	"k8s.io/helm/pkg/urlutil"
 
@@ -49,7 +54,7 @@ func (h *HelmV3) PullWithRepoURL(repoURL, name, version, dest string) (string, e
 			chartRef = entry.Name + "/" + name
 			// Ensure we have the repository index as this is
 			// later used by Helm.
-			if r, err := repo.NewChartRepository(entry, getters); err == nil {
+			if r, err := newChartRepository(entry); err == nil {
 				r.DownloadIndexFile()
 			}
 			break
@@ -68,11 +73,30 @@ func (h *HelmV3) PullWithRepoURL(repoURL, name, version, dest string) (string, e
 		// we give to it, and does not ignore missing index files, we need
 		// to be sure all indexes files are present, and we are only able
 		// to do so by updating our indexes.
-		err := h.RepositoryIndex()
-		if err != nil {
+		if err := downloadMissingRepositoryIndexes(repoFile.Repositories); err != nil {
 			return "", err
 		}
 	}
 
 	return h.Pull(chartRef, version, dest)
+}
+
+func downloadMissingRepositoryIndexes(repositories []*repo.Entry) error {
+	var wg sync.WaitGroup
+	for _, c := range repositories {
+		r, err := newChartRepository(c)
+		if err != nil {
+			return err
+		}
+		wg.Add(1)
+		go func(r *repo.ChartRepository) {
+			f := filepath.Join(r.CachePath, helmpath.CacheIndexFile(r.Config.Name))
+			if _, err := os.Stat(f); os.IsNotExist(err) {
+				r.DownloadIndexFile()
+			}
+			wg.Done()
+		}(r)
+	}
+	wg.Wait()
+	return nil
 }
