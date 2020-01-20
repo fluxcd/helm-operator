@@ -68,6 +68,12 @@ func (c sourceRef) forHelmRelease(hr *v1.HelmRelease) bool {
 	if hr == nil || hr.Spec.GitChartSource == nil {
 		return false
 	}
+
+	// reject git source if URL and path are missing
+	if hr.Spec.GitURL == "" || hr.Spec.Path == "" {
+		return false
+	}
+
 	return c.mirror == mirrorName(hr) && c.remote == hr.Spec.GitURL && c.ref == hr.Spec.Ref
 }
 
@@ -75,15 +81,12 @@ func NewGitChartSync(logger log.Logger,
 	lister lister.HelmReleaseLister, cfg GitConfig, queue ReleaseQueue) *GitChartSync {
 
 	return &GitChartSync{
-		logger: logger,
-		config: cfg,
-
-		lister: lister,
-
+		logger:             logger,
+		config:             cfg,
+		lister:             lister,
 		mirrors:            git.NewMirrors(),
 		releaseSourcesByID: make(map[string]sourceRef),
-
-		releaseQueue: queue,
+		releaseQueue:       queue,
 	}
 }
 
