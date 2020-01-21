@@ -195,9 +195,12 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `tolerations`                                     | `[]`                                                 | Tolerations properties for the deployment
 | `affinity`                                        | `{}`                                                 | Affinity properties for the deployment
 | `extraEnvs`                                       | `[]`                                                 | Extra environment variables for the Helm Operator pod(s)
+| `podAnnotations`                                  | `{}`                                                 | Additional pod annotations
+| `podLabels`                                       | `{}`                                                 | Additional pod labels
 | `rbac.create`                                     | `true`                                               | If `true`, create and use RBAC resources
 | `rbac.pspEnabled`                                 | `false`                                              | If `true`, create and use a restricted pod security policy for Helm Operator pod(s)
 | `serviceAccount.create`                           | `true`                                               | If `true`, create a new service account
+| `serviceAccount.annotations`                      | ``                                                   | Additional Service Account annotations
 | `serviceAccount.name`                             | `flux`                                               | Service account to be used
 | `clusterRole.create`                              | `true`                                               | If `false`, Helm Operator will be restricted to the namespace where is deployed
 | `createCRD`                                       | `false`                                              | Create the HelmRelease CRD
