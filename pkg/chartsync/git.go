@@ -329,15 +329,12 @@ func (c *GitChartSync) helmReleasesForMirror(mirror string) ([]*v1.HelmRelease, 
 
 // mirrorName returns the name of the mirror for the given
 // `v1.HelmRelease`.
-// TODO(michael): this will not always be the git URL; e.g.
-// per namespace, per auth.
 func mirrorName(hr *v1.HelmRelease) string {
 	if hr != nil && hr.Spec.GitChartSource != nil {
-		secretName := "noauth"
-		if hr.Spec.GitChartSource.SecretRef != nil {
-			secretName = hr.Spec.GitChartSource.SecretRef.Name
+		if hr.Spec.GitChartSource.SecretRef == nil {
+			return hr.Spec.GitURL
 		}
-		return fmt.Sprintf("%s/%s/%s", hr.GetNamespace(), secretName, hr.Spec.GitURL)
+		return fmt.Sprintf("%s/%s/%s", hr.GetNamespace(), hr.Spec.GitChartSource.SecretRef.Name, hr.Spec.GitURL)
 	}
 	return ""
 }
