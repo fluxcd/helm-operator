@@ -339,7 +339,10 @@ func mirrorName(hr *v1.HelmRelease) string {
 	return ""
 }
 
-// addAuthForHTTPS will add basic auth to a git url that uses https and where auth values are supplied
+// addAuthForHTTPS will attempt to add basic auth credentials from the
+// given secretRef to the given gitURL and return the result, but only
+// if the scheme of the URL is HTTPS. In case of a failure it returns
+// an error.
 func (c *GitChartSync) addAuthForHTTPS(gitURL string, secretRef *corev1.LocalObjectReference, namespace string) (string, error) {
 	if secretRef == nil {
 		return gitURL, nil
@@ -364,7 +367,10 @@ func (c *GitChartSync) addAuthForHTTPS(gitURL string, secretRef *corev1.LocalObj
 	return modifiedURL.String(), nil
 }
 
-// getAuthFromSecret will get a username/password from a secret
+// getAuthFromSecret resolve the given `secretRef` from the given namespace
+// using the core v1 secrets client, and return the username and password.
+// If this errors, or the secret does not contain the expected keys, an
+// error is returned.
 func (c *GitChartSync) getAuthFromSecret(secretRef *corev1.LocalObjectReference, ns string) (string, string, error) {
 	secretName := secretRef.Name
 
