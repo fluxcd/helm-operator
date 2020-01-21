@@ -19,8 +19,6 @@ import (
 	"github.com/fluxcd/helm-operator/pkg/status"
 )
 
-const maxHistory = 10
-
 // Condition change reasons.
 const (
 	ReasonGitNotReady      = "GitNotReady"
@@ -204,7 +202,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		Install:     curRel == nil,
 		Force:       hr.Spec.ForceUpgrade,
 		ResetValues: hr.Spec.ResetValues,
-		MaxHistory:  maxHistory,
+		MaxHistory:  hr.GetMaxHistory(),
 		// We only set this during installation to delete a failed
 		// release, but not during upgrades, as we ourselves want
 		// to be in control of rollbacks.

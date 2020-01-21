@@ -197,6 +197,11 @@ func (in *HelmReleaseList) DeepCopyObject() runtime.Object {
 func (in *HelmReleaseSpec) DeepCopyInto(out *HelmReleaseSpec) {
 	*out = *in
 	in.ChartSource.DeepCopyInto(&out.ChartSource)
+	if in.MaxHistory != nil {
+		in, out := &in.MaxHistory, &out.MaxHistory
+		*out = new(int)
+		**out = **in
+	}
 	if in.ValueFileSecrets != nil {
 		in, out := &in.ValueFileSecrets, &out.ValueFileSecrets
 		*out = make([]corev1.LocalObjectReference, len(*in))

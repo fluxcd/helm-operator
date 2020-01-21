@@ -183,6 +183,7 @@ type HelmReleaseSpec struct {
 	ChartSource      `json:"chart"`
 	HelmVersion      string                        `json:"helmVersion,omitempty"`
 	ReleaseName      string                        `json:"releaseName,omitempty"`
+	MaxHistory       *int                          `json:"maxHistory,omitempty"`
 	ValueFileSecrets []corev1.LocalObjectReference `json:"valueFileSecrets,omitempty"`
 	ValuesFrom       []ValuesFromSource            `json:"valuesFrom,omitempty"`
 	HelmValues       `json:",inline"`
@@ -219,6 +220,15 @@ func (hr HelmRelease) GetTimeout() time.Duration {
 		return 300 * time.Second
 	}
 	return time.Duration(*hr.Spec.Timeout) * time.Second
+}
+
+// GetMaxHistory returns the maximum number of release
+// revisions to keep (defaults to 10)
+func (hr HelmRelease) GetMaxHistory() int {
+	if hr.Spec.MaxHistory == nil {
+		return 10
+	}
+	return *hr.Spec.MaxHistory
 }
 
 // GetValuesFromSources maintains backwards compatibility with
