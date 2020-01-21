@@ -8,7 +8,7 @@ import (
 )
 
 func (h *HelmV3) Uninstall(releaseName string, opts helm.UninstallOptions) error {
-	cfg, cleanup, err := initActionConfig(h.kc, HelmOptions{Namespace: opts.Namespace})
+	cfg, cleanup, err := h.initActionConfig(HelmOptions{Namespace: opts.Namespace})
 	defer cleanup()
 	if err != nil {
 		return errors.Wrap(err, "failed to setup Helm client")
