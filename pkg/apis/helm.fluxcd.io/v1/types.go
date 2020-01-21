@@ -129,9 +129,10 @@ type ChartSource struct {
 }
 
 type GitChartSource struct {
-	GitURL string `json:"git"`
-	Ref    string `json:"ref"`
-	Path   string `json:"path"`
+	GitURL    string                       `json:"git"`
+	Ref       string                       `json:"ref"`
+	Path      string                       `json:"path"`
+	SecretRef *corev1.LocalObjectReference `json:"secretRef,omitempty"`
 	// Do not run 'dep' update (assume requirements.yaml is already fulfilled)
 	// +optional
 	SkipDepUpdate bool `json:"skipDepUpdate,omitempty"`

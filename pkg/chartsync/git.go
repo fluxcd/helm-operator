@@ -3,13 +3,19 @@ package chartsync
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net/url"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/fluxcd/flux/pkg/git"
 	"github.com/go-kit/kit/log"
 
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
@@ -41,7 +47,8 @@ type GitChartSync struct {
 	logger log.Logger
 	config GitConfig
 
-	lister lister.HelmReleaseLister
+	coreV1Client corev1client.CoreV1Interface
+	lister       lister.HelmReleaseLister
 
 	mirrors *git.Mirrors
 
@@ -78,11 +85,12 @@ func (c sourceRef) forHelmRelease(hr *v1.HelmRelease) bool {
 }
 
 func NewGitChartSync(logger log.Logger,
-	lister lister.HelmReleaseLister, cfg GitConfig, queue ReleaseQueue) *GitChartSync {
+	coreV1Client corev1client.CoreV1Interface, lister lister.HelmReleaseLister, cfg GitConfig, queue ReleaseQueue) *GitChartSync {
 
 	return &GitChartSync{
 		logger:             logger,
 		config:             cfg,
+		coreV1Client:       coreV1Client,
 		lister:             lister,
 		mirrors:            git.NewMirrors(),
 		releaseSourcesByID: make(map[string]sourceRef),
@@ -121,7 +129,7 @@ func (c *GitChartSync) Run(stopCh <-chan struct{}, errCh chan error, wg *sync.Wa
 
 						c.logger.Log("warning", ErrNoMirror.Error(), "mirror", mirrorName)
 						for _, hr := range hrs {
-							c.maybeMirror(mirrorName, hr.Spec.GitChartSource.GitURL)
+							c.maybeMirror(mirrorName, hr.Spec.GitChartSource, hr.Namespace)
 						}
 						// Wait for the signal from the newly requested mirror...
 						continue
@@ -155,7 +163,7 @@ func (c *GitChartSync) GetMirrorCopy(hr *v1.HelmRelease) (*git.Export, string, e
 	if !ok {
 		// We did not find a mirror; request one, return, and wait for
 		// signal.
-		c.maybeMirror(mirror, hr.Spec.GitURL)
+		c.maybeMirror(mirror, hr.Spec.GitChartSource, hr.Namespace)
 		return nil, "", ChartNotReadyError{ErrNoMirror}
 	}
 
@@ -284,12 +292,20 @@ func (c *GitChartSync) sync(hr *v1.HelmRelease, mirrorName string, repo *git.Rep
 // maybeMirror requests a new mirror for the given remote. The return value
 // indicates whether the repo was already present (`true` if so,
 // `false` otherwise).
-func (c *GitChartSync) maybeMirror(mirrorName string, remote string) bool {
+func (c *GitChartSync) maybeMirror(mirrorName string, source *v1.GitChartSource, namespace string) bool {
+	gitURL := source.GitURL
+	var err error
+
+	if gitURL, err = c.addAuthForHTTPS(gitURL, source.SecretRef, namespace); err != nil {
+		c.logger.Log("error", GitAuthError{err}.Error())
+		return false
+	}
+
 	ok := c.mirrors.Mirror(
-		mirrorName, git.Remote{URL: remote}, git.Timeout(c.config.GitTimeout),
+		mirrorName, git.Remote{URL: gitURL}, git.Timeout(c.config.GitTimeout),
 		git.PollInterval(c.config.GitPollInterval), git.ReadOnly)
 	if !ok {
-		c.logger.Log("info", "started mirroring new remote", "remote", remote, "mirror", mirrorName)
+		c.logger.Log("info", "started mirroring new remote", "remote", source.GitURL, "mirror", mirrorName)
 	}
 	return ok
 }
@@ -313,11 +329,67 @@ func (c *GitChartSync) helmReleasesForMirror(mirror string) ([]*v1.HelmRelease, 
 
 // mirrorName returns the name of the mirror for the given
 // `v1.HelmRelease`.
-// TODO(michael): this will not always be the git URL; e.g.
-// per namespace, per auth.
 func mirrorName(hr *v1.HelmRelease) string {
 	if hr != nil && hr.Spec.GitChartSource != nil {
-		return hr.Spec.GitURL
+		if hr.Spec.GitChartSource.SecretRef == nil {
+			return hr.Spec.GitURL
+		}
+		return fmt.Sprintf("%s/%s/%s", hr.GetNamespace(), hr.Spec.GitChartSource.SecretRef.Name, hr.Spec.GitURL)
 	}
 	return ""
+}
+
+// addAuthForHTTPS will attempt to add basic auth credentials from the
+// given secretRef to the given gitURL and return the result, but only
+// if the scheme of the URL is HTTPS. In case of a failure it returns
+// an error.
+func (c *GitChartSync) addAuthForHTTPS(gitURL string, secretRef *corev1.LocalObjectReference, namespace string) (string, error) {
+	if secretRef == nil {
+		return gitURL, nil
+	}
+
+	modifiedURL, err := url.Parse(strings.ToLower(gitURL))
+	if err != nil {
+		return "", err
+	}
+
+	if modifiedURL.Scheme != "https" {
+		return gitURL, nil
+	}
+
+	username, password, err := c.getAuthFromSecret(secretRef, namespace)
+	if err != nil {
+		return "", err
+	}
+
+	modifiedURL.User = url.UserPassword(username, password)
+
+	return modifiedURL.String(), nil
+}
+
+// getAuthFromSecret resolve the given `secretRef` from the given namespace
+// using the core v1 secrets client, and return the username and password.
+// If this errors, or the secret does not contain the expected keys, an
+// error is returned.
+func (c *GitChartSync) getAuthFromSecret(secretRef *corev1.LocalObjectReference, ns string) (string, string, error) {
+	secretName := secretRef.Name
+
+	secret, err := c.coreV1Client.Secrets(ns).Get(secretName, metav1.GetOptions{})
+	if err != nil {
+		return "", "", err
+	}
+
+	d, ok := secret.Data["username"]
+	if !ok {
+		return "", "", fmt.Errorf("could not find username key in secret %s/%s", ns, secretName)
+	}
+	username := string(d)
+
+	d, ok = secret.Data["password"]
+	if !ok {
+		return "", "", fmt.Errorf("could not find password key in secret %s/%s", ns, secretName)
+	}
+	password := string(d)
+
+	return username, password, nil
 }
