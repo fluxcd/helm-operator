@@ -12,7 +12,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/klog"
 	"k8s.io/kubectl/pkg/cmd/util"
 
 	"helm.sh/helm/v3/pkg/action"
@@ -60,10 +59,17 @@ func (h *HelmV3) Version() string {
 	return VERSION
 }
 
+// infoLogFunc allows us to pass our logger to components
+// that expect a klog.Infof function.
+func (h *HelmV3) infoLogFunc(format string, args ...interface{}) {
+	message := fmt.Sprintf(format, args...)
+	h.logger.Log("info", message)
+}
+
 // initActionConfig initializes the configuration for the action,
 // like the namespace it should be executed in and the storage driver.
-func initActionConfig(kubeConfig *rest.Config, opts HelmOptions) (*action.Configuration, func(), error) {
-	path, ctx, cleanup, err := writeTempKubeConfig(kubeConfig)
+func (h *HelmV3) initActionConfig(opts HelmOptions) (*action.Configuration, func(), error) {
+	path, ctx, cleanup, err := writeTempKubeConfig(h.kc)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -75,7 +81,7 @@ func initActionConfig(kubeConfig *rest.Config, opts HelmOptions) (*action.Config
 	// makes.
 	kc := &kube.Client{
 		Factory: util.NewFactory(cfgFlags),
-		Log:     klog.Infof,
+		Log:     h.infoLogFunc,
 	}
 
 	clientset, err := kc.Factory.KubernetesClientSet()
@@ -89,11 +95,11 @@ func initActionConfig(kubeConfig *rest.Config, opts HelmOptions) (*action.Config
 	switch opts.Driver {
 	case "secret", "secrets", "":
 		d := driver.NewSecrets(clientset.CoreV1().Secrets(namespace))
-		d.Log = klog.Infof
+		d.Log = h.infoLogFunc
 		store = storage.Init(d)
 	case "configmap", "configmaps":
 		d := driver.NewConfigMaps(clientset.CoreV1().ConfigMaps(namespace))
-		d.Log = klog.Infof
+		d.Log = h.infoLogFunc
 		store = storage.Init(d)
 	case "memory":
 		d := driver.NewMemory()
@@ -106,7 +112,7 @@ func initActionConfig(kubeConfig *rest.Config, opts HelmOptions) (*action.Config
 		RESTClientGetter: cfgFlags,
 		Releases:         store,
 		KubeClient:       kc,
-		Log:              klog.Infof,
+		Log:              h.infoLogFunc,
 	}, cleanup, nil
 }
 

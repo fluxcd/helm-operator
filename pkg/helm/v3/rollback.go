@@ -9,7 +9,7 @@ import (
 )
 
 func (h *HelmV3) Rollback(releaseName string, opts helm.RollbackOptions) (*helm.Release, error) {
-	cfg, cleanup, err := initActionConfig(h.kc, HelmOptions{Namespace: opts.Namespace})
+	cfg, cleanup, err := h.initActionConfig(HelmOptions{Namespace: opts.Namespace})
 	defer cleanup()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to setup Helm client")

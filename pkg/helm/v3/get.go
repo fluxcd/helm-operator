@@ -10,7 +10,7 @@ import (
 )
 
 func (h *HelmV3) Get(releaseName string, opts helm.GetOptions) (*helm.Release, error) {
-	cfg, cleanup, err := initActionConfig(h.kc, HelmOptions{Namespace: opts.Namespace})
+	cfg, cleanup, err := h.initActionConfig(HelmOptions{Namespace: opts.Namespace})
 	defer cleanup()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to setup Helm client")
