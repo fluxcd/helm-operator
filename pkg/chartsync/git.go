@@ -294,13 +294,11 @@ func (c *GitChartSync) sync(hr *v1.HelmRelease, mirrorName string, repo *git.Rep
 // `false` otherwise).
 func (c *GitChartSync) maybeMirror(mirrorName string, source *v1.GitChartSource, namespace string) bool {
 	gitURL := source.GitURL
-	if source.SecretRef != nil {
-		ammendURL, err := c.addAuthForHTTPS(gitURL, source.SecretRef, namespace)
-		if err != nil {
-			c.logger.Log("error", GitAuthError{err}.Error(), "err", err)
-			return false
-		}
-		gitURL = ammendURL
+	var err error
+
+	if gitURL, err = c.addAuthForHTTPS(gitURL, source.SecretRef, namespace); err != nil {
+		c.logger.Log("error", GitAuthError{err}.Error())
+		return false
 	}
 
 	ok := c.mirrors.Mirror(
@@ -335,7 +333,11 @@ func (c *GitChartSync) helmReleasesForMirror(mirror string) ([]*v1.HelmRelease, 
 // per namespace, per auth.
 func mirrorName(hr *v1.HelmRelease) string {
 	if hr != nil && hr.Spec.GitChartSource != nil {
-		return hr.Spec.GitURL
+		secretName := "noauth"
+		if hr.Spec.GitChartSource.SecretRef != nil {
+			secretName = hr.Spec.GitChartSource.SecretRef.Name
+		}
+		return fmt.Sprintf("%s/%s/%s", hr.GetNamespace(), secretName, hr.Spec.GitURL)
 	}
 	return ""
 }

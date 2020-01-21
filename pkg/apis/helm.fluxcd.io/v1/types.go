@@ -9,7 +9,6 @@ import (
 	"github.com/ghodss/yaml"
 
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
@@ -130,10 +129,10 @@ type ChartSource struct {
 }
 
 type GitChartSource struct {
-	GitURL    string                   `json:"git"`
-	Ref       string                   `json:"ref"`
-	Path      string                   `json:"path"`
-	SecretRef *v1.LocalObjectReference `json:"secretRef,omitempty"`
+	GitURL    string                       `json:"git"`
+	Ref       string                       `json:"ref"`
+	Path      string                       `json:"path"`
+	SecretRef *corev1.LocalObjectReference `json:"secretRef,omitempty"`
 	// Do not run 'dep' update (assume requirements.yaml is already fulfilled)
 	// +optional
 	SkipDepUpdate bool `json:"skipDepUpdate,omitempty"`
