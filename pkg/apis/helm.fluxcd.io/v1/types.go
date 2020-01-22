@@ -260,19 +260,10 @@ type HelmReleaseStatus struct {
 	// the controller.
 	ObservedGeneration int64 `json:"observedGeneration"`
 
-	// ValuesChecksum holds the SHA256 checksum of the last applied
-	// values.
-	ValuesChecksum string `json:"valuesChecksum"`
-
 	// Revision would define what Git hash or Chart version has currently
 	// been deployed.
 	// +optional
 	Revision string `json:"revision,omitempty"`
-
-	// PrevRevision would define what Git hash or Chart version had previously
-	// been deployed.
-	// +optional
-	PrevRevision string `json:"prevRevision,omitempty"`
 
 	// Conditions contains observations of the resource's state, e.g.,
 	// has the chart which it refers to been fetched.

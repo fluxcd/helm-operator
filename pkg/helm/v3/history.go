@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 
 	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/releaseutil"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
@@ -28,21 +27,11 @@ func (h *HelmV3) History(releaseName string, opts helm.HistoryOptions) ([]*helm.
 
 	releaseutil.Reverse(hist, releaseutil.SortByRevision)
 
-	var rels []*release.Release
+	var rels []*helm.Release
 	for i := 0; i < min(len(hist), client.Max); i++ {
-		rels = append(rels, hist[i])
+		rels = append(rels, releaseToGenericRelease(hist[i]))
 	}
-
-	return getReleaseHistory(hist), nil
-}
-
-func getReleaseHistory(rls []*release.Release) []*helm.Release {
-	history := make([]*helm.Release, len(rls))
-	for i := len(rls) - 1; i >= 0; i-- {
-		r := rls[i]
-		history = append(history, releaseToGenericRelease(r))
-	}
-	return history
+	return rels, nil
 }
 
 func min(x, y int) int {
