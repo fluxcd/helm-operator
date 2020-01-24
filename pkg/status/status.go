@@ -136,65 +136,7 @@ func SetReleaseRevision(client v1client.HelmReleaseInterface, hr *helmfluxv1.Hel
 		}
 
 		cHr := hr.DeepCopy()
-		cHr.Status.PrevRevision = cHr.Status.Revision
 		cHr.Status.Revision = revision
-
-		_, err = client.UpdateStatus(cHr)
-		firstTry = false
-		return
-	})
-	return err
-}
-
-// SetReleaseRevision updates the previous revision in the status of the
-// HelmRelease to the given revision, its main purpose is to be able to
-// record the revision of a failed release.
-func SetPrevReleaseRevision(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease, revision string) error {
-
-	firstTry := true
-	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
-		if !firstTry {
-			var getErr error
-			hr, getErr = client.Get(hr.Name, metav1.GetOptions{})
-			if getErr != nil {
-				return getErr
-			}
-		}
-
-		if revision == "" || hr.Status.PrevRevision == revision {
-			return
-		}
-
-		cHr := hr.DeepCopy()
-		cHr.Status.PrevRevision = revision
-
-		_, err = client.UpdateStatus(cHr)
-		firstTry = false
-		return
-	})
-	return err
-}
-
-// SetValuesChecksum updates the values checksum of the HelmRelease to
-// the given checksum.
-func SetValuesChecksum(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease, valuesChecksum string) error {
-
-	firstTry := true
-	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
-		if !firstTry {
-			var getErr error
-			hr, getErr = client.Get(hr.Name, metav1.GetOptions{})
-			if getErr != nil {
-				return getErr
-			}
-		}
-
-		if valuesChecksum == "" || hr.Status.ValuesChecksum == valuesChecksum {
-			return
-		}
-
-		cHr := hr.DeepCopy()
-		cHr.Status.ValuesChecksum = valuesChecksum
 
 		_, err = client.UpdateStatus(cHr)
 		firstTry = false
@@ -238,7 +180,7 @@ func HasSynced(hr helmfluxv1.HelmRelease) bool {
 
 // HasRolledBack returns if the current generation of the HelmRelease
 // has been rolled back.
-func HasRolledBack(hr helmfluxv1.HelmRelease, revision string) bool {
+func HasRolledBack(hr helmfluxv1.HelmRelease) bool {
 	if !HasSynced(hr) {
 		return false
 	}
@@ -246,17 +188,6 @@ func HasRolledBack(hr helmfluxv1.HelmRelease, revision string) bool {
 	rolledBack := GetCondition(hr.Status, helmfluxv1.HelmReleaseRolledBack)
 	if rolledBack == nil {
 		return false
-	}
-
-	chartFetched := GetCondition(hr.Status, helmfluxv1.HelmReleaseChartFetched)
-	if chartFetched != nil {
-		// NB: as two successful state updates can happen right after
-		// each other, on which we both want to act, we _must_ compare
-		// the update timestamps as the transition timestamp will only
-		// change on a status shift.
-		if chartFetched.Status == v1.ConditionTrue && rolledBack.LastUpdateTime.Before(&chartFetched.LastUpdateTime) {
-			return hr.Status.PrevRevision == revision
-		}
 	}
 
 	return rolledBack.Status == v1.ConditionTrue
