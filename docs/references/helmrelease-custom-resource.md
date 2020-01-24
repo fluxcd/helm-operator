@@ -16,6 +16,7 @@ spec:
   targetNamespace: mq
   timeout: 300
   resetValues: false
+  wait: false
   forceUpgrade: false
   chart:
     repository: https://kubernetes-charts.storage.googleapis.com/
@@ -35,15 +36,20 @@ If you don't supply the `targetNamespace`, the release will be installed
 in the same namespace as the HelmRelease object.
 
 The `chart` section gives a pointer to the chart; in this case, to a
-chart in a Helm repo. Since the helm operator is running in your
+chart in a Helm repo. Since the Helm operator is running in your
 cluster, and doesn't have access to local configuration, the
 repository is given as a URL rather than an alias (the URL in the
 example is what's usually aliased as `stable`). The `name` and
 `version` specify the chart to release.
 
-The `timeout` sets the timeout value for the helm install or upgrade. If you don't supply it, it is set to 300.
+The `timeout` sets the timeout value for the Helm install or upgrade.
+If you don't supply it, it is set to 300.
 
-The `resetValues`, if set to `true`, will reset values on helm upgrade.
+The `resetValues`, if set to `true`, will reset values on Helm upgrade.
+
+The `wait`, if set to `true`, will instruct the operator to wait for an
+Helm upgrade to complete before it is marked as successful in the
+`HelmRelease` resource.
 
 The `forceUpgrade`, if set to `true`, will force Helm upgrade through delete/recreate
 

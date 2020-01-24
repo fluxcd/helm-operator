@@ -206,7 +206,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		// release, but not during upgrades, as we ourselves want
 		// to be in control of rollbacks.
 		Atomic: curRel == nil,
-		Wait:   hr.Spec.Rollback.Enable,
+		Wait:   hr.Spec.Wait || hr.Spec.Rollback.Enable,
 	})
 	if err != nil {
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
