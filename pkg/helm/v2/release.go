@@ -42,7 +42,6 @@ func chartToGenericChart(c *chart.Chart) *helm.Chart {
 		Version:      c.Metadata.Version,
 		AppVersion:   c.Metadata.AppVersion,
 		Values:       valuesToGenericValues(c.Values),
-		Files:        filesToGenericFiles(c.Files),
 		Templates:    templatesToGenericFiles(c.Templates),
 	}
 }
