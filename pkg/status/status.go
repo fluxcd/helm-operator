@@ -21,6 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	kube "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/util/retry"
 
 	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	ifclientset "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned"
@@ -75,7 +76,7 @@ bail:
 			if rel == nil {
 				continue
 			}
-			if err := SetReleaseStatus(nsHrClient, *hr, releaseName, rel.Info.Status.String()); err != nil {
+			if err := SetReleaseStatus(nsHrClient, hr, releaseName, rel.Info.Status.String()); err != nil {
 				logger.Log("namespace", hr.Namespace, "resource", hr.Name, "err", err)
 				continue
 			}
@@ -88,76 +89,86 @@ bail:
 
 // SetReleaseStatus updates the status of the HelmRelease to the given
 // release name and/or release status.
-func SetReleaseStatus(client v1client.HelmReleaseInterface, hr helmfluxv1.HelmRelease,
+func SetReleaseStatus(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease,
 	releaseName, releaseStatus string) error {
 
-	cHr, err := client.Get(hr.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
+	firstTry := true
+	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
+		if !firstTry {
+			var getErr error
+			hr, getErr = client.Get(hr.Name, metav1.GetOptions{})
+			if getErr != nil {
+				return getErr
+			}
+		}
 
-	if cHr.Status.ReleaseName == releaseName && cHr.Status.ReleaseStatus == releaseStatus {
-		return nil
-	}
+		if hr.Status.ReleaseName == releaseName && hr.Status.ReleaseStatus == releaseStatus {
+			return
+		}
 
-	cHr.Status.ReleaseName = releaseName
-	cHr.Status.ReleaseStatus = releaseStatus
+		cHr := hr.DeepCopy()
+		cHr.Status.ReleaseName = releaseName
+		cHr.Status.ReleaseStatus = releaseStatus
 
-	_, err = client.UpdateStatus(cHr)
+		_, err = client.UpdateStatus(cHr)
+		firstTry = false
+		return
+	})
 	return err
 }
 
-// SetReleaseRevision updates the status of the HelmRelease to the
-// given revision.
-func SetReleaseRevision(client v1client.HelmReleaseInterface, hr helmfluxv1.HelmRelease, revision string) error {
-	cHr, err := client.Get(hr.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
+// SetReleaseRevision updates the revision in the status of the HelmRelease
+// to the given revision, and sets the current revision as the previous one.
+func SetReleaseRevision(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease, revision string) error {
 
-	if cHr.Status.Revision == revision {
-		return nil
-	}
+	firstTry := true
+	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
+		if !firstTry {
+			var getErr error
+			hr, getErr = client.Get(hr.Name, metav1.GetOptions{})
+			if getErr != nil {
+				return getErr
+			}
+		}
 
-	cHr.Status.Revision = revision
+		if revision == "" || hr.Status.Revision == revision {
+			return
+		}
 
-	_, err = client.UpdateStatus(cHr)
-	return err
-}
+		cHr := hr.DeepCopy()
+		cHr.Status.Revision = revision
 
-// SetValuesChecksum updates the values checksum of the HelmRelease to
-// the given checksum.
-func SetValuesChecksum(client v1client.HelmReleaseInterface, hr helmfluxv1.HelmRelease, valuesChecksum string) error {
-	cHr, err := client.Get(hr.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
-	if valuesChecksum == "" || cHr.Status.ValuesChecksum == valuesChecksum {
-		return nil
-	}
-
-	cHr.Status.ValuesChecksum = valuesChecksum
-
-	_, err = client.UpdateStatus(cHr)
+		_, err = client.UpdateStatus(cHr)
+		firstTry = false
+		return
+	})
 	return err
 }
 
 // SetObservedGeneration updates the observed generation status of the
 // HelmRelease to the given generation.
-func SetObservedGeneration(client v1client.HelmReleaseInterface, hr helmfluxv1.HelmRelease, generation int64) error {
-	cHr, err := client.Get(hr.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
+func SetObservedGeneration(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease, generation int64) error {
+	firstTry := true
+	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
+		if !firstTry {
+			var getErr error
+			hr, getErr = client.Get(hr.Name, metav1.GetOptions{})
+			if getErr != nil {
+				return getErr
+			}
+		}
 
-	if cHr.Status.ObservedGeneration >= generation {
-		return nil
-	}
+		if hr.Status.ObservedGeneration >= generation {
+			return
+		}
 
-	cHr.Status.ObservedGeneration = generation
+		cHr := hr.DeepCopy()
+		cHr.Status.ObservedGeneration = generation
 
-	_, err = client.UpdateStatus(cHr)
+		_, err = client.UpdateStatus(cHr)
+		firstTry = false
+		return
+	})
 	return err
 }
 
@@ -177,23 +188,6 @@ func HasRolledBack(hr helmfluxv1.HelmRelease) bool {
 	rolledBack := GetCondition(hr.Status, helmfluxv1.HelmReleaseRolledBack)
 	if rolledBack == nil {
 		return false
-	}
-
-	chartFetched := GetCondition(hr.Status, helmfluxv1.HelmReleaseChartFetched)
-	if chartFetched != nil {
-		// NB: as two successful state updates can happen right after
-		// each other, on which we both want to act, we _must_ compare
-		// the update timestamps as the transition timestamp will only
-		// change on a status shift.
-		// TODO(hidde): in case of a pod restart the last update time
-		// will actually refresh because of the pruned cache;
-		// triggering a rollout that should not happen. A solution for
-		// this may be to look at the revision we also record, as this
-		// will tell us if we already attempted a release for this
-		// revision (but failed to do so).
-		if chartFetched.Status == v1.ConditionTrue && rolledBack.LastUpdateTime.Before(&chartFetched.LastUpdateTime) {
-			return false
-		}
 	}
 
 	return rolledBack.Status == v1.ConditionTrue

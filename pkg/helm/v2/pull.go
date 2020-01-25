@@ -1,6 +1,10 @@
 package v2
 
 import (
+	"os"
+	"path/filepath"
+	"sync"
+
 	"k8s.io/helm/pkg/downloader"
 	"k8s.io/helm/pkg/repo"
 	"k8s.io/helm/pkg/urlutil"
@@ -67,11 +71,35 @@ func (h *HelmV2) PullWithRepoURL(repoURL, name, version, dest string) (string, e
 		// we give to it, and does not ignore missing index files, we need
 		// to be sure all indexes files are present, and we are only able
 		// to do so by updating our indexes.
-		err := h.RepositoryIndex()
+		err := downloadMissingRepositoryIndexes(repoFile.Repositories)
 		if err != nil {
 			return "", err
 		}
 	}
 
 	return h.Pull(chartRef, version, dest)
+}
+
+func downloadMissingRepositoryIndexes(repositories []*repo.Entry) error {
+
+	var wg sync.WaitGroup
+	for _, c := range repositories {
+		r, err := repo.NewChartRepository(c, getters)
+		if err != nil {
+			return err
+		}
+		wg.Add(1)
+		go func(r *repo.ChartRepository) {
+			f := r.Config.Cache
+			if !filepath.IsAbs(f) {
+				f = filepath.Join(repositoryCache, f)
+			}
+			if _, err := os.Stat(f); os.IsNotExist(err) {
+				r.DownloadIndexFile(repositoryCache)
+			}
+			wg.Done()
+		}(r)
+	}
+	wg.Wait()
+	return nil
 }

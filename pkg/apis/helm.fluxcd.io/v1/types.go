@@ -18,7 +18,7 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// FluxHelmRelease represents custom resource associated with a Helm Chart
+// HelmRelease represents custom resource associated with a Helm Chart
 type HelmRelease struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
@@ -77,16 +77,33 @@ func (hr HelmRelease) GetTargetNamespace() string {
 type ValuesFromSource struct {
 	// Selects a key of a ConfigMap.
 	// +optional
-	ConfigMapKeyRef *corev1.ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
+	ConfigMapKeyRef *NamespacedConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
 	// Selects a key of a Secret.
 	// +optional
-	SecretKeyRef *corev1.SecretKeySelector `json:"secretKeyRef,omitempty"`
+	SecretKeyRef *NamespacedSecretKeySelector `json:"secretKeyRef,omitempty"`
 	// Selects an URL.
 	// +optional
 	ExternalSourceRef *ExternalSourceSelector `json:"externalSourceRef,omitempty"`
 	// Selects a file from git source helm chart.
 	// +optional
 	ChartFileRef *ChartFileSelector `json:"chartFileRef,omitempty"`
+}
+
+type NamespacedConfigMapKeySelector struct {
+	Name string `json:"name"`
+	Key  string `json:"key"`
+	// +optional
+	Optional *bool `json:"optional,omitempty`
+	// +optional
+	Namespace string `json:"optional,omitempty"`
+}
+type NamespacedSecretKeySelector struct {
+	Name string `json:"name"`
+	Key  string `json:"key"`
+	// +optional
+	Optional *bool `json:"optional,omitempty"`
+	// +optional
+	Namespace string `json:"optional,omitempty"`
 }
 
 type ChartFileSelector struct {
@@ -112,9 +129,10 @@ type ChartSource struct {
 }
 
 type GitChartSource struct {
-	GitURL string `json:"git"`
-	Ref    string `json:"ref"`
-	Path   string `json:"path"`
+	GitURL    string                       `json:"git"`
+	Ref       string                       `json:"ref"`
+	Path      string                       `json:"path"`
+	SecretRef *corev1.LocalObjectReference `json:"secretRef,omitempty"`
 	// Do not run 'dep' update (assume requirements.yaml is already fulfilled)
 	// +optional
 	SkipDepUpdate bool `json:"skipDepUpdate,omitempty"`
@@ -163,10 +181,11 @@ func (r Rollback) GetTimeout() time.Duration {
 // HelmReleaseSpec is the spec for a HelmRelease resource
 type HelmReleaseSpec struct {
 	ChartSource      `json:"chart"`
-	HelmVersion      string                    `json:"helmVersion,omitempty"`
-	ReleaseName      string                    `json:"releaseName,omitempty"`
+	HelmVersion      string                        `json:"helmVersion,omitempty"`
+	ReleaseName      string                        `json:"releaseName,omitempty"`
+	MaxHistory       *int                          `json:"maxHistory,omitempty"`
 	ValueFileSecrets []corev1.LocalObjectReference `json:"valueFileSecrets,omitempty"`
-	ValuesFrom       []ValuesFromSource        `json:"valuesFrom,omitempty"`
+	ValuesFrom       []ValuesFromSource            `json:"valuesFrom,omitempty"`
 	HelmValues       `json:",inline"`
 	// Override the target namespace, defaults to metadata.namespace
 	// +optional
@@ -177,6 +196,9 @@ type HelmReleaseSpec struct {
 	// Reset values on helm upgrade
 	// +optional
 	ResetValues bool `json:"resetValues,omitempty"`
+	// Wait for the install or upgrade to complete before marking release as successful
+	// +optional
+	Wait bool `json:"wait,omitempty"`
 	// Force resource update through delete/recreate, allows recovery from a failed state
 	// +optional
 	ForceUpgrade bool `json:"forceUpgrade,omitempty"`
@@ -203,6 +225,15 @@ func (hr HelmRelease) GetTimeout() time.Duration {
 	return time.Duration(*hr.Spec.Timeout) * time.Second
 }
 
+// GetMaxHistory returns the maximum number of release
+// revisions to keep (defaults to 10)
+func (hr HelmRelease) GetMaxHistory() int {
+	if hr.Spec.MaxHistory == nil {
+		return 10
+	}
+	return *hr.Spec.MaxHistory
+}
+
 // GetValuesFromSources maintains backwards compatibility with
 // ValueFileSecrets by merging them into the ValuesFrom array.
 func (hr HelmRelease) GetValuesFromSources() []ValuesFromSource {
@@ -211,7 +242,7 @@ func (hr HelmRelease) GetValuesFromSources() []ValuesFromSource {
 	if hr.Spec.ValueFileSecrets != nil {
 		var secretKeyRefs []ValuesFromSource
 		for _, ref := range hr.Spec.ValueFileSecrets {
-			s := &corev1.SecretKeySelector{LocalObjectReference: ref}
+			s := &NamespacedSecretKeySelector{Name: ref.Name}
 			secretKeyRefs = append(secretKeyRefs, ValuesFromSource{SecretKeyRef: s})
 		}
 		valuesFrom = append(secretKeyRefs, valuesFrom...)
@@ -232,10 +263,6 @@ type HelmReleaseStatus struct {
 	// the controller.
 	ObservedGeneration int64 `json:"observedGeneration"`
 
-	// ValuesChecksum holds the SHA256 checksum of the last applied
-	// values.
-	ValuesChecksum string `json:"valuesChecksum"`
-
 	// Revision would define what Git hash or Chart version has currently
 	// been deployed.
 	// +optional
@@ -251,7 +278,7 @@ type HelmReleaseStatus struct {
 
 type HelmReleaseCondition struct {
 	Type   HelmReleaseConditionType `json:"type"`
-	Status corev1.ConditionStatus       `json:"status"`
+	Status corev1.ConditionStatus   `json:"status"`
 	// +optional
 	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty"`
 	// +optional
@@ -302,7 +329,7 @@ func (in *HelmValues) DeepCopyInto(out *HelmValues) {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// HelmReleaseList is a list of FluxHelmRelease resources
+// HelmReleaseList is a list of HelmRelease resources
 type HelmReleaseList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`

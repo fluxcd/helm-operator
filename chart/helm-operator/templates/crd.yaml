@@ -56,6 +56,10 @@ spec:
                 namespace to the resource name.
               type: string
               pattern: "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+            maxHistory:
+              description: The maximum number of release revisions to keep, defaults to 10
+              type: integer
+              format: int32
             targetNamespace:
               description: The Helm release namespace. If not supplied, the namespace will be the same
                 as the resource namespace.
@@ -67,6 +71,9 @@ spec:
               format: int64
             resetValues:
               description: If supplied will reset values on helm upgrade
+              type: boolean
+            wait:
+              description: Wait for an upgrade to complete before marking release as successful
               type: boolean
             forceUpgrade:
               description: If supplied will force Helm upgrade through delete/recreate
@@ -122,6 +129,9 @@ spec:
                       optional:
                         description: If set, successful retrieval of the values file is no longer mandatory
                         type: boolean
+                      namespace:
+                        description: The namespace in which the configmap exists
+                        type: string
                   secretKeyRef:
                     type: object
                     required: ['name']
@@ -135,6 +145,9 @@ spec:
                       optional:
                         description: If set, successful retrieval of the values file is no longer mandatory
                         type: boolean
+                      namespace:
+                        description: The namespace in which the secret exists
+                        type: string
                   externalSourceRef:
                     type: object
                     required: ['url']

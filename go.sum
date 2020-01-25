@@ -168,8 +168,8 @@ github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwo
 github.com/fatih/color v1.7.0 h1:DkWD4oS2D8LGGgTQ6IvwJJXSL5Vp2ffcQg58nFV38Ys=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga6PJ7M=
-github.com/fluxcd/flux v1.17.1-0.20200109130101-ca3e8f451dd0 h1:eNG4Yhh9Z6soFK1DZtt9l57qiuY09HQjm6/XDfPsAuc=
-github.com/fluxcd/flux v1.17.1-0.20200109130101-ca3e8f451dd0/go.mod h1:I9PuqnfWRhXHU2W/c5qOwxAqsMUXhm/bjtlrrIEiU+s=
+github.com/fluxcd/flux v1.17.2-0.20200121140732-3903cf8e71c3 h1:v4YmH83oJONVaMrtzcugoqXwD+Shid2/7b6oGKfzyg8=
+github.com/fluxcd/flux v1.17.2-0.20200121140732-3903cf8e71c3/go.mod h1:1hipEHtmNyVHfJbaB8G49vsINGY19ZReEVQvMRJx82I=
 github.com/fluxcd/helm-operator v1.0.0-rc6/go.mod h1:a3RbngauN4uJDi/sBBpk1JOCZNCCyjGps69J2uEC9J0=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=

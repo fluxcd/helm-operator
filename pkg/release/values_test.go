@@ -9,70 +9,211 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 
 	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
 func TestComposeValues(t *testing.T) {
-	namespace := "flux"
+	defaultNamespace := "flux"
+	otherNamespace := "other-namespace"
 	falseVal := false
 
 	client := fake.NewSimpleClientset(
 		&corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "release-configmap",
-				Namespace: namespace,
+				Namespace: defaultNamespace,
 			},
 			Data: map[string]string{
 				"values.yaml": `valuesDict:
-  configmap: true`,
+  same-namespace-configmap: true`,
+			},
+		},
+		&corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "release-configmap",
+				Namespace: otherNamespace,
+			},
+			Data: map[string]string{
+				"values.yaml": `valuesDict:
+  cross-namespace-configmap: true`,
 			},
 		},
 		&corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "release-secret",
-				Namespace: namespace,
+				Namespace: defaultNamespace,
 			},
 			Data: map[string][]byte{
 				"values.yaml": []byte(`valuesDict:
-  secret: true`),
+  same-namespace-secret: true`),
+			},
+		},
+		&corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "release-secret",
+				Namespace: otherNamespace,
+			},
+			Data: map[string][]byte{
+				"values.yaml": []byte(`valuesDict:
+  cross-namespace-secret: true`),
 			},
 		},
 	)
 
-	valuesFromSource := []helmfluxv1.ValuesFromSource{
+	cases := []struct {
+		description      string
+		releaseNamespace string
+		valuesFromSource []helmfluxv1.ValuesFromSource
+		assertions       []func(*testing.T, helm.Values)
+	}{
 		{
-			ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: "release-configmap",
+			description:      "simple same-namespace test",
+			releaseNamespace: defaultNamespace,
+			valuesFromSource: []helmfluxv1.ValuesFromSource{
+				{
+					ConfigMapKeyRef: &helmfluxv1.NamespacedConfigMapKeySelector{
+						Name:     "release-configmap",
+						Key:      "values.yaml",
+						Optional: &falseVal,
+					},
+					SecretKeyRef:      nil,
+					ExternalSourceRef: nil,
+					ChartFileRef:      nil,
 				},
-				Key:      "values.yaml",
-				Optional: &falseVal,
+				{
+					ConfigMapKeyRef: nil,
+					SecretKeyRef: &helmfluxv1.NamespacedSecretKeySelector{
+						Name:     "release-secret",
+						Key:      "values.yaml",
+						Optional: &falseVal,
+					},
+					ExternalSourceRef: nil,
+					ChartFileRef:      nil,
+				},
 			},
-			SecretKeyRef:      nil,
-			ExternalSourceRef: nil,
-			ChartFileRef:      nil,
+			assertions: []func(*testing.T, helm.Values){
+				func(t *testing.T, values helm.Values) {
+					assert.NotNil(t, values["valuesDict"].(map[string]interface{})["same-namespace-configmap"])
+				},
+				func(t *testing.T, values helm.Values) {
+					assert.NotNil(t, values["valuesDict"].(map[string]interface{})["same-namespace-secret"])
+				},
+			},
 		},
 		{
-			ConfigMapKeyRef: nil,
-			SecretKeyRef: &corev1.SecretKeySelector{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: "release-secret",
+			description:      "simple cross-namespace test",
+			releaseNamespace: defaultNamespace,
+			valuesFromSource: []helmfluxv1.ValuesFromSource{
+				{
+					ConfigMapKeyRef: &helmfluxv1.NamespacedConfigMapKeySelector{
+						Name:      "release-configmap",
+						Namespace: otherNamespace,
+						Key:       "values.yaml",
+						Optional:  &falseVal,
+					},
+					SecretKeyRef:      nil,
+					ExternalSourceRef: nil,
+					ChartFileRef:      nil,
 				},
-				Key:      "values.yaml",
-				Optional: &falseVal,
+				{
+					ConfigMapKeyRef: nil,
+					SecretKeyRef: &helmfluxv1.NamespacedSecretKeySelector{
+						Name:      "release-secret",
+						Namespace: otherNamespace,
+						Key:       "values.yaml",
+						Optional:  &falseVal,
+					},
+					ExternalSourceRef: nil,
+					ChartFileRef:      nil,
+				},
 			},
-			ExternalSourceRef: nil,
-			ChartFileRef:      nil,
-		}}
-
-	hr := &helmfluxv1.HelmRelease{
-		Spec: helmfluxv1.HelmReleaseSpec{
-			ValuesFrom: valuesFromSource,
+			assertions: []func(*testing.T, helm.Values){
+				func(t *testing.T, values helm.Values) {
+					assert.NotNil(t, values["valuesDict"].(map[string]interface{})["cross-namespace-configmap"])
+				},
+				func(t *testing.T, values helm.Values) {
+					assert.NotNil(t, values["valuesDict"].(map[string]interface{})["cross-namespace-secret"])
+				},
+			},
+		},
+		{
+			description:      "same and cross-namespace test",
+			releaseNamespace: defaultNamespace,
+			valuesFromSource: []helmfluxv1.ValuesFromSource{
+				{
+					ConfigMapKeyRef: &helmfluxv1.NamespacedConfigMapKeySelector{
+						Name:     "release-configmap",
+						Key:      "values.yaml",
+						Optional: &falseVal,
+					},
+					SecretKeyRef:      nil,
+					ExternalSourceRef: nil,
+					ChartFileRef:      nil,
+				},
+				{
+					ConfigMapKeyRef: nil,
+					SecretKeyRef: &helmfluxv1.NamespacedSecretKeySelector{
+						Name:     "release-secret",
+						Key:      "values.yaml",
+						Optional: &falseVal,
+					},
+					ExternalSourceRef: nil,
+					ChartFileRef:      nil,
+				},
+				{
+					ConfigMapKeyRef: &helmfluxv1.NamespacedConfigMapKeySelector{
+						Name:      "release-configmap",
+						Namespace: otherNamespace,
+						Key:       "values.yaml",
+						Optional:  &falseVal,
+					},
+					SecretKeyRef:      nil,
+					ExternalSourceRef: nil,
+					ChartFileRef:      nil,
+				},
+				{
+					ConfigMapKeyRef: nil,
+					SecretKeyRef: &helmfluxv1.NamespacedSecretKeySelector{
+						Name:      "release-secret",
+						Namespace: otherNamespace,
+						Key:       "values.yaml",
+						Optional:  &falseVal,
+					},
+					ExternalSourceRef: nil,
+					ChartFileRef:      nil,
+				},
+			},
+			assertions: []func(*testing.T, helm.Values){
+				func(t *testing.T, values helm.Values) {
+					assert.NotNil(t, values["valuesDict"].(map[string]interface{})["cross-namespace-configmap"])
+				},
+				func(t *testing.T, values helm.Values) {
+					assert.NotNil(t, values["valuesDict"].(map[string]interface{})["cross-namespace-secret"])
+				},
+				func(t *testing.T, values helm.Values) {
+					assert.NotNil(t, values["valuesDict"].(map[string]interface{})["cross-namespace-configmap"])
+				},
+				func(t *testing.T, values helm.Values) {
+					assert.NotNil(t, values["valuesDict"].(map[string]interface{})["cross-namespace-secret"])
+				},
+			},
 		},
 	}
-	hr.Namespace = namespace
+	for _, c := range cases {
+		t.Run(c.description, func(t *testing.T) {
+			hr := &helmfluxv1.HelmRelease{
+				Spec: helmfluxv1.HelmReleaseSpec{
+					ValuesFrom: c.valuesFromSource,
+				},
+			}
+			hr.Namespace = c.releaseNamespace
 
-	values, err := composeValues(client.CoreV1(), hr, "")
-	assert.NoError(t, err)
-	assert.NotNil(t, values["valuesDict"].(map[string]interface{})["configmap"])
-	assert.NotNil(t, values["valuesDict"].(map[string]interface{})["secret"])
+			values, err := composeValues(client.CoreV1(), hr, "")
+			t.Log(values)
+			assert.NoError(t, err)
+			for _, assertion := range c.assertions {
+				assertion(t, values)
+			}
+		})
+	}
 }

@@ -2,7 +2,6 @@ package operator
 
 import (
 	"fmt"
-	"github.com/fluxcd/helm-operator/pkg/release"
 	"sync"
 	"time"
 
@@ -24,7 +23,7 @@ import (
 	hrv1 "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/helm.fluxcd.io/v1"
 	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/helm"
-	"github.com/fluxcd/helm-operator/pkg/status"
+	"github.com/fluxcd/helm-operator/pkg/release"
 )
 
 const (
@@ -101,8 +100,7 @@ func New(
 	// ----- EVENT HANDLERS for HelmRelease resources change ---------
 	hrInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(new interface{}) {
-			hr, ok := checkCustomResourceType(controller.logger, new)
-			if ok && !status.HasRolledBack(hr) {
+			if _, ok := checkCustomResourceType(controller.logger, new); ok {
 				controller.enqueueJob(new)
 			}
 		},

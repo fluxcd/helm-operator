@@ -5,7 +5,7 @@ fullnameOverride: ""
 
 image:
   repository: docker.io/fluxcd/helm-operator
-  tag: 1.0.0-rc7
+  tag: 1.0.0-rc8
   pullPolicy: IfNotPresent
   pullSecret:
 
@@ -129,6 +129,8 @@ rbac:
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
+  # Service account annotations
+  annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name:
@@ -175,9 +177,9 @@ extraEnvs: []
 #   - name: FOO
 #     value: bar
 
-replicaCount: 1
+podAnnotations: {}
+podLabels: {}
 nodeSelector: {}
-annotations: {}
 tolerations: []
 affinity: {}
 extraVolumeMounts: []

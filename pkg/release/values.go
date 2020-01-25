@@ -22,15 +22,18 @@ import (
 // or an error in case anything went wrong.
 func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, chartPath string) (helm.Values, error) {
 	result := helm.Values{}
-	ns := hr.Namespace
 
 	for _, v := range hr.GetValuesFromSources() {
 		var valueFile helm.Values
+		ns := hr.Namespace
 
 		switch {
 		case v.ConfigMapKeyRef != nil:
 			cm := v.ConfigMapKeyRef
 			name := cm.Name
+			if cm.Namespace != "" {
+				ns = cm.Namespace
+			}
 			key := cm.Key
 			if key == "" {
 				key = "values.yaml"
@@ -59,6 +62,9 @@ func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, char
 		case v.SecretKeyRef != nil:
 			s := v.SecretKeyRef
 			name := s.Name
+			if s.Namespace != "" {
+				ns = s.Namespace
+			}
 			key := s.Key
 			if key == "" {
 				key = "values.yaml"

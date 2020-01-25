@@ -1,3 +1,16 @@
+## 0.5.0 (2020-01-10)
+
+### Improvements
+
+ - Update Helm Operator to `1.0.0-rc7`
+   [fluxcd/helm-operator#197](https://github.com/fluxcd/helm-operator/pull/197)
+ - Add support for configuring cert files for repositories
+   [fluxcd/helm-operator#183](https://github.com/fluxcd/helm-operator/pull/183)
+ - Add support for configuring Helm v3 repositories
+   [fluxcd/helm-operator#173](https://github.com/fluxcd/helm-operator/pull/173)
+ - Add Prometheus Operator ServiceMonitor templates
+   [fluxcd/helm-operator#139](https://github.com/fluxcd/helm-operator/pull/139)
+
 ## 0.4.0 (2019-12-23)
 
 ### Improvements

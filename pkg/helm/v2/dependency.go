@@ -7,9 +7,6 @@ import (
 )
 
 func (h *HelmV2) DependencyUpdate(chartPath string) error {
-	repositoryConfigLock.RLock()
-	defer repositoryConfigLock.RUnlock()
-
 	out := helm.NewLogWriter(h.logger)
 	man := downloader.Manager{
 		Out:       out,

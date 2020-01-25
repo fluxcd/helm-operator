@@ -44,12 +44,11 @@ type Info struct {
 
 // Chart describes the chart for a release
 type Chart struct {
-	Name         string
-	Version      string
-	AppVersion   string
-	Values       Values
-	Files        []*File
-	Templates    []*File
+	Name       string
+	Version    string
+	AppVersion string
+	Values     Values
+	Templates  []*File
 }
 
 // File represents a file as a name/value pair.

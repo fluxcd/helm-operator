@@ -38,12 +38,11 @@ func chartToGenericChart(c *chart.Chart) *helm.Chart {
 	}
 
 	return &helm.Chart{
-		Name:         c.Metadata.Name,
-		Version:      c.Metadata.Version,
-		AppVersion:   c.Metadata.AppVersion,
-		Values:       valuesToGenericValues(c.Values),
-		Files:        filesToGenericFiles(c.Files),
-		Templates:    templatesToGenericFiles(c.Templates),
+		Name:       c.Metadata.Name,
+		Version:    c.Metadata.Version,
+		AppVersion: c.Metadata.AppVersion,
+		Values:     valuesToGenericValues(c.Values),
+		Templates:  templatesToGenericFiles(c.Templates),
 	}
 }
 

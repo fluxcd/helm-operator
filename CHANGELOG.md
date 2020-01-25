@@ -1,4 +1,97 @@
-## 1.0.0-rc7 (2019-01-10)
+## 1.0.0-rc8 (2020-01-25)
+
+> **Notice:** upgrading to this version from `<=0.10.x` by just
+> updating your Helm Operator image tag is not possible as the
+> CRD domain and version have changed. An upgrade guide can be
+> found [here](./docs/guides/upgrading-to-ga.md).
+
+> **Notice:**  due to the multiple added fields, you need to
+> re-apply the `HelmRelease` CRD.
+
+### Bug fixes
+
+ - release: push returned error as condition on sync check
+   failure
+   [fluxcd/helm-operator][#209]
+ - release: reject git source if URL and path are missing
+   [fluxcd/helm-operator][#223]
+ - helm: only hold repository config lock for duration of
+   read so dry-runs are run in parallel again
+   [fluxcd/helm-operator][#225]
+ - release: use all set `rollback` values when performing
+   a rollback operation
+   [fluxcd/helm-operator][#239]
+ - helm: do not include non-template files in chart data
+   so that the generation of a `requirement.lock` due to
+   a dependency update does not cause spurious upgrades
+   [fluxcd/helm-operator][#242]
+
+### Enhancements
+
+ - release: allow `.spec.wait` to be set for upgrades
+   [fluxcd/helm-operator][#95]
+ - chartsync: support supplying Git HTTPS credentials
+   using `secretRef`
+   [fluxcd/helm-operator][#172]
+ - status: retry status and condition updates on conflicts
+   [fluxcd/helm-operator][#210]
+ - release: allow `secretKeyRef` and `configMapKeyRef` to be
+   selected from other namespaces using the `namespace` key
+   [fluxcd/helm-operator][#219]
+ - helm: only index missing repositories when fetching a
+   chart from an URL
+   [fluxcd/helm-operator][#225]
+ - helm/v3: propagate main application logger to client
+   [fluxcd/helm-operator][#232]
+ - release: allow max history to be overridden using
+   `.spec.maxHistory`
+   [fluxcd/helm-operator][#235]
+ - release: rely on Helm storage for determining when to
+   upgrade after rolling back
+   [fluxcd/helm-operator][#239]
+
+### Maintenance and documentation
+
+ - build: update Kubernetes Kind to `v0.7.0` and set
+   Kubernetes `v1.14.10` for end-to-end tests
+   [fluxcd/helm-operator][#207]
+ - build: upgrade code-generator to Kubernetes 1.16.2
+   [fluxcd/helm-operator][#214]
+ - docs: update FAQ on Flux garbage collection
+   [fluxcd/helm-operator][#221]
+ - Pkg: update Flux to `v1.17.2-0.20200121140732-3903cf8e71c3`
+   [fluxcd/helm-operator][#230]
+ - Pkg: make `pkg/install` a Go module to reduce its
+   dependencies
+   [fluxcd/helm-operator][#234]
+
+
+### Thanks
+
+Thanks to @sa-spag, @carlpett, @sureshamk, @ingeknudsen, @cep21,
+@HaveFun83, @stefanprodan, @runningman84, @nabadger, @Helcaraxan,
+@stefansedich, @hiddeco, @grrywlsn, @niall-weedon, @richardcase,
+@REBELinBLUE, @derrickburns, and others for their contributions to
+this release, feedback, and reporting issues.
+
+[#95]: https://github.com/fluxcd/helm-operator/pull/95
+[#172]: https://github.com/fluxcd/helm-operator/pull/172
+[#207]: https://github.com/fluxcd/helm-operator/pull/207
+[#209]: https://github.com/fluxcd/helm-operator/pull/209
+[#210]: https://github.com/fluxcd/helm-operator/pull/210
+[#214]: https://github.com/fluxcd/helm-operator/pull/214
+[#219]: https://github.com/fluxcd/helm-operator/pull/219
+[#221]: https://github.com/fluxcd/helm-operator/pull/221
+[#223]: https://github.com/fluxcd/helm-operator/pull/223
+[#225]: https://github.com/fluxcd/helm-operator/pull/225
+[#230]: https://github.com/fluxcd/helm-operator/pull/230
+[#232]: https://github.com/fluxcd/helm-operator/pull/232
+[#234]: https://github.com/fluxcd/helm-operator/pull/234
+[#235]: https://github.com/fluxcd/helm-operator/pull/235
+[#239]: https://github.com/fluxcd/helm-operator/pull/239
+[#242]: https://github.com/fluxcd/helm-operator/pull/242
+
+## 1.0.0-rc7 (2020-01-10)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
@@ -40,7 +133,7 @@ to this release, feedback, and reporting issues.
 [#193]: https://github.com/fluxcd/helm-operator/pull/193
 [#196]: https://github.com/fluxcd/helm-operator/pull/196
 
-## 1.0.0-rc6 (2019-01-08)
+## 1.0.0-rc6 (2020-01-08)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the

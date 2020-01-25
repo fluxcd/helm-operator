@@ -254,6 +254,7 @@ func main() {
 
 	gitChartSync := chartsync.NewGitChartSync(
 		log.With(logger, "component", "gitchartsync"),
+		kubeClient.CoreV1(),
 		hrInformer.Lister(),
 		chartsync.GitConfig{GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval, GitDefaultRef: *gitDefaultRef},
 		queue,

@@ -3,6 +3,7 @@ package status
 import (
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 
 	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
@@ -23,23 +24,31 @@ func NewCondition(conditionType helmfluxv1.HelmReleaseConditionType, status v1.C
 }
 
 // SetCondition updates the HelmRelease to include the given condition.
-func SetCondition(client v1client.HelmReleaseInterface, hr helmfluxv1.HelmRelease,
+func SetCondition(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease,
 	condition helmfluxv1.HelmReleaseCondition) error {
 
-	cHr, err := client.Get(hr.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
+	firstTry := true
+	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
+		if !firstTry {
+			var getErr error
+			hr, getErr = client.Get(hr.Name, metav1.GetOptions{})
+			if getErr != nil {
+				return getErr
+			}
+		}
 
-	currCondition := GetCondition(cHr.Status, condition.Type)
-	if currCondition != nil && currCondition.Status == condition.Status {
-		condition.LastTransitionTime = currCondition.LastTransitionTime
-	}
+		cHr := hr.DeepCopy()
+		currCondition := GetCondition(cHr.Status, condition.Type)
+		if currCondition != nil && currCondition.Status == condition.Status {
+			condition.LastTransitionTime = currCondition.LastTransitionTime
+		}
+		newConditions := filterOutCondition(cHr.Status.Conditions, condition.Type)
+		cHr.Status.Conditions = append(newConditions, condition)
 
-	newConditions := filterOutCondition(cHr.Status.Conditions, condition.Type)
-	cHr.Status.Conditions = append(newConditions, condition)
-
-	_, err = client.UpdateStatus(cHr)
+		_, err = client.UpdateStatus(cHr)
+		firstTry = false
+		return
+	})
 	return err
 }
 

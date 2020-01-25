@@ -30,12 +30,11 @@ func releaseToGenericRelease(r *release.Release) *helm.Release {
 // a generic `helm.Chart`
 func chartToGenericChart(c *chart.Chart) *helm.Chart {
 	return &helm.Chart{
-		Name:         c.Name(),
-		Version:      formatVersion(c),
-		AppVersion:   c.AppVersion(),
-		Values:       c.Values,
-		Files:        filesToGenericFiles(c.Files),
-		Templates:    filesToGenericFiles(c.Templates),
+		Name:       c.Name(),
+		Version:    formatVersion(c),
+		AppVersion: c.AppVersion(),
+		Values:     c.Values,
+		Templates:  filesToGenericFiles(c.Templates),
 	}
 }
 
