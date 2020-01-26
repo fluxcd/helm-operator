@@ -19,6 +19,8 @@ type TemplateParameters struct {
 	EnableTillerTLS         bool
 	TillerTLSCACertContent  string
 	TillerTLSCertSecretName string
+	HelmVersions            string
+	AdditionalArgs          []string
 }
 
 func FillInTemplates(params TemplateParameters) (map[string][]byte, error) {

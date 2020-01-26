@@ -160,3 +160,10 @@ spec:
         # - --tiller-tls-cert-path=/etc/fluxd/helm/tls.crt
         # - --tiller-tls-verify=true
         # - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt{{ end }}
+{{ if .HelmVersions }}
+        - --enabled-helm-versions={{ .HelmVersions }}
+{{ end }}
+{{ if .AdditionalArgs }}
+        # Additional arguments{{ range .AdditionalArgs }}
+        - {{ . }}{{ end }}
+{{ end }}
