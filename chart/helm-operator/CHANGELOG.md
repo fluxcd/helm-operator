@@ -1,3 +1,12 @@
+## 0.6.0 (2020-01-26)
+
+### Improvements
+
+ - Update Helm Operator to `1.0.0-rc8`
+   [fluxcd/helm-operator#244](https://github.com/fluxcd/helm-operator/pull/244)
+ - Allow pod annotations, labels and account annotations to be set
+   [fluxcd/helm-operator#229](https://github.com/fluxcd/helm-operator/pull/229)
+
 ## 0.5.0 (2020-01-10)
 
 ### Improvements
