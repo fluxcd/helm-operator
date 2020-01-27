@@ -36,7 +36,7 @@ helm upgrade -i helm-operator fluxcd/helm-operator \
 --set helm.versions=v3
 ```
 
-By default the `helm.versions` is set to `v2,v3`, in this mode Tiller is required.
+By default the `helm.versions` is set to `v2`, in this mode Tiller is required.
 
 ## Use a custom Helm repository
 
