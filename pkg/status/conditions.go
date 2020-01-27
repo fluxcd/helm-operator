@@ -1,19 +1,19 @@
 package status
 
 import (
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
 
-	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 )
 
 // NewCondition creates a new HelmReleaseCondition.
-func NewCondition(conditionType helmfluxv1.HelmReleaseConditionType, status v1.ConditionStatus,
-	reason, message string) helmfluxv1.HelmReleaseCondition {
+func NewCondition(conditionType v1.HelmReleaseConditionType, status corev1.ConditionStatus,
+	reason, message string) v1.HelmReleaseCondition {
 
-	return helmfluxv1.HelmReleaseCondition{
+	return v1.HelmReleaseCondition{
 		Type:               conditionType,
 		Status:             status,
 		LastUpdateTime:     metav1.Now(),
@@ -23,9 +23,20 @@ func NewCondition(conditionType helmfluxv1.HelmReleaseConditionType, status v1.C
 	}
 }
 
+// GetCondition returns the condition with the given type.
+func GetCondition(status v1.HelmReleaseStatus, conditionType v1.HelmReleaseConditionType) *v1.HelmReleaseCondition {
+
+	for i := range status.Conditions {
+		c := status.Conditions[i]
+		if c.Type == conditionType {
+			return &c
+		}
+	}
+	return nil
+}
+
 // SetCondition updates the HelmRelease to include the given condition.
-func SetCondition(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease,
-	condition helmfluxv1.HelmReleaseCondition) error {
+func SetCondition(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, condition v1.HelmReleaseCondition) error {
 
 	firstTry := true
 	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
@@ -45,6 +56,13 @@ func SetCondition(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelea
 		newConditions := filterOutCondition(cHr.Status.Conditions, condition.Type)
 		cHr.Status.Conditions = append(newConditions, condition)
 
+		switch {
+		case condition.Type == v1.HelmReleaseReleased && condition.Status == corev1.ConditionTrue:
+			cHr.Status.RollbackCount = 0
+		case condition.Type == v1.HelmReleaseRolledBack && condition.Status == corev1.ConditionTrue:
+			cHr.Status.RollbackCount = hr.Status.RollbackCount + 1
+		}
+
 		_, err = client.UpdateStatus(cHr)
 		firstTry = false
 		return
@@ -52,25 +70,45 @@ func SetCondition(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelea
 	return err
 }
 
-// GetCondition returns the condition with the given type.
-func GetCondition(status helmfluxv1.HelmReleaseStatus,
-	conditionType helmfluxv1.HelmReleaseConditionType) *helmfluxv1.HelmReleaseCondition {
+// UnsetCondition updates the HelmRelease to exclude the given condition.
+func UnsetCondition(client v1client.HelmReleaseInterface,
+	hr *v1.HelmRelease, conditionType v1.HelmReleaseConditionType) error {
 
-	for i := range status.Conditions {
-		c := status.Conditions[i]
-		if c.Type == conditionType {
-			return &c
+	firstTry := true
+	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
+		if !firstTry {
+			var getErr error
+			hr, getErr = client.Get(hr.Name, metav1.GetOptions{})
+			if getErr != nil {
+				return getErr
+			}
 		}
-	}
-	return nil
+
+		if GetCondition(hr.Status, conditionType) == nil {
+			return
+		}
+
+		cHr := hr.DeepCopy()
+		cHr.Status.Conditions = filterOutCondition(cHr.Status.Conditions, conditionType)
+
+		switch {
+		case conditionType == v1.HelmReleaseRolledBack:
+			cHr.Status.RollbackCount = 0
+		}
+
+		_, err = client.UpdateStatus(cHr)
+		firstTry = false
+		return
+	})
+	return err
 }
 
 // filterOutCondition returns a new slice of conditions without the
 // conditions of the given type.
-func filterOutCondition(conditions []helmfluxv1.HelmReleaseCondition,
-	conditionType helmfluxv1.HelmReleaseConditionType) []helmfluxv1.HelmReleaseCondition {
+func filterOutCondition(conditions []v1.HelmReleaseCondition,
+	conditionType v1.HelmReleaseConditionType) []v1.HelmReleaseCondition {
 
-	var newConditions []helmfluxv1.HelmReleaseCondition
+	var newConditions []v1.HelmReleaseCondition
 	for _, c := range conditions {
 		if c.Type == conditionType {
 			continue
