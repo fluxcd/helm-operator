@@ -71,7 +71,7 @@ type sourceRef struct {
 
 // forHelmRelease returns true if the given `v1.HelmRelease`s
 // `v1.GitChartSource` matches the sourceRef.
-func (c sourceRef) forHelmRelease(hr *v1.HelmRelease) bool {
+func (c sourceRef) forHelmRelease(hr *v1.HelmRelease, defaultGitRef string) bool {
 	if hr == nil || hr.Spec.GitChartSource == nil {
 		return false
 	}
@@ -81,7 +81,7 @@ func (c sourceRef) forHelmRelease(hr *v1.HelmRelease) bool {
 		return false
 	}
 
-	return c.mirror == mirrorName(hr) && c.remote == hr.Spec.GitURL && c.ref == hr.Spec.Ref
+	return c.mirror == mirrorName(hr) && c.remote == hr.Spec.GitURL && c.ref == hr.Spec.GitChartSource.RefOrDefault(defaultGitRef)
 }
 
 func NewGitChartSync(logger log.Logger,
@@ -250,7 +250,7 @@ func (c *GitChartSync) sync(hr *v1.HelmRelease, mirrorName string, repo *git.Rep
 	c.releaseSourcesMu.RUnlock()
 
 	var changed bool
-	if !ok || !s.forHelmRelease(hr) {
+	if !ok || !s.forHelmRelease(hr, c.config.GitDefaultRef) {
 		s = sourceRef{mirror: mirrorName, remote: source.GitURL, ref: source.RefOrDefault(c.config.GitDefaultRef)}
 		changed = true
 	}
