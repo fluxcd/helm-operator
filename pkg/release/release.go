@@ -202,20 +202,29 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		Force:       hr.Spec.ForceUpgrade,
 		ResetValues: hr.Spec.ResetValues,
 		MaxHistory:  hr.GetMaxHistory(),
-		// We only set this during installation to delete a failed
-		// release, but not during upgrades, as we ourselves want
-		// to be in control of rollbacks.
-		Atomic: curRel == nil,
-		Wait:   hr.Spec.Wait || hr.Spec.Rollback.Enable,
+		Wait:        hr.Spec.Wait || (curRel != nil && hr.Spec.Rollback.Enable),
 	})
 	if err != nil {
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
 			v1.HelmReleaseReleased, corev1.ConditionFalse, failReason, err.Error()))
 		logger.Log("error", "Helm release failed", "revision", revision, "err", err.Error())
 
-		// If this is the first release, or rollbacks are not enabled;
-		// return and wait for the next signal to retry...
-		if curRel == nil || !hr.Spec.Rollback.Enable {
+		// If there was no release prior to this,
+		// uninstall the failed release so it can be retried.
+		if curRel == nil {
+			logger.Log("info", "uninstalling initial failed release so it can be retried")
+			if uErr := client.Uninstall(hr.GetReleaseName(), helm.UninstallOptions{
+				Namespace:   hr.GetTargetNamespace(),
+				KeepHistory: false,
+				Timeout:     hr.GetTimeout(),
+			}); uErr != nil {
+				logger.Log("error", "Helm uninstall failed", "err", uErr.Error())
+			}
+			return hr, err
+		}
+
+		// Rollbacks are not enabled; return and wait for the next signal to retry...
+		if !hr.Spec.Rollback.Enable {
 			return hr, err
 		}
 
@@ -289,6 +298,7 @@ func (r *Release) Uninstall(client helm.Client, hr *v1.HelmRelease) {
 	if err := client.Uninstall(hr.GetReleaseName(), helm.UninstallOptions{
 		Namespace:   hr.GetTargetNamespace(),
 		KeepHistory: false,
+		Timeout:     hr.GetTimeout(),
 	}); err != nil {
 		logger.Log("error", "failed to uninstall Helm release", "err", err.Error())
 	}
