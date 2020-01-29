@@ -60,6 +60,10 @@ function setup() {
 }
 
 function teardown() {
+  # Teardown is verbose when a test fails, and this will help most of the time
+  # to determine _why_ it failed.
+  kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator
+
   # Removing the operator also takes care of the global resources it installs.
   uninstall_helm_operator_with_helm
   uninstall_tiller
