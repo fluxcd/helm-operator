@@ -21,7 +21,7 @@ function setup() {
   poll_until_equals 'podinfo-helm-repository HelmRelease' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o 'custom-columns=status:status.releaseStatus' --no-headers"
 
   # Apply a faulty patch
-  kubectl patch -f "$FIXTURES_DIR/releases/helm-repository.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/values/service/type", "value":"LoadBalancer"}]' >&3
+  kubectl patch -f "$FIXTURES_DIR/releases/helm-repository.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/values/faults/unready", "value":"true"}]' >&3
 
   # Wait for release failure
   poll_until_equals 'podinfo-helm-repository HelmRelease upgrade failure' 'HelmUpgradeFailed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
@@ -44,7 +44,7 @@ function setup() {
   poll_until_equals 'podinfo-git HelmRelease' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o 'custom-columns=status:status.releaseStatus' --no-headers"
 
   # Apply a faulty patch
-  kubectl patch -f "$FIXTURES_DIR/releases/git.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/values/service/type", "value":"LoadBalancer"}]' >&3
+  kubectl patch -f "$FIXTURES_DIR/releases/git.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/values/faults/unready", "value":"true"}]' >&3
 
   # Wait for release failure
   poll_until_equals 'podinfo-git HelmRelease upgrade failure' 'HelmUpgradeFailed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
