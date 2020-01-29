@@ -14,7 +14,7 @@ spec:
   chart:
     repository: https://stefanprodan.github.io/podinfo
     name: podinfo
-    version: 3.1.4
+    version: 3.2.0
   values:
     replicaCount: 1
 
