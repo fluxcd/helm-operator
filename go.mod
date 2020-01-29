@@ -17,7 +17,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.4.0
 	google.golang.org/grpc v1.24.0
-	helm.sh/helm/v3 v3.0.2
+	helm.sh/helm/v3 v3.0.3
 	k8s.io/api v0.0.0-20191016110408-35e52d86657a // kubernetes-1.16.2
 	k8s.io/apiextensions-apiserver v0.0.0-20191016113550-5357c4baaf65 // kubernetes-1.16.2
 	k8s.io/apimachinery v0.0.0-20191004115801-a2eda9f80ab8 // kubernetes-1.16.2
