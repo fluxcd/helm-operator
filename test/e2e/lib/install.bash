@@ -29,10 +29,10 @@ function install_helm_operator_with_helm() {
   helm2 install --name helm-operator --wait \
     --namespace "${E2E_NAMESPACE}" \
     --set createCRD="${create_crds}" \
-    --set chartsSyncInterval=10s \
+    --set chartsSyncInterval=3s \
     --set image.repository=docker.io/fluxcd/helm-operator \
     --set image.tag=latest \
-    --set git.pollInterval=10s \
+    --set git.pollInterval=3s \
     --set git.config.secretName=gitconfig \
     --set git.config.enabled=true \
     --set-string git.config.data="${GITCONFIG}" \
