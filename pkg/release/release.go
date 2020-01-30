@@ -358,9 +358,9 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 	// If this results in one or more diffs we should sync.
 	logger.Log("info", "performing dry-run upgrade to see if release has diverged")
 	desRel, err := client.UpgradeFromPath(chartPath, hr.GetReleaseName(), b, helm.UpgradeOptions{
-		DryRun: true,
-		Namespace: hr.GetTargetNamespace(),
-		Force: hr.Spec.ForceUpgrade,
+		DryRun:      true,
+		Namespace:   hr.GetTargetNamespace(),
+		Force:       hr.Spec.ForceUpgrade,
 		ResetValues: hr.Spec.ResetValues,
 	})
 	if err != nil {
