@@ -164,6 +164,8 @@ func (s RepoChartSource) CleanRepoURL() string {
 
 type Rollback struct {
 	Enable       bool   `json:"enable,omitempty"`
+	Retry        bool   `json:"retry,omitempty"`
+	MaxRetries   *int64 `json:"maxRetries,omitempty"`
 	Force        bool   `json:"force,omitempty"`
 	Recreate     bool   `json:"recreate,omitempty"`
 	DisableHooks bool   `json:"disableHooks,omitempty"`
@@ -176,6 +178,13 @@ func (r Rollback) GetTimeout() time.Duration {
 		return 300 * time.Second
 	}
 	return time.Duration(*r.Timeout) * time.Second
+}
+
+func (r Rollback) GetMaxRetries() int64 {
+	if r.MaxRetries == nil {
+		return 5
+	}
+	return *r.MaxRetries
 }
 
 // HelmReleaseSpec is the spec for a HelmRelease resource
@@ -267,6 +276,11 @@ type HelmReleaseStatus struct {
 	// been deployed.
 	// +optional
 	Revision string `json:"revision,omitempty"`
+
+	// RollbackCount defines the amount of rollback attempts made,
+	// it is incremented after a rollback failure and reset after a
+	// successful upgrade or revision change.
+	RollbackCount int64 `json:"rollbackCount,omitempty"`
 
 	// Conditions contains observations of the resource's state, e.g.,
 	// has the chart which it refers to been fetched.

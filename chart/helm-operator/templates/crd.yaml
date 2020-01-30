@@ -84,6 +84,15 @@ spec:
                 enable:
                   description: If set, will perform rollbacks for this release on upgrade failures
                   type: boolean
+                retry:
+                  description: If set, the upgrade of a rolled back release will be retried until
+                    the maximum amount of retries is reached
+                  type: boolean
+                maxRetries:
+                  description: The maximum amount of retries that should be attempted for a rolled
+                    back release if retries are enabled, defaults to 5, 0 equals infinite
+                  type: integer
+                  format: int64
                 force:
                   description: If set, will force resource update through delete/recreate if needed
                   type: boolean

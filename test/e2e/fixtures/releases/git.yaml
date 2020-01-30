@@ -6,7 +6,7 @@ metadata:
   namespace: demo
 spec:
   releaseName: podinfo-git
-  timeout: 10
+  timeout: 15
   wait: true
   rollback:
     enable: true
