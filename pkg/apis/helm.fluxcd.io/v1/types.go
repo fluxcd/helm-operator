@@ -93,9 +93,9 @@ type NamespacedConfigMapKeySelector struct {
 	Name string `json:"name"`
 	Key  string `json:"key"`
 	// +optional
-	Optional *bool `json:"optional,omitempty`
+	Optional *bool `json:"optional,omitempty"`
 	// +optional
-	Namespace string `json:"optional,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
 }
 type NamespacedSecretKeySelector struct {
 	Name string `json:"name"`
@@ -103,7 +103,7 @@ type NamespacedSecretKeySelector struct {
 	// +optional
 	Optional *bool `json:"optional,omitempty"`
 	// +optional
-	Namespace string `json:"optional,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
 }
 
 type ChartFileSelector struct {

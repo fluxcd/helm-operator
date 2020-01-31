@@ -119,7 +119,7 @@ func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, char
 				if optional {
 					continue
 				}
-				return result, fmt.Errorf("unable to yaml.Unmarshal %v from URL %s", f, filePath)
+				return result, fmt.Errorf("unable to yaml.Unmarshal %v from path %s", f, filePath)
 			}
 		}
 		result = mergeValues(result, valueFile)
@@ -142,11 +142,16 @@ func readURL(URL string) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return []byte{}, err
+	switch resp.StatusCode {
+	case http.StatusOK:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return []byte{}, err
+		}
+		return body, nil
+	default:
+		return []byte{}, fmt.Errorf("failed to retrieve file from URL, status '%s (%d)'", resp.Status, resp.StatusCode)
 	}
-	return body, nil
 }
 
 // readLocalChartFile attempts to read a file from the chart path.
