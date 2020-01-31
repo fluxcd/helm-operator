@@ -5,12 +5,11 @@ import (
 	"path/filepath"
 	"sync"
 
-	"helm.sh/helm/v3/pkg/cli"
+	"k8s.io/helm/pkg/urlutil"
+
 	"helm.sh/helm/v3/pkg/downloader"
-	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/helmpath"
 	"helm.sh/helm/v3/pkg/repo"
-	"k8s.io/helm/pkg/urlutil"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
@@ -25,11 +24,7 @@ func (h *HelmV3) Pull(ref, version, dest string) (string, error) {
 		Verify:           downloader.VerifyNever,
 		RepositoryConfig: repositoryConfig,
 		RepositoryCache:  repositoryCache,
-		Getters: getter.All(&cli.EnvSettings{
-			RepositoryConfig: repositoryConfig,
-			RepositoryCache:  repositoryCache,
-			PluginsDirectory: pluginsDir,
-		}),
+		Getters:          getterProviders(),
 	}
 	d, _, err := c.DownloadTo(ref, version, dest)
 	return d, err
@@ -70,12 +65,7 @@ func (h *HelmV3) PullWithRepoURL(repoURL, name, version, dest string) (string, e
 	if chartRef == "" {
 		// We were unable to find an entry so we need to make a request
 		// to the repository to get the absolute URL of the chart.
-		chartRef, err = repo.FindChartInRepoURL(repoURL, name, version, "", "", "", getter.All(
-			&cli.EnvSettings{
-				RepositoryConfig: repositoryConfig,
-				RepositoryCache:  repositoryCache,
-				PluginsDirectory: pluginsDir,
-			}))
+		chartRef, err = repo.FindChartInRepoURL(repoURL, name, version, "", "", "", getterProviders())
 		if err != nil {
 			return "", err
 		}

@@ -5,8 +5,6 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-	"helm.sh/helm/v3/pkg/cli"
-	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
 )
 
@@ -60,7 +58,7 @@ func (h *HelmV3) RepositoryAdd(name, url, username, password, certFile, keyFile,
 	f.Add(c)
 
 	if f.Has(name) {
-		return errors.New("chart repository with name %s already exists")
+		return errors.New("chart repository with name '%s' already exists")
 	}
 
 	r, err := newChartRepository(c)
@@ -128,11 +126,7 @@ func (h *HelmV3) RepositoryImport(path string) error {
 // of the cache path and getters while duplicating as less
 // code as possible.
 func newChartRepository(e *repo.Entry) (*repo.ChartRepository, error) {
-	cr, err := repo.NewChartRepository(e, getter.All(&cli.EnvSettings{
-		RepositoryConfig: repositoryConfig,
-		RepositoryCache:  repositoryCache,
-		PluginsDirectory: pluginsDir,
-	}))
+	cr, err := repo.NewChartRepository(e, getterProviders())
 	if err != nil {
 		return nil, err
 	}

@@ -2,19 +2,19 @@ package v3
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
 
 	"github.com/go-kit/kit/log"
 
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/kubectl/pkg/cmd/util"
 
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/helmpath"
 	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/storage"
@@ -26,10 +26,9 @@ import (
 const VERSION = "v3"
 
 var (
-	defaultClusterName = "in-cluster"
 	repositoryConfig   = helmpath.ConfigPath("repositories.yaml")
 	repositoryCache    = helmpath.CachePath("repository")
-	pluginsDir		   = helmpath.DataPath("plugins")
+	pluginsDir         = helmpath.DataPath("plugins")
 )
 
 type HelmOptions struct {
@@ -38,9 +37,11 @@ type HelmOptions struct {
 }
 
 type HelmV3 struct {
-	kc     *rest.Config
-	logger log.Logger
+	kubeConfig *rest.Config
+	logger     log.Logger
 }
+
+type infoLogFunc func(string, ...interface{})
 
 // New creates a new HelmV3 client
 func New(logger log.Logger, kubeConfig *rest.Config) helm.Client {
@@ -51,8 +52,8 @@ func New(logger log.Logger, kubeConfig *rest.Config) helm.Client {
 		panic(err)
 	}
 	return &HelmV3{
-		kc:     kubeConfig,
-		logger: logger,
+		kubeConfig: kubeConfig,
+		logger:     logger,
 	}
 }
 
@@ -67,103 +68,62 @@ func (h *HelmV3) infoLogFunc(format string, args ...interface{}) {
 	h.logger.Log("info", message)
 }
 
-// initActionConfig initializes the configuration for the action,
-// like the namespace it should be executed in and the storage driver.
-func (h *HelmV3) initActionConfig(opts HelmOptions) (*action.Configuration, func(), error) {
-	path, ctx, cleanup, err := writeTempKubeConfig(h.kc)
+func newActionConfig(config *rest.Config, logFunc infoLogFunc, namespace, driver string) (*action.Configuration, error) {
+
+	restClientGetter := newConfigFlags(config, namespace)
+	kubeClient := &kube.Client{
+		Factory: util.NewFactory(restClientGetter),
+		Log:     logFunc,
+	}
+	client, err := kubeClient.Factory.KubernetesClientSet()
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	cfgFlags := kube.GetConfig(path, ctx, opts.Namespace)
-
-	// We simply construct the client here instead of using `kube.New`
-	// to prevent concurrency issues due to the `AddToScheme` call it
-	// makes.
-	kc := &kube.Client{
-		Factory: util.NewFactory(cfgFlags),
-		Log:     h.infoLogFunc,
-	}
-
-	clientset, err := kc.Factory.KubernetesClientSet()
+	store, err := newStorageDriver(client, logFunc, namespace, driver)
 	if err != nil {
-		return nil, cleanup, err
-	}
-
-	namespace := opts.Namespace
-
-	var store *storage.Storage
-	switch opts.Driver {
-	case "secret", "secrets", "":
-		d := driver.NewSecrets(clientset.CoreV1().Secrets(namespace))
-		d.Log = h.infoLogFunc
-		store = storage.Init(d)
-	case "configmap", "configmaps":
-		d := driver.NewConfigMaps(clientset.CoreV1().ConfigMaps(namespace))
-		d.Log = h.infoLogFunc
-		store = storage.Init(d)
-	case "memory":
-		d := driver.NewMemory()
-		store = storage.Init(d)
-	default:
-		return nil, cleanup, fmt.Errorf("unknown Client storage driver [%s]", opts.Driver)
+		return nil, err
 	}
 
 	return &action.Configuration{
-		RESTClientGetter: cfgFlags,
+		RESTClientGetter: restClientGetter,
 		Releases:         store,
-		KubeClient:       kc,
-		Log:              h.infoLogFunc,
-	}, cleanup, nil
+		KubeClient:       kubeClient,
+		Log:              logFunc,
+	}, nil
 }
 
-// writeTempKubeConfig writes the given Config to a temporary location
-// to be used by Client as a `.kube/config` file. The reason we do this
-// is to be able to utilize Kubernetes' in-cluster discovery. It returns
-// a cleanup function.
-func writeTempKubeConfig(kc *rest.Config) (string, string, func(), error) {
-	tmpDir, err := ioutil.TempDir("", "helmv3")
-	if err != nil {
-		return "", "", func() {}, err
+func newConfigFlags(config *rest.Config, namespace string) *genericclioptions.ConfigFlags {
+	return &genericclioptions.ConfigFlags{
+		Namespace:   &namespace,
+		APIServer:   &config.Host,
+		CAFile:      &config.CAFile,
+		BearerToken: &config.BearerToken,
 	}
-	cleanup := func() { os.RemoveAll(tmpDir) }
-
-	caData, err := ioutil.ReadFile(kc.CAFile)
-	if err != nil {
-		return "", "", cleanup, err
-	}
-
-	c := newConfig(kc.Host, kc.Username, kc.BearerToken, caData)
-	tmpFullPath := tmpDir + "/config"
-	if err := clientcmd.WriteToFile(c, tmpFullPath); err != nil {
-		return "", "", cleanup, err
-	}
-
-	return tmpFullPath, c.CurrentContext, cleanup, nil
 }
 
-func newConfig(host, username, token string, caCert []byte) clientcmdapi.Config {
-
-	contextName := fmt.Sprintf("%s@%s", username, defaultClusterName)
-
-	return clientcmdapi.Config{
-		Clusters: map[string]*clientcmdapi.Cluster{
-			defaultClusterName: {
-				Server:                   host,
-				CertificateAuthorityData: caCert,
-			},
-		},
-		Contexts: map[string]*clientcmdapi.Context{
-			contextName: {
-				Cluster:  defaultClusterName,
-				AuthInfo: username,
-			},
-		},
-		AuthInfos: map[string]*clientcmdapi.AuthInfo{
-			username: {
-				Token: token,
-			},
-		},
-		CurrentContext: contextName,
+func newStorageDriver(client *kubernetes.Clientset, logFunc infoLogFunc, namespace, d string) (*storage.Storage, error) {
+	switch d {
+	case "secret", "secrets", "":
+		s := driver.NewSecrets(client.CoreV1().Secrets(namespace))
+		s.Log = logFunc
+		return storage.Init(s), nil
+	case "configmap", "configmaps":
+		c := driver.NewConfigMaps(client.CoreV1().ConfigMaps(namespace))
+		c.Log = logFunc
+		return storage.Init(c), nil
+	case "memory":
+		m := driver.NewMemory()
+		return storage.Init(m), nil
+	default:
+		return nil, fmt.Errorf("unsupported storage driver '%s'", d)
 	}
+}
+
+func getterProviders() getter.Providers {
+	return getter.All(&cli.EnvSettings{
+		RepositoryConfig: repositoryConfig,
+		RepositoryCache:  repositoryCache,
+		PluginsDirectory: pluginsDir,
+	})
 }
