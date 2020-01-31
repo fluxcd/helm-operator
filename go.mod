@@ -3,7 +3,6 @@ module github.com/fluxcd/helm-operator
 go 1.13
 
 require (
-	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/fluxcd/flux v1.17.2-0.20200121140732-3903cf8e71c3
 	github.com/fluxcd/helm-operator/pkg/install v0.0.0-00010101000000-000000000000
 	github.com/ghodss/yaml v1.0.0
@@ -11,6 +10,7 @@ require (
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.3.1
 	github.com/gorilla/mux v1.7.1
+	github.com/helm/helm-2to3 v0.2.2
 	github.com/ncabatoff/go-seq v0.0.0-20180805175032-b08ef85ed833
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.2.1
