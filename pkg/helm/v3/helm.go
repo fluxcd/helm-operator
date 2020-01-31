@@ -29,6 +29,7 @@ var (
 	defaultClusterName = "in-cluster"
 	repositoryConfig   = helmpath.ConfigPath("repositories.yaml")
 	repositoryCache    = helmpath.CachePath("repository")
+	pluginsDir		   = helmpath.DataPath("plugins")
 )
 
 type HelmOptions struct {

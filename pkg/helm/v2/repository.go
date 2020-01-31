@@ -6,18 +6,11 @@ import (
 
 	"github.com/pkg/errors"
 	"k8s.io/helm/pkg/getter"
+	"k8s.io/helm/pkg/helm/environment"
 	"k8s.io/helm/pkg/repo"
 )
 
-var (
-	repositoryConfigLock sync.RWMutex
-	getters              = getter.Providers{{
-		Schemes: []string{"http", "https"},
-		New: func(URL, CertFile, KeyFile, CAFile string) (getter.Getter, error) {
-			return getter.NewHTTPGetter(URL, CertFile, KeyFile, CAFile)
-		},
-	}}
-)
+var repositoryConfigLock sync.RWMutex
 
 func (h *HelmV2) RepositoryIndex() error {
 
@@ -30,7 +23,7 @@ func (h *HelmV2) RepositoryIndex() error {
 
 	var wg sync.WaitGroup
 	for _, c := range f.Repositories {
-		r, err := repo.NewChartRepository(c, getters)
+		r, err := repo.NewChartRepository(c, getter.All(environment.EnvSettings{Home: helmHome()}))
 		if err != nil {
 			return err
 		}
@@ -70,7 +63,7 @@ func (h *HelmV2) RepositoryAdd(name, url, username, password, certFile, keyFile,
 		return errors.New("chart repository with name %s already exists")
 	}
 
-	r, err := repo.NewChartRepository(c, getters)
+	r, err := repo.NewChartRepository(c, getter.All(environment.EnvSettings{Home: helmHome()}))
 	if err != nil {
 		return err
 	}
@@ -113,7 +106,7 @@ func (h *HelmV2) RepositoryImport(path string) error {
 			h.logger.Log("error", "repository with name already exists", "name", c.Name, "url", c.URL)
 			continue
 		}
-		r, err := repo.NewChartRepository(c, getters)
+		r, err := repo.NewChartRepository(c, getter.All(environment.EnvSettings{Home: helmHome()}))
 		if err != nil {
 			h.logger.Log("error", err, "name", c.Name, "url", c.URL)
 			continue

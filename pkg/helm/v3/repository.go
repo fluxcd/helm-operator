@@ -5,17 +5,12 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
 )
 
-var (
-	repositoryConfigLock sync.RWMutex
-	getters              = getter.Providers{{
-		Schemes: []string{"http", "https"},
-		New:     getter.NewHTTPGetter,
-	}}
-)
+var repositoryConfigLock sync.RWMutex
 
 func (h *HelmV3) RepositoryIndex() error {
 
@@ -133,7 +128,11 @@ func (h *HelmV3) RepositoryImport(path string) error {
 // of the cache path and getters while duplicating as less
 // code as possible.
 func newChartRepository(e *repo.Entry) (*repo.ChartRepository, error) {
-	cr, err := repo.NewChartRepository(e, getters)
+	cr, err := repo.NewChartRepository(e, getter.All(&cli.EnvSettings{
+		RepositoryConfig: repositoryConfig,
+		RepositoryCache:  repositoryCache,
+		PluginsDirectory: pluginsDir,
+	}))
 	if err != nil {
 		return nil, err
 	}
