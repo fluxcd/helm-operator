@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	kube "k8s.io/client-go/kubernetes"
@@ -190,7 +189,7 @@ func HasRolledBack(hr v1.HelmRelease) bool {
 		return false
 	}
 
-	return rolledBack.Status == corev1.ConditionTrue
+	return rolledBack.Status == v1.ConditionTrue
 }
 
 // ShouldRetryUpgrade returns if the upgrade of a rolled back release should

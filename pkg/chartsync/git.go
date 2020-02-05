@@ -12,7 +12,6 @@ import (
 	"github.com/fluxcd/flux/pkg/git"
 	"github.com/go-kit/kit/log"
 
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -343,7 +342,7 @@ func mirrorName(hr *v1.HelmRelease) string {
 // given secretRef to the given gitURL and return the result, but only
 // if the scheme of the URL is HTTPS. In case of a failure it returns
 // an error.
-func (c *GitChartSync) addAuthForHTTPS(gitURL string, secretRef *corev1.LocalObjectReference, namespace string) (string, error) {
+func (c *GitChartSync) addAuthForHTTPS(gitURL string, secretRef *v1.LocalObjectReference, namespace string) (string, error) {
 	if secretRef == nil {
 		return gitURL, nil
 	}
@@ -371,9 +370,9 @@ func (c *GitChartSync) addAuthForHTTPS(gitURL string, secretRef *corev1.LocalObj
 // using the core v1 secrets client, and return the username and password.
 // If this errors, or the secret does not contain the expected keys, an
 // error is returned.
-func (c *GitChartSync) getAuthFromSecret(secretRef *corev1.LocalObjectReference, ns string) (string, string, error) {
-	secretName := secretRef.Name
+func (c *GitChartSync) getAuthFromSecret(secretRef *v1.LocalObjectReference, ns string) (string, string, error) {
 
+	secretName := secretRef.Name
 	secret, err := c.coreV1Client.Secrets(ns).Get(secretName, metav1.GetOptions{})
 	if err != nil {
 		return "", "", err

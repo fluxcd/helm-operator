@@ -13,16 +13,6 @@ func TestHelmValues(t *testing.T) {
 		expectedCopy     *HelmValues
 		expectedOriginal *HelmValues
 	}{
-		// reassignment
-		{
-			original: nil,
-			transformer: func(v *HelmValues) *HelmValues {
-				return &HelmValues{}
-			},
-			expectedCopy:     &HelmValues{},
-			expectedOriginal: nil,
-		},
-		// mutation
 		{
 			original: &HelmValues{Values: map[string]interface{}{}},
 			transformer: func(v *HelmValues) *HelmValues {
@@ -44,9 +34,9 @@ func TestHelmValues(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		output := &HelmValues{}
-		tc.original.DeepCopyInto(output)
-		assert.Exactly(t, tc.expectedCopy, tc.transformer(output), "copy was not mutated. test case: %d", i)
+		var out HelmValues
+		tc.original.DeepCopyInto(&out)
+		assert.Exactly(t, tc.expectedCopy, tc.transformer(&out), "copy was not mutated. test case: %d", i)
 		assert.Exactly(t, tc.expectedOriginal, tc.original, "original was mutated. test case: %d", i)
 	}
 }
