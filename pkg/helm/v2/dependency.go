@@ -12,7 +12,7 @@ func (h *HelmV2) DependencyUpdate(chartPath string) error {
 		Out:       out,
 		ChartPath: chartPath,
 		HelmHome:  helmHome(),
-		Getters:   getters,
+		Getters:   getterProviders(),
 	}
 	return man.Update()
 }

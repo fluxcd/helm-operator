@@ -10,28 +10,32 @@ import (
 )
 
 func (h *HelmV3) History(releaseName string, opts helm.HistoryOptions) ([]*helm.Release, error) {
-	cfg, cleanup, err := h.initActionConfig(HelmOptions{Namespace: opts.Namespace})
-	defer cleanup()
-
+	cfg, err := newActionConfig(h.kubeConfig, h.infoLogFunc, opts.Namespace, "")
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to setup Helm client")
+		return nil, err
 	}
 
-	client := action.NewHistory(cfg)
-	client.Max = opts.Max
+	history := action.NewHistory(cfg)
+	historyOptions(opts).configure(history)
 
-	hist, err := client.Run(releaseName)
+	hist, err := history.Run(releaseName)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to retrieve history for [%s]", releaseName)
+		return nil, errors.Wrapf(err, "failed to retrieve history for '%s'", releaseName)
 	}
 
 	releaseutil.Reverse(hist, releaseutil.SortByRevision)
 
 	var rels []*helm.Release
-	for i := 0; i < min(len(hist), client.Max); i++ {
+	for i := 0; i < min(len(hist), history.Max); i++ {
 		rels = append(rels, releaseToGenericRelease(hist[i]))
 	}
 	return rels, nil
+}
+
+type historyOptions helm.HistoryOptions
+
+func (opts historyOptions) configure(action *action.History) {
+	action.Max = opts.Max
 }
 
 func min(x, y int) int {
