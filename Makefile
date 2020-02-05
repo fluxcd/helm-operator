@@ -22,6 +22,8 @@ endif
 CURRENT_OS_ARCH=$(shell echo `go env GOOS`-`go env GOARCH`)
 GOBIN?=$(shell echo `go env GOPATH`/bin)
 
+MAIN_GO_MODULE:=$(shell go list -m -f '{{ .Path }}')
+LOCAL_GO_MODULES:=$(shell go list -m -f '{{ .Path }}' all | grep $(MAIN_GO_MODULE))
 godeps=$(shell go list -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
 
 HELM_OPERATOR_DEPS:=$(call godeps,./cmd/helm-operator/...)
@@ -43,7 +45,7 @@ realclean: clean
 	rm -rf ./cache
 
 test: test/bin/helm2 test/bin/helm3
-	PATH="${PWD}/bin:${PWD}/test/bin:${PATH}" go test ${TEST_FLAGS} $(shell go list ./... | grep -v "^github.com/weaveworks/flux/vendor" | sort -u)
+	PATH="${PWD}/bin:${PWD}/test/bin:${PATH}" go test ${TEST_FLAGS} $(shell go list $(patsubst %, %/..., $(LOCAL_GO_MODULES)) | sort -u)
 
 e2e: test/bin/helm2 test/bin/helm3 test/bin/kubectl test/e2e/bats build/.helm-operator.done
 	PATH="${PWD}/test/bin:${PATH}" CURRENT_OS_ARCH=$(CURRENT_OS_ARCH) test/e2e/run.bash
