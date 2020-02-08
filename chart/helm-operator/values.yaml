@@ -184,6 +184,7 @@ tolerations: []
 affinity: {}
 extraVolumeMounts: []
 extraVolumes: []
+initContainers: []
 resources:
   requests:
     cpu: 50m

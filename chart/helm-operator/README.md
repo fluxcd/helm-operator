@@ -244,4 +244,4 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `prometheus.serviceMonitor.interval`              | ``                                                   | Interval at which metrics should be scraped
 | `prometheus.serviceMonitor.namespace`             | ``                                                   | The namespace where the ServiceMonitor is deployed
 | `prometheus.serviceMonitor.additionalLabels`      | `{}`                                                 | Additional labels to add to the ServiceMonitor
-
+| `initContainers`                                  | `[]`                                                 | Init containers and their specs

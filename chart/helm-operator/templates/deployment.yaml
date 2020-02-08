@@ -91,6 +91,10 @@ spec:
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | indent 6 }}
       {{- end }}
+{{- if .Values.initContainers }}
+      initContainers:
+{{ toYaml .Values.initContainers | indent 8 }}
+{{- end }}
       containers:
       - name: flux-helm-operator
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
