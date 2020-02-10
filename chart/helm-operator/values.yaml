@@ -76,6 +76,15 @@ configureRepositories:
     #   certFile:
     #   keyFile:
 
+# Helm plugins to initialize before starting the operator.
+initPlugins:
+  enable: false
+  cacheVolumeName: plugins-cache
+  plugins:
+  # - helmVersion: v3
+  #   plugin: https://github.com/hypnoglow/helm-s3.git
+  #   version: 0.9.2
+
 # For charts stored in Git repos set the SSH private key secret
 git:
   # Period on which to poll git chart sources for changes
@@ -184,6 +193,7 @@ tolerations: []
 affinity: {}
 extraVolumeMounts: []
 extraVolumes: []
+initContainers: []
 resources:
   requests:
     cpu: 50m
