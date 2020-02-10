@@ -206,6 +206,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		Install:     curRel == nil,
 		Force:       hr.Spec.ForceUpgrade,
 		ResetValues: hr.Spec.ResetValues,
+		SkipCRDs:    hr.Spec.SkipCRDs,
 		MaxHistory:  hr.GetMaxHistory(),
 		Wait:        hr.Spec.Wait || (curRel != nil && hr.Spec.Rollback.Enable),
 	})

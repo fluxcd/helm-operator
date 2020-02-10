@@ -13,16 +13,18 @@ function setup() {
   kubectl create namespace "$DEMO_NAMESPACE"
 }
 
-@test "Helm chart installation smoke test" {
-  # The gitconfig secret must exist and have the right value
-  poll_until_equals "gitconfig secret" "$GITCONFIG" "kubectl get secrets -n $E2E_NAMESPACE gitconfig -ojsonpath={..data.gitconfig} | base64 --decode"
+@test "When skipCRDs is set" {
+  if [ "$HELM_VERSION" != "v3" ]; then
+    skip
+  fi
 
-  # Apply the HelmRelease fixtures
-  kubectl apply -f "$FIXTURES_DIR/releases/git.yaml" >&3
-  kubectl apply -f "$FIXTURES_DIR/releases/helm-repository.yaml" >&3
+  # Apply the HelmRelease
+  kubectl apply -f "$FIXTURES_DIR/releases/skip-crd.yaml" >&3
+  poll_until_equals 'skip-crd HelmRelease' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/skip-crd -o 'custom-columns=status:status.releaseStatus' --no-headers"
 
-  poll_until_equals 'podinfo-helm-repository HelmRelease' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o 'custom-columns=status:status.releaseStatus' --no-headers"
-  poll_until_equals 'podinfo-git HelmRelease' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o 'custom-columns=status:status.releaseStatus' --no-headers"
+  # Assert no CRDs were installed
+  count=$(kubectl get crd --no-headers | grep 'konghq.com' | wc -l)
+  [ "$count" -eq 0 ]
 }
 
 function teardown() {

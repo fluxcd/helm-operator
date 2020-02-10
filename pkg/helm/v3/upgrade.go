@@ -60,6 +60,7 @@ func (opts installOptions) configure(action *action.Install, releaseName string)
 	action.ClientOnly = opts.ClientOnly
 	action.Timeout = opts.Timeout
 	action.Wait = opts.Wait
+	action.SkipCRDs = opts.SkipCRDs
 }
 
 type upgradeOptions helm.UpgradeOptions

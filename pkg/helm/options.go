@@ -25,6 +25,7 @@ type UpgradeOptions struct {
 	ClientOnly   bool
 	Force        bool
 	ResetValues  bool
+	SkipCRDs     bool
 	ReuseValues  bool
 	Recreate     bool
 	MaxHistory   int
