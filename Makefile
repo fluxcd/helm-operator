@@ -138,6 +138,7 @@ cache/bats-core-$(BATS_COMMIT).tar.gz:
 
 generate-deploy: pkg/install/generated_templates.gogen.go
 	cd deploy && go run ../pkg/install/generate.go deploy
+	cp ./deploy/flux-helm-release-crd.yaml ./chart/helm-operator/crds/helmrelease.yaml
 
 check-generated: generate-deploy pkg/install/generated_templates.gogen.go
 	git diff --exit-code -- pkg/install/generated_templates.gogen.go
