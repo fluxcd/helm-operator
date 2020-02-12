@@ -51,7 +51,9 @@ if ! kubectl version > /dev/null 2>&1; then
     # Wire tests with the right cluster based on their BATS_JOB_SLOT env variable
     eval export "KUBECONFIG_SLOT_${I}=${KIND_CONFIG_PREFIX}-${I}"
   done
-  seq 1 "${E2E_KIND_CLUSTER_NUM}" | time parallel -- env KUBECONFIG="${KIND_CONFIG_PREFIX}-{}" kind create cluster --name "${KIND_CLUSTER_PREFIX}-{}" --wait 5m --image kindest/node:${KUBE_VERSION}
+  # Due to https://github.com/kubernetes-sigs/kind/issues/1288
+  # limit parallel creation of clusters to 1 job.
+  seq 1 "${E2E_KIND_CLUSTER_NUM}" | time parallel -j 1 -- env KUBECONFIG="${KIND_CONFIG_PREFIX}-{}" kind create cluster --name "${KIND_CLUSTER_PREFIX}-{}" --wait 5m --image kindest/node:${KUBE_VERSION}
 
   echo '>>> Loading images into the Kind cluster(s)'
   seq 1 "${E2E_KIND_CLUSTER_NUM}" | time parallel -- kind --name "${KIND_CLUSTER_PREFIX}-{}" load docker-image 'docker.io/fluxcd/helm-operator:latest'

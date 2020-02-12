@@ -9,7 +9,7 @@ commands:
           name: End-to-end Helm <<parameters.helm_version>>
           command: make e2e
           environment:
-            E2E_KIND_CLUSTER_NUM: 2
+            E2E_KIND_CLUSTER_NUM: 4
             HELM_VERSION: <<parameters.helm_version>>
 jobs:
   build:
