@@ -7,16 +7,18 @@ source "${E2E_DIR}/lib/template.bash"
 
 function install_tiller() {
   if ! helm2 version > /dev/null 2>&1; then # only if helm isn't already installed
-    kubectl --namespace kube-system create sa tiller
-    kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-    helm2 init --service-account tiller --upgrade --wait
+    kubectl --namespace "$E2E_NAMESPACE" create sa tiller
+    kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount="$E2E_NAMESPACE":tiller
+    helm2 init --tiller-namespace "$E2E_NAMESPACE" --service-account tiller --upgrade --wait
   fi
 }
 
 function uninstall_tiller() {
-  helm2 reset --force
+  # Note: helm reset --force will delete the Tiller
+  # instance but will not delete release history.
+  helm2 reset --tiller-namespace "$E2E_NAMESPACE" --force
   kubectl delete clusterrolebinding tiller-cluster-rule
-  kubectl --namespace kube-system delete sa tiller
+  kubectl --namespace "$E2E_NAMESPACE" delete sa tiller
 }
 
 function install_helm_operator_with_helm() {
@@ -27,6 +29,7 @@ function install_helm_operator_with_helm() {
   fi
 
   helm2 install --name helm-operator --wait \
+    --tiller-namespace "${E2E_NAMESPACE}" \
     --namespace "${E2E_NAMESPACE}" \
     --set createCRD="${create_crds}" \
     --set chartsSyncInterval=3s \
@@ -44,11 +47,15 @@ function install_helm_operator_with_helm() {
     --set configureRepositories.repositories[1].name="podinfo" \
     --set configureRepositories.repositories[1].url="https://stefanprodan.github.io/podinfo" \
     --set helm.versions="${HELM_VERSION:-v2\,v3}" \
+    --set tillerNamespace="${E2E_NAMESPACE}" \
     "${ROOT_DIR}/chart/helm-operator"
 }
 
 function uninstall_helm_operator_with_helm() {
-  helm2 delete --purge helm-operator > /dev/null 2>&1
+  helm2 delete \
+    --tiller-namespace "$E2E_NAMESPACE" \
+    --purge helm-operator > /dev/null 2>&1
+
   kubectl delete crd helmreleases.helm.fluxcd.io > /dev/null 2>&1
 }
 
