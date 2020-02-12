@@ -64,6 +64,9 @@ spec:
             resetValues:
               description: If supplied will reset values on helm upgrade
               type: boolean
+            skipCRDs:
+              description: If set, will skip CRD installation for Helm v3
+              type: boolean
             wait:
               description: Wait for an upgrade to complete before marking release as successful
               type: boolean

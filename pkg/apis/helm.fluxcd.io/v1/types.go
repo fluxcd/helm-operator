@@ -205,6 +205,9 @@ type HelmReleaseSpec struct {
 	// Reset values on helm upgrade
 	// +optional
 	ResetValues bool `json:"resetValues,omitempty"`
+	// Skip helm3 CRD installation
+	// +optional
+	SkipCRDs bool `json:"skipCRDs,omitempty"`
 	// Wait for the install or upgrade to complete before marking release as successful
 	// +optional
 	Wait bool `json:"wait,omitempty"`
