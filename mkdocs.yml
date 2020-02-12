@@ -73,3 +73,7 @@ nav:
   - Troubleshooting:
     - FAQ: faq.md
     - Troubleshooting: troubleshooting.md
+  - Contributing:
+    - Introduction: contributing/introduction.md
+    - Building: contributing/building.md
+    - Get started developing: contributing/get-started-developing.md
