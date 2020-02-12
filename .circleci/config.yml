@@ -1,4 +1,16 @@
-version: 2
+version: 2.1
+commands:
+  e2e_tests:
+    parameters:
+      helm_version:
+        type: string
+    steps:
+      - run:
+          name: End-to-end Helm <<parameters.helm_version>>
+          command: make e2e
+          environment:
+            E2E_KIND_CLUSTER_NUM: 2
+            HELM_VERSION: <<parameters.helm_version>>
 jobs:
   build:
     working_directory: /home/circleci/go/src/github.com/fluxcd/helm-operator
@@ -55,16 +67,10 @@ jobs:
       - run: make test TEST_FLAGS="-race -timeout 5m"
       - run: make all
       - run: make test-docs
-      - run:
-          name: End-to-end Helm v2
-          command: E2E_KIND_CLUSTER_NUM=4 make e2e
-          environment:
-            HELM_VERSION: v2
-      - run:
-          name: End-to-end Helm v3
-          command: E2E_KIND_CLUSTER_NUM=4 make e2e
-          environment:
-            HELM_VERSION: v3
+      - e2e_tests:
+          helm_version: v2
+      - e2e_tests:
+          helm_version: v3
       - save_cache:
           key: cache-{{ checksum "Makefile" }}
           paths:
