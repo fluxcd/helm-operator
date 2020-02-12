@@ -26,9 +26,9 @@ import (
 const VERSION = "v3"
 
 var (
-	repositoryConfig   = helmpath.ConfigPath("repositories.yaml")
-	repositoryCache    = helmpath.CachePath("repository")
-	pluginsDir         = helmpath.DataPath("plugins")
+	repositoryConfig = helmpath.ConfigPath("repositories.yaml")
+	repositoryCache  = helmpath.CachePath("repository")
+	pluginsDir       = helmpath.DataPath("plugins")
 )
 
 type HelmOptions struct {
@@ -63,9 +63,11 @@ func (h *HelmV3) Version() string {
 
 // infoLogFunc allows us to pass our logger to components
 // that expect a klog.Infof function.
-func (h *HelmV3) infoLogFunc(format string, args ...interface{}) {
-	message := fmt.Sprintf(format, args...)
-	h.logger.Log("info", message)
+func (h *HelmV3) infoLogFunc(namespace string, releaseName string) infoLogFunc {
+	return func(format string, args ...interface{}) {
+		message := fmt.Sprintf(format, args...)
+		h.logger.Log("info", message, "targetNamespace", namespace, "release", releaseName)
+	}
 }
 
 func newActionConfig(config *rest.Config, logFunc infoLogFunc, namespace, driver string) (*action.Configuration, error) {
