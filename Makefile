@@ -136,6 +136,11 @@ cache/bats-core-$(BATS_COMMIT).tar.gz:
 	# Use 2opremio's fork until https://github.com/bats-core/bats-core/pull/255 is merged
 	curl --fail -L -o $@ https://github.com/2opremio/bats-core/archive/$(BATS_COMMIT).tar.gz
 
+generate: generate-codegen generate-deploy
+
+generate-codegen:
+	./hack/update/generated.sh
+
 generate-deploy: pkg/install/generated_templates.gogen.go
 	cd deploy && go run ../pkg/install/generate.go deploy
 	cp ./deploy/flux-helm-release-crd.yaml ./chart/helm-operator/crds/helmrelease.yaml
