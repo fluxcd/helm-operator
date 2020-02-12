@@ -57,9 +57,8 @@ function install_git_srv() {
   local kustomization_dir=${2:-base/gitsrv}
   local gen_dir
   gen_dir=$(mktemp -d)
-
-  ssh-keygen -t rsa -N "" -f "$gen_dir/id_rsa"
   defer rm -rf "'$gen_dir'"
+  ssh-keygen -t rsa -N "" -f "$gen_dir/id_rsa"
   kubectl create secret generic flux-git-deploy \
     --namespace="${E2E_NAMESPACE}" \
     --from-file="${FIXTURES_DIR}/known_hosts" \
@@ -87,8 +86,37 @@ function install_git_srv() {
 }
 
 function uninstall_git_srv() {
-  local secret_name=${1:-flux-git-deploy}
+  local kustomization_dir=${1:-base/gitsrv}
+
   # Silence secret deletion errors since the secret can be missing (deleted by uninstalling Flux)
-  kubectl delete -n "${E2E_NAMESPACE}" secret "$secret_name" &> /dev/null
-  kubectl delete -n "${E2E_NAMESPACE}" -f "${FIXTURES_DIR}/gitsrv.yaml"
+  kubectl delete -n "${E2E_NAMESPACE}" secret flux-git-deploy &> /dev/null
+  kubectl delete -n "${E2E_NAMESPACE}" -k "${FIXTURES_DIR}/kustom/${kustomization_dir}" >&3
+}
+
+function install_chartmuseum() {
+  local external_access_result_var=${1}
+  local kustomization_dir=${2:-base/chartmuseum}
+
+  kubectl apply -n "${E2E_NAMESPACE}" -k "${FIXTURES_DIR}/kustom/${kustomization_dir}" >&3
+
+  # Wait for the chartmuseum to become ready
+  kubectl -n "${E2E_NAMESPACE}" rollout status deployment/chartmuseum
+
+  if [ -n "$external_access_result_var" ]; then
+    local chartmuseum_podname
+    chartmuseum_podname=$(kubectl get pod -n "${E2E_NAMESPACE}" -l name=chartmuseum -o jsonpath="{['items'][0].metadata.name}")
+    coproc kubectl port-forward -n "${E2E_NAMESPACE}" "$chartmuseum_podname" :8080
+    local local_port
+    read -r local_port <&"${COPROC[0]}"-
+    # shellcheck disable=SC2001
+    local_port=$(echo "$local_port" | sed 's%.*:\([0-9]*\).*%\1%')
+    # return the ssh command needed for git, and the PID of the port-forwarding PID into a variable of choice
+    eval "${external_access_result_var}=('$local_port' '$COPROC_PID')"
+  fi
+}
+
+function uninstall_chartmuseum() {
+  local kustomization_dir=${1:-base/chartmuseum}
+
+  kubectl delete -n "${E2E_NAMESPACE}" -k "${FIXTURES_DIR}/kustom/${kustomization_dir}" >&3
 }
