@@ -9,14 +9,14 @@ import (
 	"k8s.io/helm/pkg/repo"
 	"k8s.io/helm/pkg/urlutil"
 
-	"github.com/fluxcd/helm-operator/pkg/helm"
+	"github.com/fluxcd/helm-operator/pkg/utils"
 )
 
 func (h *HelmV2) Pull(ref, version, dest string) (string, error) {
 	repositoryConfigLock.RLock()
 	defer repositoryConfigLock.RUnlock()
 
-	out := helm.NewLogWriter(h.logger)
+	out := utils.NewLogWriter(h.logger)
 	c := downloader.ChartDownloader{
 		Out:      out,
 		HelmHome: helmHome(),
