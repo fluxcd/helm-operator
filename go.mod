@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/fluxcd/flux v1.17.2-0.20200121140732-3903cf8e71c3
+	github.com/fluxcd/helm-operator/pkg/install v0.0.0-00010101000000-000000000000
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-kit/kit v0.9.0
 	github.com/golang/protobuf v1.3.2
@@ -16,10 +17,11 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.4.0
 	google.golang.org/grpc v1.24.0
-	helm.sh/helm/v3 v3.0.2
+	helm.sh/helm/v3 v3.0.3
 	k8s.io/api v0.0.0-20191016110408-35e52d86657a // kubernetes-1.16.2
 	k8s.io/apiextensions-apiserver v0.0.0-20191016113550-5357c4baaf65 // kubernetes-1.16.2
 	k8s.io/apimachinery v0.0.0-20191004115801-a2eda9f80ab8 // kubernetes-1.16.2
+	k8s.io/cli-runtime v0.0.0-20191016114015-74ad18325ed5
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/helm v2.16.1+incompatible
 	k8s.io/klog v1.0.0
@@ -47,3 +49,6 @@ replace k8s.io/client-go => k8s.io/client-go v0.0.0-20191016111102-bec269661e48 
 
 // Pin Flux to master branch to break weaveworks/flux circular dependency (to be removed on Flux 1.18)
 replace github.com/fluxcd/flux => github.com/fluxcd/flux v1.17.2-0.20200121140732-3903cf8e71c3
+
+// Patched release of Helm v3.0.3 until https://github.com/helm/helm/pull/7401 is merged
+replace helm.sh/helm/v3 => github.com/hiddeco/helm/v3 v3.0.3-scheme-patched

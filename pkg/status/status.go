@@ -17,13 +17,13 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	kube "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/util/retry"
 
-	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	v1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	ifclientset "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned"
 	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/helm.fluxcd.io/v1"
@@ -89,7 +89,7 @@ bail:
 
 // SetReleaseStatus updates the status of the HelmRelease to the given
 // release name and/or release status.
-func SetReleaseStatus(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease,
+func SetReleaseStatus(client v1client.HelmReleaseInterface, hr *v1.HelmRelease,
 	releaseName, releaseStatus string) error {
 
 	firstTry := true
@@ -119,7 +119,7 @@ func SetReleaseStatus(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmR
 
 // SetReleaseRevision updates the revision in the status of the HelmRelease
 // to the given revision, and sets the current revision as the previous one.
-func SetReleaseRevision(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease, revision string) error {
+func SetReleaseRevision(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, revision string) error {
 
 	firstTry := true
 	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
@@ -147,7 +147,7 @@ func SetReleaseRevision(client v1client.HelmReleaseInterface, hr *helmfluxv1.Hel
 
 // SetObservedGeneration updates the observed generation status of the
 // HelmRelease to the given generation.
-func SetObservedGeneration(client v1client.HelmReleaseInterface, hr *helmfluxv1.HelmRelease, generation int64) error {
+func SetObservedGeneration(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, generation int64) error {
 	firstTry := true
 	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
 		if !firstTry {
@@ -174,21 +174,30 @@ func SetObservedGeneration(client v1client.HelmReleaseInterface, hr *helmfluxv1.
 
 // HasSynced returns if the HelmRelease has been processed by the
 // controller.
-func HasSynced(hr helmfluxv1.HelmRelease) bool {
+func HasSynced(hr v1.HelmRelease) bool {
 	return hr.Status.ObservedGeneration >= hr.Generation
 }
 
 // HasRolledBack returns if the current generation of the HelmRelease
 // has been rolled back.
-func HasRolledBack(hr helmfluxv1.HelmRelease) bool {
+func HasRolledBack(hr v1.HelmRelease) bool {
 	if !HasSynced(hr) {
 		return false
 	}
 
-	rolledBack := GetCondition(hr.Status, helmfluxv1.HelmReleaseRolledBack)
+	rolledBack := GetCondition(hr.Status, v1.HelmReleaseRolledBack)
 	if rolledBack == nil {
 		return false
 	}
 
-	return rolledBack.Status == v1.ConditionTrue
+	return rolledBack.Status == corev1.ConditionTrue
+}
+
+// ShouldRetryUpgrade returns if the upgrade of a rolled back release should
+// be retried.
+func ShouldRetryUpgrade(hr v1.HelmRelease) bool {
+	if !hr.Spec.Rollback.Retry {
+		return false
+	}
+	return hr.Spec.Rollback.GetMaxRetries() == 0 || hr.Status.RollbackCount <= hr.Spec.Rollback.GetMaxRetries()
 }

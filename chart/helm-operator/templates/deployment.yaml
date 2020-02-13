@@ -88,9 +88,22 @@ spec:
       - name: {{ .Values.configureRepositories.cacheVolumeName | quote }}
         emptyDir: {}
       {{- end }}
+      {{- if .Values.initPlugins.enable }}
+      - name: {{ .Values.initPlugins.cacheVolumeName | quote }}
+        emptyDir: {}
+      {{- end }}
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | indent 6 }}
       {{- end }}
+{{- if or .Values.initContainers .Values.initPlugins.enable }}
+      initContainers:
+{{- if .Values.initContainers }}
+{{ toYaml .Values.initContainers | indent 6 }}
+{{- end }}
+{{- if .Values.initPlugins.enable }}
+{{- include "helm-operator.initPlugins" . | indent 6 }}
+{{- end }}
+{{- end }}
       containers:
       - name: flux-helm-operator
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -155,6 +168,24 @@ spec:
         - name: {{ .Values.configureRepositories.cacheVolumeName | quote }}
           mountPath: /root/.cache/helm/repository
           subPath: v3
+        {{- end }}
+        {{- end }}
+        {{- if .Values.initPlugins.enable }}
+        {{- if contains "v2" .Values.helm.versions }}
+        - name: {{ .Values.initPlugins.cacheVolumeName | quote }}
+          mountPath: /var/fluxd/helm/cache/plugins/
+          subPath: v2
+        - name: {{ .Values.initPlugins.cacheVolumeName | quote }}
+          mountPath: /var/fluxd/helm/plugins
+          subPath: v2-config
+        {{- end }}
+        {{- if contains "v3" .Values.helm.versions }}
+        - name: {{ .Values.initPlugins.cacheVolumeName | quote }}
+          mountPath: /root/.cache/helm/plugins
+          subPath: v3
+        - name: {{ .Values.initPlugins.cacheVolumeName | quote }}
+          mountPath: /root/.local/share/helm/plugins
+          subPath: v3-config
         {{- end }}
         {{- end }}
         {{- if .Values.extraVolumeMounts }}

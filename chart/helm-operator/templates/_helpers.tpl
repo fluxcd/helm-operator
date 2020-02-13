@@ -32,7 +32,7 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
-Create the name of the service account to use
+Create the name of the service account to use.
 */}}
 {{- define "helm-operator.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create -}}
@@ -43,7 +43,7 @@ Create the name of the service account to use
 {{- end -}}
 
 {{/*
-Create the name of the cluster role to use
+Create the name of the cluster role to use.
 */}}
 {{- define "helm-operator.clusterRoleName" -}}
 {{- if .Values.clusterRole.create -}}
@@ -54,7 +54,7 @@ Create the name of the cluster role to use
 {{- end -}}
 
 {{/*
-Create a custom repositories.yaml for Helm
+Create a custom repositories.yaml for Helm.
 */}}
 {{- define "helm-operator.customRepositories" -}}
 apiVersion: v1
@@ -69,6 +69,42 @@ repositories:
   keyFile: "{{ .keyFile | default "" }}"
   password: "{{ .password | default "" }}"
   username: "{{ .username | default "" }}"
+{{- end }}
+{{- end -}}
+
+{{/*
+Create Helm plugin init containers.
+*/}}
+{{- define "helm-operator.initPlugins" -}}
+{{- range $i, $v := .Values.initPlugins.plugins -}}
+{{- $name := printf "helm-plugin-init-%02d" $i -}}
+{{- $plugin := required "Please specify the plugin" $v.plugin -}}
+{{- $helmVersion := required "Please specify the targeted Helm version" $v.helmVersion -}}
+{{- if contains $helmVersion $.Values.helm.versions }}
+- name: {{ $name }}
+  image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+  imagePullPolicy: {{ $.Values.image.pullPolicy }}
+{{- if eq $helmVersion "v2" }}
+  command: ['sh', '-c', 'helm2 plugin install {{ $plugin }}{{ if $v.version }} --version {{ $v.version }}{{ end }}']
+  volumeMounts:
+  - name: {{ $.Values.initPlugins.cacheVolumeName | quote }}
+    mountPath: /var/fluxd/helm/cache/plugins/
+    subPath: {{ $helmVersion }}
+  - name: {{ $.Values.initPlugins.cacheVolumeName | quote }}
+    mountPath: /var/fluxd/helm/plugins
+    subPath: {{ $helmVersion }}-config
+{{- end }}
+{{- if eq $helmVersion "v3" }}
+  command: ['sh', '-c', 'helm3 plugin install {{ $plugin }}{{ if $v.version }} --version {{ $v.version }}{{ end }}']
+  volumeMounts:
+  - name: {{ $.Values.initPlugins.cacheVolumeName | quote }}
+    mountPath: /root/.cache/helm/plugins
+    subPath: {{ $helmVersion }}
+  - name: {{ $.Values.initPlugins.cacheVolumeName | quote }}
+    mountPath: /root/.local/share/helm/plugins
+    subPath: {{ $helmVersion }}-config
+{{- end }}
+{{- end }}
 {{- end }}
 {{- end -}}
 

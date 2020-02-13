@@ -22,6 +22,8 @@ endif
 CURRENT_OS_ARCH=$(shell echo `go env GOOS`-`go env GOARCH`)
 GOBIN?=$(shell echo `go env GOPATH`/bin)
 
+MAIN_GO_MODULE:=$(shell go list -m -f '{{ .Path }}')
+LOCAL_GO_MODULES:=$(shell go list -m -f '{{ .Path }}' all | grep $(MAIN_GO_MODULE))
 godeps=$(shell go list -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
 
 HELM_OPERATOR_DEPS:=$(call godeps,./cmd/helm-operator/...)
@@ -43,7 +45,7 @@ realclean: clean
 	rm -rf ./cache
 
 test: test/bin/helm2 test/bin/helm3
-	PATH="${PWD}/bin:${PWD}/test/bin:${PATH}" go test ${TEST_FLAGS} $(shell go list ./... | grep -v "^github.com/weaveworks/flux/vendor" | sort -u)
+	PATH="${PWD}/bin:${PWD}/test/bin:${PATH}" go test ${TEST_FLAGS} $(shell go list $(patsubst %, %/..., $(LOCAL_GO_MODULES)) | sort -u)
 
 e2e: test/bin/helm2 test/bin/helm3 test/bin/kubectl test/e2e/bats build/.helm-operator.done
 	PATH="${PWD}/test/bin:${PATH}" CURRENT_OS_ARCH=$(CURRENT_OS_ARCH) test/e2e/run.bash
@@ -134,8 +136,14 @@ cache/bats-core-$(BATS_COMMIT).tar.gz:
 	# Use 2opremio's fork until https://github.com/bats-core/bats-core/pull/255 is merged
 	curl --fail -L -o $@ https://github.com/2opremio/bats-core/archive/$(BATS_COMMIT).tar.gz
 
+generate: generate-codegen generate-deploy
+
+generate-codegen:
+	./hack/update/generated.sh
+
 generate-deploy: pkg/install/generated_templates.gogen.go
 	cd deploy && go run ../pkg/install/generate.go deploy
+	cp ./deploy/flux-helm-release-crd.yaml ./chart/helm-operator/crds/helmrelease.yaml
 
 check-generated: generate-deploy pkg/install/generated_templates.gogen.go
 	git diff --exit-code -- pkg/install/generated_templates.gogen.go

@@ -92,7 +92,7 @@ spec:
         # There are no ":latest" images for helm-operator. Find the most recent
         # release or image version at https://hub.docker.com/r/weaveworks/helm-operator/tags
         # and replace the tag here.
-        image: docker.io/fluxcd/helm-operator:1.0.0-rc8
+        image: docker.io/fluxcd/helm-operator:1.0.0-rc9
         imagePullPolicy: IfNotPresent
         ports:
         - name: http
@@ -160,3 +160,10 @@ spec:
         # - --tiller-tls-cert-path=/etc/fluxd/helm/tls.crt
         # - --tiller-tls-verify=true
         # - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt{{ end }}
+{{ if .HelmVersions }}
+        - --enabled-helm-versions={{ .HelmVersions }}
+{{ end }}
+{{ if .AdditionalArgs }}
+        # Additional arguments{{ range .AdditionalArgs }}
+        - {{ . }}{{ end }}
+{{ end }}

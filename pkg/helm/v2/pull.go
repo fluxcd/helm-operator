@@ -21,7 +21,7 @@ func (h *HelmV2) Pull(ref, version, dest string) (string, error) {
 		Out:      out,
 		HelmHome: helmHome(),
 		Verify:   downloader.VerifyNever,
-		Getters:  getters,
+		Getters:  getterProviders(),
 	}
 	d, _, err := c.DownloadTo(ref, version, dest)
 	return d, err
@@ -52,7 +52,7 @@ func (h *HelmV2) PullWithRepoURL(repoURL, name, version, dest string) (string, e
 			chartRef = entry.Name + "/" + name
 			// Ensure we have the repository index as this is
 			// later used by Helm.
-			if r, err := repo.NewChartRepository(entry, getters); err == nil {
+			if r, err := repo.NewChartRepository(entry, getterProviders()); err == nil {
 				r.DownloadIndexFile(repositoryCache)
 			}
 			break
@@ -62,7 +62,7 @@ func (h *HelmV2) PullWithRepoURL(repoURL, name, version, dest string) (string, e
 	if chartRef == "" {
 		// We were unable to find an entry so we need to make a request
 		// to the repository to get the absolute URL of the chart.
-		chartRef, err = repo.FindChartInRepoURL(repoURL, name, version, "", "", "", getters)
+		chartRef, err = repo.FindChartInRepoURL(repoURL, name, version, "", "", "", getterProviders())
 		if err != nil {
 			return "", err
 		}
@@ -84,7 +84,7 @@ func downloadMissingRepositoryIndexes(repositories []*repo.Entry) error {
 
 	var wg sync.WaitGroup
 	for _, c := range repositories {
-		r, err := repo.NewChartRepository(c, getters)
+		r, err := repo.NewChartRepository(c, getterProviders())
 		if err != nil {
 			return err
 		}

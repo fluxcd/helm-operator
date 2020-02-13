@@ -6,19 +6,18 @@ metadata:
   namespace: demo
 spec:
   releaseName: podinfo-git
-  timeout: 10
-  resetValues: false
-  forceUpgrade: false
+  timeout: 15
+  wait: true
   rollback:
     enable: true
+    wait: true
   chart:
     git: ssh://git@gitsrv/git-server/repos/cluster.git
     ref: master
     path: charts/podinfo
   values:
-    replicaCount: 1
+    replicaCount: 2
 
-    service:
-      enabled: true
-      type: NodePort
-      nodePort: 31198
+    faults:
+      # Setting this to 'true' will make the release fail
+      unready: false

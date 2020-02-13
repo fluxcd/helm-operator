@@ -11,6 +11,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/helm/pkg/getter"
 	helmv2 "k8s.io/helm/pkg/helm"
 	"k8s.io/helm/pkg/helm/environment"
 	"k8s.io/helm/pkg/helm/helmpath"
@@ -130,11 +131,10 @@ func tillerHost(kubeClient *kubernetes.Clientset, opts TillerOptions) (string, e
 	return fmt.Sprintf("%s:%s", opts.Host, opts.Port), nil
 }
 
-func statusMessageErr(err error) error {
-	if s, ok := status.FromError(err); ok {
-		return errors.New(s.Message())
-	}
-	return err
+func getterProviders() getter.Providers {
+	return getter.All(environment.EnvSettings{
+		Home: helmHome(),
+	})
 }
 
 func helmHome() helmpath.Home {
@@ -142,4 +142,11 @@ func helmHome() helmpath.Home {
 		return helmpath.Home(v)
 	}
 	return helmpath.Home(environment.DefaultHelmHome)
+}
+
+func statusMessageErr(err error) error {
+	if s, ok := status.FromError(err); ok {
+		return errors.New(s.Message())
+	}
+	return err
 }

@@ -1,3 +1,86 @@
+## 1.0.0-rc9 (2020-02-13)
+
+> **Notice:** upgrading to this version from `<=0.10.x` by just
+> updating your Helm Operator image tag is not possible as the
+> CRD domain and version have changed. An upgrade guide can be
+> found [here](./docs/guides/upgrading-to-ga.md).
+
+> **Notice:**  due to the multiple added fields, you need to
+> re-apply the `HelmRelease` CRD.
+
+### Bug fixes
+
+ - release: propagate all configured release flags to dry-run upgrade
+   [fluxcd/helm-operator#250][#250]
+ - chartsync: honour the configured default Git ref when reconciling
+   charts source
+   [fluxcd/helm-operator#253][#253]
+ - release: disable atomic flag for Helm chart installation
+   [fluxcd/helm-operator#256][#256]
+ - apis: correct JSON namespace tag for key selectors
+   [fluxcd/helm-operator#262][#262]
+ - helm/v3: support upgrades of releases with nested `HelmRelease`
+   resources (using a patched Helm `3.0.3` release)
+   [fluxcd/helm-operator#292][#292]
+
+### Enhancements
+
+ - release: support retrying rollbacks
+   [fluxcd/helm-operator#252][#252]
+ - helm: support downloader plugins
+   [fluxcd/helm-operator#263][#263]
+ - helm/v3: support skipping CRD installation using `.spec.skipCRDs`
+   [fluxcd/helm-operator#282][#282]
+ - helm/v3: enrich Helm logger with release name and namespace
+   metadata
+   [fluxcd/helm-operator#291][#291]
+
+### Maintenance and documentation
+
+ - e2e: use podinfo's `--unready` to make a release fail
+   [fluxcd/helm-operator#258][#258]
+ - Pkg: update Helm 3 to `3.0.3`
+   fluxcd/helm-operator{[#260][], [#292][]}
+ - build: include `bash` and `curl` in image
+   [fluxcd/helm-operator#276][#267]
+ - build: make sure we test all the local modules
+   [fluxcd/helm-operator#269][#269]
+ - build: add `generate-codegen` target to Makefile
+   [fluxcd/helm-operator#289][#289]
+ - e2e: install Tiller in operator namespace for more reliable cleanup
+   [fluxcd/helm-operator#290][#290]
+ - e2e: do not create kind clusters in parallel
+   [fluxcd/helm-operator#290][#290]
+ - docs: document usage of Helm downloader plugins
+   [fluxcd/helm-operator#295][#295]
+ - docs: highlight standalone usage in `README.md`
+   [fluxcd/helm-operator#296][#296]
+
+### Thanks
+
+Thanks to @sa-spag, @stefanprodan, @mcharriere, @GODBS, @derrickburns,
+@autarchprinceps, @stefanseditch, @infinitydon, @cbenjemaa, @sayboras,
+@2opremio, @hiddeco, and others for their contributions to this
+release, feedback, and reporting issues.
+
+[#250]: https://github.com/fluxcd/helm-operator/pull/250
+[#252]: https://github.com/fluxcd/helm-operator/pull/252
+[#253]: https://github.com/fluxcd/helm-operator/pull/253
+[#256]: https://github.com/fluxcd/helm-operator/pull/256
+[#258]: https://github.com/fluxcd/helm-operator/pull/258
+[#260]: https://github.com/fluxcd/helm-operator/pull/260
+[#262]: https://github.com/fluxcd/helm-operator/pull/262
+[#263]: https://github.com/fluxcd/helm-operator/pull/263
+[#267]: https://github.com/fluxcd/helm-operator/pull/267
+[#269]: https://github.com/fluxcd/helm-operator/pull/269
+[#282]: https://github.com/fluxcd/helm-operator/pull/282
+[#289]: https://github.com/fluxcd/helm-operator/pull/289
+[#290]: https://github.com/fluxcd/helm-operator/pull/290
+[#291]: https://github.com/fluxcd/helm-operator/pull/291
+[#292]: https://github.com/fluxcd/helm-operator/pull/292
+[#295]: https://github.com/fluxcd/helm-operator/pull/295
+[#296]: https://github.com/fluxcd/helm-operator/pull/296
+
 ## 1.0.0-rc8 (2020-01-25)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
@@ -12,58 +95,58 @@
 
  - release: push returned error as condition on sync check
    failure
-   [fluxcd/helm-operator][#209]
+   [fluxcd/helm-operator#209][#209]
  - release: reject git source if URL and path are missing
-   [fluxcd/helm-operator][#223]
+   [fluxcd/helm-operator#223][#223]
  - helm: only hold repository config lock for duration of
    read so dry-runs are run in parallel again
-   [fluxcd/helm-operator][#225]
+   [fluxcd/helm-operator#225][#225]
  - release: use all set `rollback` values when performing
    a rollback operation
-   [fluxcd/helm-operator][#239]
+   [fluxcd/helm-operator#239][#239]
  - helm: do not include non-template files in chart data
    so that the generation of a `requirement.lock` due to
    a dependency update does not cause spurious upgrades
-   [fluxcd/helm-operator][#242]
+   [fluxcd/helm-operator#242][#242]
 
 ### Enhancements
 
  - release: allow `.spec.wait` to be set for upgrades
-   [fluxcd/helm-operator][#95]
+   [fluxcd/helm-operator#95][#95]
  - chartsync: support supplying Git HTTPS credentials
    using `secretRef`
-   [fluxcd/helm-operator][#172]
+   [fluxcd/helm-operator#172][#172]
  - status: retry status and condition updates on conflicts
-   [fluxcd/helm-operator][#210]
+   [fluxcd/helm-operator#210][#210]
  - release: allow `secretKeyRef` and `configMapKeyRef` to be
    selected from other namespaces using the `namespace` key
-   [fluxcd/helm-operator][#219]
+   [fluxcd/helm-operator#219][#219]
  - helm: only index missing repositories when fetching a
    chart from an URL
-   [fluxcd/helm-operator][#225]
+   [fluxcd/helm-operator#225][#225]
  - helm/v3: propagate main application logger to client
-   [fluxcd/helm-operator][#232]
+   [fluxcd/helm-operator#232][#232]
  - release: allow max history to be overridden using
    `.spec.maxHistory`
-   [fluxcd/helm-operator][#235]
+   [fluxcd/helm-operator#235][#235]
  - release: rely on Helm storage for determining when to
    upgrade after rolling back
-   [fluxcd/helm-operator][#239]
+   [fluxcd/helm-operator#239][#239]
 
 ### Maintenance and documentation
 
  - build: update Kubernetes Kind to `v0.7.0` and set
    Kubernetes `v1.14.10` for end-to-end tests
-   [fluxcd/helm-operator][#207]
+   [fluxcd/helm-operator#207][#207]
  - build: upgrade code-generator to Kubernetes 1.16.2
-   [fluxcd/helm-operator][#214]
+   [fluxcd/helm-operator#214][#214]
  - docs: update FAQ on Flux garbage collection
-   [fluxcd/helm-operator][#221]
+   [fluxcd/helm-operator#221][#221]
  - Pkg: update Flux to `v1.17.2-0.20200121140732-3903cf8e71c3`
-   [fluxcd/helm-operator][#230]
+   [fluxcd/helm-operator#230][#230]
  - Pkg: make `pkg/install` a Go module to reduce its
    dependencies
-   [fluxcd/helm-operator][#234]
+   [fluxcd/helm-operator#234][#234]
 
 
 ### Thanks
