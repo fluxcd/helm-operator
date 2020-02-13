@@ -164,9 +164,9 @@ helm upgrade -i helm-operator fluxcd/helm-operator \
 
 The deploy key naming convention is `<Flux Release Name>-git-deploy`.
 
-## Use Helm (getter) plugins
+## Use Helm downloader plugins
 
-Helm plugins like [`hypnoglow/helm-s3`](https://github.com/hypnoglow/helm-s3)
+Helm downloader plugins like [`hypnoglow/helm-s3`](https://github.com/hypnoglow/helm-s3)
 and [`hayorov/helm-gcs`](https://github.com/hayorov/helm-gcs) make it possible
 to extend the protocols Helm recognizes to e.g. pull charts from a S3 bucket.
 

@@ -111,6 +111,113 @@ OK
 > either need to port forward before making the request or put something
 > in front of it to serve as a gatekeeper.
 
+## Extending the supported Helm repository protocols
+
+By default, the Helm operator is able to pull charts from repositories
+using HTTP/S. It is however possible to extend the supported protocols
+by making use of a [Helm downloader plugin](https://helm.sh/docs/topics/plugins/#downloader-plugins),
+this allows you for example to use charts hosted on [Amazon S3](https://github.com/hypnoglow/helm-s3)
+or [Google Cloud Storage](https://github.com/hayorov/helm-gcs).
+
+> **Note:** the operator only offers support for _downloader plugins_,
+> other plugins will not be recognized nor used.
+
+**Plugin folder paths per Helm version:**
+
+| Version | Plugins | Config
+|--------|---------|---
+| Helm 2 | `/var/fluxd/helm/cache/plugins` | `/var/fluxd/helm/plugins`
+| Helm 3 | `/root/.cache/helm/plugins` | `/root/.local/share/helm/plugins`
+
+### Install a Helm downloader plugin
+
+The easiest way to install a plugin so that it becomes accessible to
+the Helm operator to use an [init container](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
+and one of the available `helm` binaries in the operator's image and
+a volume mount. For the Helm chart of the operator, [see the
+documentation](https://github.com/fluxcd/helm-operator/tree/master/chart/helm-operator#use-helm-downloader-plugins).
+
+#### Using an init container
+
+Create a volume entry of [type `emptyDir`](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir)
+to the deployment of your Helm operator, this is where the plugins will
+be stored for the lifetime duration of the pod.
+   
+```yaml
+spec:
+  volumes:
+  - name: helm-plugins-cache
+    emptyDir: {}
+```
+   
+Add a new init container that utilizes the same image as the operator's
+container and makes use of the earlier mentioned volume with correct
+volume mounts for the Helm version your are making use of.
+The available `helm2` and `helm3` binaries can then be used to install
+the plugin.
+   
+```yaml
+spec:
+  initContainers:
+  - name: helm-3-downloader-plugin
+    image: docker.io/fluxcd/helm-operator:<tag>
+    imagePullPolicy: IfNotPresent
+    command:
+      - 'sh'
+      - '-c'
+      # Replace '<plugin>' and '<version>' with the respective
+      # values of the plugin you want to install
+      - 'helm3 plugin install <plugin> --version <version>'
+    volumeMounts:
+    - name: helm-plugins-cache
+      # See: 'plugin folder paths per Helm version'
+      mountPath: /root/.cache/helm/plugins
+      subPath: v3
+    - name: helm-plugins-cache
+      # See: 'plugin folder paths per Helm version'
+      mountPath: /root/.local/share/helm/plugins
+      subPath: v3-config
+```
+
+Last, add the same volume mounts to the operator's container so the
+downloaded plugin becomes available.
+
+```yaml
+spec:
+  containers:
+  - name: flux-helm-operator
+    image: docker.io/fluxcd/helm-operator:<tag>
+    ...
+    volumeMounts:
+    - name: helm-plugins-cache
+      # See: 'plugin folder paths per Helm version'
+      mountPath: /root/.cache/helm/plugins
+      subPath: v3
+    - name: helm-plugins-cache
+      # See: 'plugin folder paths per Helm version'
+      mountPath: /root/.local/share/helm/plugins
+      subPath: v3-config
+```
+
+### Using an installed protocol in your `HelmRelease`
+
+Once a Helm downloader plugin has been successfully installed, the
+newly added protocol can be used in the `.spec.chart.repository`
+value of a `HelmRelease`.
+
+> **Note:** most downloader plugins expect some form of authentication
+> to be available to be able to download a chart, make sure those are
+> available in the operator's container before attempting to make use
+> of the newly added protocol.
+
+```yaml
+spec:
+  chart:
+    repository: s3://bucket-name/charts
+    name: chart-name
+    version: 1.0.0
+```
+
 ## Supplying values to the chart
 
 You can supply values to be used with the chart when installing it, in
