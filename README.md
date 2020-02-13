@@ -4,24 +4,42 @@
 [![GoDoc](https://godoc.org/github.com/fluxcd/helm-operator?status.svg)](https://godoc.org/github.com/fluxcd/helm-operator)
 [![Documentation](https://img.shields.io/badge/latest-documentation-informational)](https://docs.fluxcd.io/projects/helm-operator/en/latest/)
 
-The Helm Operator provides an extension to [Flux](https://github.com/fluxcd/flux)
-that automates Helm Chart releases in a GitOps manner.
-A Chart release is described through a Kubernetes custom resource named HelmRelease. 
-The Flux daemon synchronizes these resources from git to the cluster, 
-and the Helm Operator makes sure Helm charts are released as specified in the resources.
+The Helm operator is a [Kubernetes operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/),
+allowing one to declaratively manage Helm chart releases. Combined with
+[Flux](https://github.com/fluxcd/flux) this can be utilized to automate
+releases in a GitOps manner, but the usage of Flux is not a strict
+requirement.
+
+The desired state of a Helm release is described through a Kubernetes
+Custom Resource named `HelmRelease`. Based on the creation, mutation or
+removal of a `HelmRelease` resource in the cluster, Helm actions are
+performed by the operator.
 
 ![GitOps Helm Operator](docs/_files/fluxcd-helm-operator-diagram.png)
 
 ## Helm Operator features
 
-* declarative helm install/upgrade/delete of charts
-* pulls charts from public or private Helm repositories over HTTPS
-* pulls charts from public or private Git repositories over SSH
-* chart release values can be specified inline in the HelmRelease object or via secrets, configmaps or URLs
-* automated chart upgrades based on container image tag policies (requires Flux)
-* automatic purging on chart install failures
-* automatic rollback on chart upgrade failures
-* supports both Helm v2 and v3
+* Declarative install, upgrade, and delete of Helm releases
+* Pulls chart from _any_ chart source;
+  * Public or private Helm repositories over HTTP/S
+  * Public or private Git repositories over HTTPS or SSH
+  * Any other public or private chart source using one of the available
+    [Helm downloader plugins](https://helm.sh/docs/topics/plugins/#downloader-plugins)
+* Allows Helm values to be specified;
+  * In-line in the `HelmRelease` resource
+  * In (external) sources, e.g. `ConfigMap` and `Secret` resources,
+    or a (local) URL
+* Automated purging on release install failures
+* Automated (optional) rollback on upgrade failures
+* Automated image upgrades [using Flux](https://docs.fluxcd.io/en/latest/references/helm-operator-integration.html)
+* Automated (configurable) chart dependency updates for Helm charts
+  from Git sources on install or upgrade
+* Detection and recovery from Helm storage mutations
+  (e.g. a manual Helm release that was made but conflicts with the
+  declared configuration for the release)
+* Parallel and scalable processing of different `HelmRelease` resources
+  using workers
+* Supports both Helm 2 and 3
 
 ## Get started with the Helm Operator
 
