@@ -413,7 +413,9 @@ the filename.
 cp ~/.helm/repository/repositories.yaml .
 sed -i -e 's/^\( *cache: \).*\/\(.*\.yaml\)/\1\2/g' repositories.yaml
 ```
-If you are using OSX and Helm 3 the command will be
+
+If you are using OSX and Helm 3 the command will be:
+
 ```sh
 cp ~/Library/Preferences/helm/repositories.yaml
 ```
