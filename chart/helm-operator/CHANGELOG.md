@@ -1,3 +1,16 @@
+## 0.7.0 (2020-02-14)
+
+### Improvements
+
+ - Update Helm Operator to `1.0.0-rc9`
+   [fluxcd/helm-operator#298](https://github.com/fluxcd/helm-operator/pull/298)
+ - Allow init containers to be set
+   [fluxcd/helm-operator#276](https://github.com/fluxcd/helm-operator/pull/276)
+ - Support installation of Helm plugins
+   [fluxcd/helm-operator#276](https://github.com/fluxcd/helm-operator/pull/276)
+ - Support Helm 3 CRD installation
+   [fluxcd/helm-operator#287](https://github.com/fluxcd/helm-operator/pull/287)
+
 ## 0.6.0 (2020-01-26)
 
 ### Improvements
