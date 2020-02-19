@@ -155,10 +155,18 @@ spec:
         {{- end }}
         {{- end }}
         {{- if .Values.configureRepositories.enable }}
+        {{- if contains "v2" .Values.helm.versions }}
         - name: {{ .Values.configureRepositories.volumeName | quote }}
           mountPath: /root/.helm/repository/repositories.yaml
           subPath: repositories.yaml
           readOnly: true
+        {{- end -}}
+        {{- if contains "v3" .Values.helm.versions -}}
+        - name: {{ .Values.configureRepositories.volumeName | quote }}
+          mountPath: /root/.config/helm/repositories.yaml
+          subPath: repositories.yaml
+          readOnly: true
+        {{- end -}}
         {{- if contains "v2" .Values.helm.versions }}
         - name: {{ .Values.configureRepositories.cacheVolumeName | quote }}
           mountPath: /var/fluxd/helm/repository/cache
