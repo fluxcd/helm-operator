@@ -21,8 +21,10 @@ function setup() {
   kubectl apply -f "$FIXTURES_DIR/releases/git.yaml" >&3
   kubectl apply -f "$FIXTURES_DIR/releases/helm-repository.yaml" >&3
 
-  poll_until_equals 'podinfo-helm-repository HelmRelease' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o 'custom-columns=status:status.releaseStatus' --no-headers"
-  poll_until_equals 'podinfo-git HelmRelease' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o 'custom-columns=status:status.releaseStatus' --no-headers"
+  poll_until_equals 'podinfo-helm-repository to be deployed' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o 'custom-columns=status:status.releaseStatus' --no-headers"
+  poll_until_equals 'antecedent annotation' "$DEMO_NAMESPACE:helmrelease/podinfo-helm-repository" "kubectl -n $DEMO_NAMESPACE get deploy/podinfo-helm-repository -o jsonpath='{.metadata.annotations.helm\.fluxcd\.io/antecedent}'"
+  poll_until_equals 'podinfo-git to be deployed' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o 'custom-columns=status:status.releaseStatus' --no-headers"
+  poll_until_equals 'antecedent annotation' "$DEMO_NAMESPACE:helmrelease/podinfo-git" "kubectl -n $DEMO_NAMESPACE get deploy/podinfo-git -o jsonpath='{.metadata.annotations.helm\.fluxcd\.io/antecedent}'"
 }
 
 function teardown() {
