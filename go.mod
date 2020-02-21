@@ -15,7 +15,7 @@ require (
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.4.0
-	github.com/gorilla/mux v1.7.2
+	github.com/gorilla/mux v1.7.3
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/ncabatoff/go-seq v0.0.0-20180805175032-b08ef85ed833
 	github.com/pkg/errors v0.9.1
@@ -25,7 +25,7 @@ require (
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
 	google.golang.org/grpc v1.27.0
-	helm.sh/helm/v3 v3.1.0
+	helm.sh/helm/v3 v3.1.1
 	k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2
@@ -42,14 +42,20 @@ replace github.com/fluxcd/helm-operator/pkg/install => ./pkg/install
 // Transitive requirement from Helm: https://github.com/helm/helm/blob/v3.1.0/go.mod#L44
 replace github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
 
-// Pin Flux to master branch to break weaveworks/flux circular dependency (to be removed on Flux 1.18)
-replace github.com/fluxcd/flux => github.com/fluxcd/flux v1.17.2-0.20200121140732-3903cf8e71c3
-
-// Patched release of Helm v3.1.0 until https://github.com/helm/helm/pull/7401 is merged
-replace helm.sh/helm/v3 => github.com/hiddeco/helm/v3 v3.1.0-scheme-patched
+// Pin Flux to 1.18.0
+replace (
+	github.com/fluxcd/flux => github.com/fluxcd/flux v1.18.0
+	github.com/fluxcd/flux/pkg/install => github.com/fluxcd/flux/pkg/install v0.0.0-20200206191601-8b676b003ab0
+)
 
 // Force upgrade because of a transitive downgrade.
 // github.com/fluxcd/helm-operator
 // +-> github.com/fluxcd/flux@v1.17.2
 //     +-> k8s.io/client-go@v11.0.0+incompatible
 replace k8s.io/client-go => k8s.io/client-go v0.17.2
+
+// Force upgrade because of a transitive downgrade.
+// github.com/fluxcd/flux
+// +-> github.com/fluxcd/helm-operator@v1.0.0-rc6
+//     +-> helm.sh/helm/v3@v3.0.2
+replace helm.sh/helm/v3 => helm.sh/helm/v3 v3.1.1
