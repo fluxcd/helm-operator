@@ -242,7 +242,7 @@ func (in *HelmReleaseSpec) DeepCopyInto(out *HelmReleaseSpec) {
 		**out = **in
 	}
 	in.Rollback.DeepCopyInto(&out.Rollback)
-	in.HelmValues.DeepCopyInto(&out.HelmValues)
+	in.Values.DeepCopyInto(&out.Values)
 	return
 }
 

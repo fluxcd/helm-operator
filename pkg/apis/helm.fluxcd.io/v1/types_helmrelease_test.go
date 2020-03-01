@@ -14,22 +14,22 @@ func TestHelmValues(t *testing.T) {
 		expectedOriginal *HelmValues
 	}{
 		{
-			original: &HelmValues{Values: map[string]interface{}{}},
+			original: &HelmValues{Data: map[string]interface{}{}},
 			transformer: func(v *HelmValues) *HelmValues {
-				v.Values["foo"] = "bar"
+				v.Data["foo"] = "bar"
 				return v
 			},
-			expectedCopy:     &HelmValues{Values: map[string]interface{}{"foo": "bar"}},
-			expectedOriginal: &HelmValues{Values: map[string]interface{}{}},
+			expectedCopy:     &HelmValues{Data: map[string]interface{}{"foo": "bar"}},
+			expectedOriginal: &HelmValues{Data: map[string]interface{}{}},
 		},
 		{
-			original: &HelmValues{Values: map[string]interface{}{"foo": map[string]interface{}{"bar": "baz"}}},
+			original: &HelmValues{Data: map[string]interface{}{"foo": map[string]interface{}{"bar": "baz"}}},
 			transformer: func(v *HelmValues) *HelmValues {
-				v.Values["foo"] = map[string]interface{}{"bar": "oof"}
+				v.Data["foo"] = map[string]interface{}{"bar": "oof"}
 				return v
 			},
-			expectedCopy:     &HelmValues{Values: map[string]interface{}{"foo": map[string]interface{}{"bar": "oof"}}},
-			expectedOriginal: &HelmValues{Values: map[string]interface{}{"foo": map[string]interface{}{"bar": "baz"}}},
+			expectedCopy:     &HelmValues{Data: map[string]interface{}{"foo": map[string]interface{}{"bar": "oof"}}},
+			expectedOriginal: &HelmValues{Data: map[string]interface{}{"foo": map[string]interface{}{"bar": "baz"}}},
 		},
 	}
 

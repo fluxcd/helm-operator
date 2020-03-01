@@ -123,7 +123,7 @@ func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, char
 		result = mergeValues(result, valueFile)
 	}
 
-	result = mergeValues(result, hr.Spec.Values)
+	result = mergeValues(result, hr.Spec.Values.Data)
 	return result, nil
 }
 
