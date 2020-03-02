@@ -198,7 +198,7 @@ spec:
                   name:
                     type: string
             values:
-              description: HelmValues holds values the for this Helm release.
+              description: Values holds the values for this Helm release.
               type: object
               x-kubernetes-preserve-unknown-fields: true
             valuesFrom:
