@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flux-helm-operator
+  name: helm-operator
   namespace: weave
   labels:
-    app: flux-helm-operator
+    app: helm-operator
     weave-cloud-component: helm-operator
 spec:
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: flux-helm-operator
+      app: helm-operator
   template:
     metadata:
       annotations:
         prometheus.io/scrape: "false"
       labels:
-        app: flux-helm-operator
+        app: helm-operator
     spec:
       serviceAccountName: weave-flux
       volumes:
@@ -26,7 +26,7 @@ spec:
             defaultMode: 256
             secretName: flux-git-deploy
       containers:
-        - name: flux-helm-operator
+        - name: helm-operator
           image: docker.io/fluxcd/helm-operator:1.0.0-rc9
           imagePullPolicy: IfNotPresent
           args:

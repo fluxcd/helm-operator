@@ -2,7 +2,7 @@
 
 Each release of a chart is declared by a `HelmRelease`
 resource. The schema for these resources is given in [the custom
-resource definition](https://github.com/fluxcd/helm-operator/blob/master/deploy/flux-helm-release-crd.yaml). They
+resource definition](https://github.com/fluxcd/helm-operator/blob/master/deploy/crds.yaml). They
 look like this:
 
 ```yaml

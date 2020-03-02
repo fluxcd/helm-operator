@@ -18,7 +18,7 @@ helm repo add fluxcd https://charts.fluxcd.io
 Install the HelmRelease CRD:
 
 ```sh
-kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/master/deploy/flux-helm-release-crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/master/deploy/crds.yaml
 ```
 
 Install Helm Operator for Tiller in the fluxcd namespace:

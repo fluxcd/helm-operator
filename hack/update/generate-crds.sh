@@ -55,7 +55,7 @@ bin/controller-gen \
   paths=./pkg/apis/...
 
 echo "Forging CRD template for \`pkg/install\` from generated chart CRDs"
-out="./pkg/install/templates/helm-operator-crds.yaml.tmpl"
+out="./pkg/install/templates/crds.yaml.tmpl"
 rm "$out" || true
 touch "$out"
 for file in $(find "${CRD_DIR}" -type f | sort -V); do
