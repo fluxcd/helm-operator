@@ -397,7 +397,6 @@ type HelmReleaseSpec struct {
 	Rollback Rollback `json:"rollback,omitempty"`
 	// Values holds the values for this Helm release.
 	// +optional
-	// +kubebuilder:pruning:PreserveUnknownFields
 	Values HelmValues `json:"values,omitempty"`
 }
 
