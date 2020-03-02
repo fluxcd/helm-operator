@@ -18,9 +18,9 @@ sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Flux Helm Operator'
-copyright = '2019, Flux development team'
-author = 'Flux development team'
+project = 'Flux Helm operator'
+copyright = '2020, The Flux CD contributors.'
+author = 'The Flux CD contributors'
 
 # The short X.Y version
 version = ''
@@ -44,7 +44,6 @@ extensions = [
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
-
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -129,8 +128,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'flux-helm-operator.tex', 'Flux Helm Operator Documentation',
-     'Flux development team', 'manual'),
+    (master_doc, 'flux-helm-operator.tex', 'Flux Helm operator documentation',
+     author, 'manual'),
 ]
 
 
@@ -139,7 +138,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'flux helm operator', 'Flux Helm Operator Documentation',
+    (master_doc, 'Flux Helm operator', 'The Flux Helm operator, for declarative Helming.',
      [author], 1)
 ]
 
@@ -150,8 +149,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Flux Helm Operator', 'Flux Helm Operator Documentation',
-     author, 'Flux Helm Operator', 'One line description of project.',
+    (master_doc, 'Flux Helm operator', 'Flux Helm operator documentation',
+     author, 'Flux Helm operator', 'The Flux Helm operator, for declarative Helming.',
      'Miscellaneous'),
 ]
 
