@@ -1,23 +1,27 @@
 package status
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
+	"k8s.io/utils/clock"
 
 	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 )
 
+// Clock is defined as a var so it can be stubbed during tests.
+var Clock clock.Clock = clock.RealClock{}
+
 // NewCondition creates a new HelmReleaseCondition.
-func NewCondition(conditionType v1.HelmReleaseConditionType, status corev1.ConditionStatus,
+func NewCondition(conditionType v1.HelmReleaseConditionType, status v1.ConditionStatus,
 	reason, message string) v1.HelmReleaseCondition {
 
+	nowTime := metav1.NewTime(Clock.Now())
 	return v1.HelmReleaseCondition{
 		Type:               conditionType,
 		Status:             status,
-		LastUpdateTime:     metav1.Now(),
-		LastTransitionTime: metav1.Now(),
+		LastUpdateTime:     &nowTime,
+		LastTransitionTime: &nowTime,
 		Reason:             reason,
 		Message:            message,
 	}
@@ -57,9 +61,9 @@ func SetCondition(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, cond
 		cHr.Status.Conditions = append(newConditions, condition)
 
 		switch {
-		case condition.Type == v1.HelmReleaseReleased && condition.Status == corev1.ConditionTrue:
+		case condition.Type == v1.HelmReleaseReleased && condition.Status == v1.ConditionTrue:
 			cHr.Status.RollbackCount = 0
-		case condition.Type == v1.HelmReleaseRolledBack && condition.Status == corev1.ConditionTrue:
+		case condition.Type == v1.HelmReleaseRolledBack && condition.Status == v1.ConditionTrue:
 			cHr.Status.RollbackCount = hr.Status.RollbackCount + 1
 		}
 

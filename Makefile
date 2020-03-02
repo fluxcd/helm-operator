@@ -139,11 +139,13 @@ cache/bats-core-$(BATS_COMMIT).tar.gz:
 generate: generate-codegen generate-deploy
 
 generate-codegen:
-	./hack/update/generated.sh
+	./hack/update/generate-codegen.sh
 
-generate-deploy: pkg/install/generated_templates.gogen.go
+generate-crds:
+	./hack/update/generate-crds.sh
+
+generate-deploy: generate-crds pkg/install/generated_templates.gogen.go
 	cd deploy && go run ../pkg/install/generate.go deploy
-	cp ./deploy/flux-helm-release-crd.yaml ./chart/helm-operator/crds/helmrelease.yaml
 
 check-generated: generate-deploy pkg/install/generated_templates.gogen.go
 	git diff --exit-code -- pkg/install/generated_templates.gogen.go

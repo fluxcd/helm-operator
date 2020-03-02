@@ -18,31 +18,5 @@ set -o errexit -o nounset -o pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 
-DIFFROOT="${REPO_ROOT}/pkg"
-TMP_DIFFROOT="${REPO_ROOT}/_tmp/pkg"
-_tmp="${REPO_ROOT}/_tmp"
-
-cleanup() {
-  rm -rf "${_tmp}"
-}
-trap "cleanup" EXIT SIGINT
-
-cleanup
-
-mkdir -p "${TMP_DIFFROOT}"
-cp -a "${DIFFROOT}"/* "${TMP_DIFFROOT}"
-
 "${REPO_ROOT}/hack/update/generate-codegen.sh"
 "${REPO_ROOT}/hack/update/generate-crds.sh"
-
-echo "diffing ${DIFFROOT} against freshly generated codegen"
-ret=0
-diff -Naupr "${DIFFROOT}" "${TMP_DIFFROOT}" || ret=$?
-cp -a "${TMP_DIFFROOT}"/* "${DIFFROOT}"
-if [[ $ret -eq 0 ]]
-then
-  echo "${DIFFROOT} up to date."
-else
-  echo "${DIFFROOT} is out of date. Please run hack/update/generated.sh"
-  exit 1
-fi

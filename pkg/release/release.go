@@ -9,10 +9,9 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/google/go-cmp/cmp"
 
-	corev1 "k8s.io/api/core/v1"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 
-	v1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/chartsync"
 	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/helm"
@@ -102,10 +101,10 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 			switch err.(type) {
 			case chartsync.ChartUnavailableError:
 				_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-					v1.HelmReleaseChartFetched, corev1.ConditionFalse, ReasonDownloadFailed, err.Error()))
+					v1.HelmReleaseChartFetched, v1.ConditionFalse, ReasonDownloadFailed, err.Error()))
 			case chartsync.ChartNotReadyError:
 				_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-					v1.HelmReleaseChartFetched, corev1.ConditionUnknown, ReasonGitNotReady, err.Error()))
+					v1.HelmReleaseChartFetched, v1.ConditionUnknown, ReasonGitNotReady, err.Error()))
 			}
 			logger.Log("error", err.Error())
 			return hr, err
@@ -115,14 +114,14 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		chartPath = filepath.Join(export.Dir(), hr.Spec.GitChartSource.Path)
 
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-			v1.HelmReleaseChartFetched, corev1.ConditionTrue, ReasonGitCloned, "successfully cloned chart revision: "+revision))
+			v1.HelmReleaseChartFetched, v1.ConditionTrue, ReasonGitCloned, "successfully cloned chart revision: "+revision))
 
 		if r.config.UpdateDeps && !hr.Spec.GitChartSource.SkipDepUpdate {
 			// Attempt to update chart dependencies, if it fails we
 			// simply update the status on the resource and return.
 			if err := client.DependencyUpdate(chartPath); err != nil {
 				_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-					v1.HelmReleaseReleased, corev1.ConditionFalse, ReasonDependencyFailed, err.Error()))
+					v1.HelmReleaseReleased, v1.ConditionFalse, ReasonDependencyFailed, err.Error()))
 				logger.Log("error", ErrDepUpdate.Error(), "err", err.Error())
 				return hr, err
 			}
@@ -136,17 +135,17 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 
 		if err != nil {
 			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-				v1.HelmReleaseChartFetched, corev1.ConditionFalse, ReasonDownloadFailed, err.Error()))
+				v1.HelmReleaseChartFetched, v1.ConditionFalse, ReasonDownloadFailed, err.Error()))
 			logger.Log("error", err.Error())
 			return hr, err
 		}
 		if fetched {
 			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-				v1.HelmReleaseChartFetched, corev1.ConditionTrue, ReasonDownloaded, "chart fetched: "+filepath.Base(chartPath)))
+				v1.HelmReleaseChartFetched, v1.ConditionTrue, ReasonDownloaded, "chart fetched: "+filepath.Base(chartPath)))
 		}
 	default:
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-			v1.HelmReleaseChartFetched, corev1.ConditionFalse, ReasonDownloadFailed, ErrNoChartSource.Error()))
+			v1.HelmReleaseChartFetched, v1.ConditionFalse, ReasonDownloadFailed, ErrNoChartSource.Error()))
 		logger.Log("error", ErrNoChartSource.Error())
 		return hr, ErrNoChartSource
 	}
@@ -157,7 +156,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	curRel, err := client.Get(hr.GetReleaseName(), helm.GetOptions{Namespace: hr.GetTargetNamespace()})
 	if err != nil {
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-			v1.HelmReleaseReleased, corev1.ConditionFalse, ReasonClientError, err.Error()))
+			v1.HelmReleaseReleased, v1.ConditionFalse, ReasonClientError, err.Error()))
 		logger.Log("error", ErrShouldSync.Error(), "err", err.Error())
 		return hr, ErrShouldSync
 	}
@@ -173,7 +172,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	composedValues, err := composeValues(r.coreV1Client, hr, chartPath)
 	if err != nil {
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-			v1.HelmReleaseReleased, corev1.ConditionFalse, failReason, ErrComposingValues.Error()))
+			v1.HelmReleaseReleased, v1.ConditionFalse, failReason, ErrComposingValues.Error()))
 		logger.Log("error", ErrComposingValues.Error(), "err", err.Error())
 		return hr, ErrComposingValues
 	}
@@ -182,7 +181,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	if !ok {
 		if err != nil {
 			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-				v1.HelmReleaseReleased, corev1.ConditionFalse, failReason, err.Error()))
+				v1.HelmReleaseReleased, v1.ConditionFalse, failReason, err.Error()))
 			logger.Log("error", ErrShouldSync.Error(), "err", err.Error())
 			return hr, ErrShouldSync
 		}
@@ -212,7 +211,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 	})
 	if err != nil {
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-			v1.HelmReleaseReleased, corev1.ConditionFalse, failReason, err.Error()))
+			v1.HelmReleaseReleased, v1.ConditionFalse, failReason, err.Error()))
 		logger.Log("error", "Helm release failed", "revision", revision, "err", err.Error())
 
 		// If there was no release prior to this,
@@ -261,7 +260,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		performRollback = true
 	} else {
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-			v1.HelmReleaseReleased, corev1.ConditionTrue, ReasonSuccess, "Helm release sync succeeded"))
+			v1.HelmReleaseReleased, v1.ConditionTrue, ReasonSuccess, "Helm release sync succeeded"))
 		status.SetReleaseRevision(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, revision)
 		logger.Log("info", "Helm release sync succeeded", "revision", revision)
 	}
@@ -279,12 +278,12 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		})
 		if err != nil {
 			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-				v1.HelmReleaseRolledBack, corev1.ConditionFalse, ReasonRollbackFailed, err.Error()))
+				v1.HelmReleaseRolledBack, v1.ConditionFalse, ReasonRollbackFailed, err.Error()))
 			logger.Log("error", "Helm rollback failed", "err", err.Error())
 			return hr, err
 		}
 		_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
-			v1.HelmReleaseRolledBack, corev1.ConditionTrue, ReasonSuccess, "Helm rollback succeeded"))
+			v1.HelmReleaseRolledBack, v1.ConditionTrue, ReasonSuccess, "Helm rollback succeeded"))
 		logger.Log("info", "Helm rollback succeeded")
 
 		// We should still report failure.

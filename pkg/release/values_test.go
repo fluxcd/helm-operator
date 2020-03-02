@@ -8,14 +8,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
-	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
 func TestComposeValues(t *testing.T) {
 	defaultNamespace := "flux"
 	otherNamespace := "other-namespace"
-	falseVal := false
 
 	client := fake.NewSimpleClientset(
 		&corev1.ConfigMap{
@@ -63,32 +62,32 @@ func TestComposeValues(t *testing.T) {
 	cases := []struct {
 		description      string
 		releaseNamespace string
-		valuesFromSource []helmfluxv1.ValuesFromSource
+		valuesFromSource []v1.ValuesFromSource
 		assertions       []func(*testing.T, helm.Values)
 	}{
 		{
 			description:      "simple same-namespace test",
 			releaseNamespace: defaultNamespace,
-			valuesFromSource: []helmfluxv1.ValuesFromSource{
+			valuesFromSource: []v1.ValuesFromSource{
 				{
-					ConfigMapKeyRef: &helmfluxv1.NamespacedConfigMapKeySelector{
-						Name:     "release-configmap",
-						Key:      "values.yaml",
-						Optional: &falseVal,
+					ConfigMapKeyRef: &v1.OptionalConfigMapKeySelector{
+						ConfigMapKeySelector: v1.ConfigMapKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "release-configmap",
+							},
+							Key: "values.yaml",
+						},
 					},
-					SecretKeyRef:      nil,
-					ExternalSourceRef: nil,
-					ChartFileRef:      nil,
 				},
 				{
-					ConfigMapKeyRef: nil,
-					SecretKeyRef: &helmfluxv1.NamespacedSecretKeySelector{
-						Name:     "release-secret",
-						Key:      "values.yaml",
-						Optional: &falseVal,
+					SecretKeyRef: &v1.OptionalSecretKeySelector{
+						SecretKeySelector: v1.SecretKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "release-secret",
+							},
+							Key: "values.yaml",
+						},
 					},
-					ExternalSourceRef: nil,
-					ChartFileRef:      nil,
 				},
 			},
 			assertions: []func(*testing.T, helm.Values){
@@ -103,28 +102,28 @@ func TestComposeValues(t *testing.T) {
 		{
 			description:      "simple cross-namespace test",
 			releaseNamespace: defaultNamespace,
-			valuesFromSource: []helmfluxv1.ValuesFromSource{
+			valuesFromSource: []v1.ValuesFromSource{
 				{
-					ConfigMapKeyRef: &helmfluxv1.NamespacedConfigMapKeySelector{
-						Name:      "release-configmap",
-						Namespace: otherNamespace,
-						Key:       "values.yaml",
-						Optional:  &falseVal,
+					ConfigMapKeyRef: &v1.OptionalConfigMapKeySelector{
+						ConfigMapKeySelector: v1.ConfigMapKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "release-configmap",
+							},
+							Namespace: otherNamespace,
+							Key:       "values.yaml",
+						},
 					},
-					SecretKeyRef:      nil,
-					ExternalSourceRef: nil,
-					ChartFileRef:      nil,
 				},
 				{
-					ConfigMapKeyRef: nil,
-					SecretKeyRef: &helmfluxv1.NamespacedSecretKeySelector{
-						Name:      "release-secret",
-						Namespace: otherNamespace,
-						Key:       "values.yaml",
-						Optional:  &falseVal,
+					SecretKeyRef: &v1.OptionalSecretKeySelector{
+						SecretKeySelector: v1.SecretKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "release-secret",
+							},
+							Namespace: otherNamespace,
+							Key:       "values.yaml",
+						},
 					},
-					ExternalSourceRef: nil,
-					ChartFileRef:      nil,
 				},
 			},
 			assertions: []func(*testing.T, helm.Values){
@@ -139,48 +138,48 @@ func TestComposeValues(t *testing.T) {
 		{
 			description:      "same and cross-namespace test",
 			releaseNamespace: defaultNamespace,
-			valuesFromSource: []helmfluxv1.ValuesFromSource{
+			valuesFromSource: []v1.ValuesFromSource{
 				{
-					ConfigMapKeyRef: &helmfluxv1.NamespacedConfigMapKeySelector{
-						Name:     "release-configmap",
-						Key:      "values.yaml",
-						Optional: &falseVal,
+					ConfigMapKeyRef: &v1.OptionalConfigMapKeySelector{
+						ConfigMapKeySelector: v1.ConfigMapKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "release-configmap",
+							},
+							Key: "values.yaml",
+						},
 					},
-					SecretKeyRef:      nil,
-					ExternalSourceRef: nil,
-					ChartFileRef:      nil,
 				},
 				{
-					ConfigMapKeyRef: nil,
-					SecretKeyRef: &helmfluxv1.NamespacedSecretKeySelector{
-						Name:     "release-secret",
-						Key:      "values.yaml",
-						Optional: &falseVal,
+					SecretKeyRef: &v1.OptionalSecretKeySelector{
+						SecretKeySelector: v1.SecretKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "release-secret",
+							},
+							Key: "values.yaml",
+						},
 					},
-					ExternalSourceRef: nil,
-					ChartFileRef:      nil,
 				},
 				{
-					ConfigMapKeyRef: &helmfluxv1.NamespacedConfigMapKeySelector{
-						Name:      "release-configmap",
-						Namespace: otherNamespace,
-						Key:       "values.yaml",
-						Optional:  &falseVal,
+					ConfigMapKeyRef: &v1.OptionalConfigMapKeySelector{
+						ConfigMapKeySelector: v1.ConfigMapKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "release-configmap",
+							},
+							Namespace: otherNamespace,
+							Key:       "values.yaml",
+						},
 					},
-					SecretKeyRef:      nil,
-					ExternalSourceRef: nil,
-					ChartFileRef:      nil,
 				},
 				{
-					ConfigMapKeyRef: nil,
-					SecretKeyRef: &helmfluxv1.NamespacedSecretKeySelector{
-						Name:      "release-secret",
-						Namespace: otherNamespace,
-						Key:       "values.yaml",
-						Optional:  &falseVal,
+					SecretKeyRef: &v1.OptionalSecretKeySelector{
+						SecretKeySelector: v1.SecretKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "release-secret",
+							},
+							Namespace: otherNamespace,
+							Key:       "values.yaml",
+						},
 					},
-					ExternalSourceRef: nil,
-					ChartFileRef:      nil,
 				},
 			},
 			assertions: []func(*testing.T, helm.Values){
@@ -201,8 +200,8 @@ func TestComposeValues(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.description, func(t *testing.T) {
-			hr := &helmfluxv1.HelmRelease{
-				Spec: helmfluxv1.HelmReleaseSpec{
+			hr := &v1.HelmRelease{
+				Spec: v1.HelmReleaseSpec{
 					ValuesFrom: c.valuesFromSource,
 				},
 			}

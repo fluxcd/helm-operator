@@ -38,23 +38,22 @@ func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, char
 			if key == "" {
 				key = "values.yaml"
 			}
-			optional := cm.Optional != nil && *cm.Optional
 			configMap, err := coreV1Client.ConfigMaps(ns).Get(name, metav1.GetOptions{})
 			if err != nil {
-				if errors.IsNotFound(err) && optional {
+				if errors.IsNotFound(err) && cm.Optional {
 					continue
 				}
 				return result, err
 			}
 			d, ok := configMap.Data[key]
 			if !ok {
-				if optional {
+				if cm.Optional {
 					continue
 				}
 				return result, fmt.Errorf("could not find key %v in ConfigMap %s/%s", key, ns, name)
 			}
 			if err := yaml.Unmarshal([]byte(d), &valueFile); err != nil {
-				if optional {
+				if cm.Optional {
 					continue
 				}
 				return result, fmt.Errorf("unable to yaml.Unmarshal %v from %s in ConfigMap %s/%s", d, key, ns, name)
@@ -69,17 +68,16 @@ func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, char
 			if key == "" {
 				key = "values.yaml"
 			}
-			optional := s.Optional != nil && *s.Optional
 			secret, err := coreV1Client.Secrets(ns).Get(name, metav1.GetOptions{})
 			if err != nil {
-				if errors.IsNotFound(err) && optional {
+				if errors.IsNotFound(err) && s.Optional {
 					continue
 				}
 				return result, err
 			}
 			d, ok := secret.Data[key]
 			if !ok {
-				if optional {
+				if s.Optional {
 					continue
 				}
 				return result, fmt.Errorf("could not find key %s in Secret %s/%s", key, ns, name)
@@ -125,7 +123,7 @@ func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, char
 		result = mergeValues(result, valueFile)
 	}
 
-	result = mergeValues(result, hr.Spec.Values)
+	result = mergeValues(result, hr.Spec.Values.Data)
 	return result, nil
 }
 
