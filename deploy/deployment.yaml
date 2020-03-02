@@ -2,32 +2,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flux-helm-operator{{ if .Namespace }}
-  namespace: {{ .Namespace }}{{ end }}
+  name: helm-operator
+  namespace: flux
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: flux-helm-operator
+      name: helm-operator
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        name: flux-helm-operator
+        name: helm-operator
       annotations:
         prometheus.io/scrape: "true"
     spec:
-      serviceAccountName: flux-helm-operator
-      volumes:{{ if .EnableTillerTLS }}
-        - name: helm-tls-ca
-          configMap:
-            name: flux-helm-tls-ca-config
-            defaultMode: 0600
-        - name: helm-tls-certs
-          secret:
-            secretName: {{ if .TillerTLSCertSecretName }}{{ .TillerTLSCertSecretName }}{{ else }}flux-helm-tls-cert{{ end }}
-            defaultMode: 0400{{ else }}
+      serviceAccountName: helm-operator
+      volumes:
       #
       # You will need these two volumes if you want to establish validated TLS
       # connections against Tiller
@@ -39,9 +31,9 @@ spec:
       # Secret type kubernetes.io/tls
       # - name: flux-helm-tls-cert
       #   secret:
-      #     secretName: {{ if .TillerTLSCertSecretName }}{{ .TillerTLSCertSecretName }}{{ else }}flux-helm-tls-cert{{ end }}
+      #     secretName: tiller-tls-cert
       #     defaultMode: 0400
-      #{{end}}
+      #
       # The following volume is for using a customised known_hosts file,
       # which you will need to do if you host your own git repo rather
       # than using github or the like. You'll also need to mount it
@@ -55,14 +47,7 @@ spec:
       # - name: sshdir
       #   configMap:
       #     name: flux-ssh-config
-      #     defaultMode: 0400{{ if .SSHSecretName }}
-
-      # SSH key to access the Git repository
-        - name: git-key
-          secret:
-            secretName: {{ .SSHSecretName }}
-            defaultMode: 0400 # when mounted read-only, we won't be able to chmod
-{{ else }}
+      #     defaultMode: 0400
       #
       # You will need this volume if you're using a git repo that
       # needs an SSH key for access; e.g., a GitHub deploy key. If
@@ -76,7 +61,7 @@ spec:
       #   secret:
       #     secretName: flux-git-deploy
       #     defaultMode: 0400 # when mounted read-only, we won't be able to chmod
-      #{{end}}
+      #
       # These two volumes are for mounting a repositories.yaml file,
       # and providing a cache directory. The latter is needed because
       # mounting the former will make the cache/ directory read-only.
@@ -88,7 +73,7 @@ spec:
       #   emptyDir: {}
 
       containers:
-      - name: flux-helm-operator
+      - name: helm-operator
         # There are no ":latest" images for helm-operator. Find the most recent
         # release or image version at https://hub.docker.com/r/weaveworks/helm-operator/tags
         # and replace the tag here.
@@ -118,52 +103,27 @@ spec:
         # file; you'll also need the volume declared above.
         # - name: sshdir
         #   mountPath: /root/.ssh
-        #   readOnly: true{{ if .SSHSecretName }}
-
-          - name: git-key
-            mountPath: /etc/fluxd/ssh
-{{ else }}
+        #   readOnly: true
         # - name: git-key
-        #   mountPath: /etc/fluxd/ssh{{ end }}
+        #   mountPath: /etc/fluxd/ssh
         # - name: repositories-yaml
         #   mountPath: /var/fluxd/helm/repository
         # - name: repositories-cache
-        #   mountPath: /var/fluxd/helm/repository/cache{{ if .EnableTillerTLS }}
-
-          - name: helm-tls-certs
-            mountPath: /etc/fluxd/helm
-            readOnly: true
-          - name: helm-tls-ca
-            mountPath: /etc/fluxd/helm-ca
-            readOnly: true
-{{ else }}
+        #   mountPath: /var/fluxd/helm/repository/cache
         # - name: helm-tls-certs
         #   mountPath: /etc/fluxd/helm
         #   readOnly: true
         # - name: helm-tls-ca
         #   mountPath: /etc/fluxd/helm-ca
-        #   readOnly: true{{ end }}
+        #   readOnly: true
         args:
         # How to find Tiller
-        - --tiller-namespace={{ if .TillerNamespace }}{{ .TillerNamespace }}{{ else }}kube-system{{ end }}{{ if .EnableTillerTLS }}
-        # TLS configuration
-        - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt
-        - --tiller-tls-enable=true
-        - --tiller-tls-key-path=/etc/fluxd/helm/tls.key
-        - --tiller-tls-cert-path=/etc/fluxd/helm/tls.crt
-        - --tiller-tls-verify=true
-        - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt{{ else }}
+        - --tiller-namespace=kube-system
         # Comment out to to establish validated TLS connections against Tiller
         # - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt
         # - --tiller-tls-enable=true
         # - --tiller-tls-key-path=/etc/fluxd/helm/tls.key
         # - --tiller-tls-cert-path=/etc/fluxd/helm/tls.crt
         # - --tiller-tls-verify=true
-        # - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt{{ end }}
-{{ if .HelmVersions }}
-        - --enabled-helm-versions={{ .HelmVersions }}
-{{ end }}
-{{ if .AdditionalArgs }}
-        # Additional arguments{{ range .AdditionalArgs }}
-        - {{ . }}{{ end }}
-{{ end }}
+        # - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt
+

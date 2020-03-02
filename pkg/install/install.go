@@ -12,18 +12,28 @@ import (
 	"github.com/shurcooL/httpfs/vfsutil"
 )
 
+const (
+	defaultNamespace       = "default"
+	defaultTillerNamespace = "kube-system"
+)
+
 type TemplateParameters struct {
-	Namespace               string
-	TillerNamespace         string
-	SSHSecretName           string
-	EnableTillerTLS         bool
-	TillerTLSCACertContent  string
-	TillerTLSCertSecretName string
-	HelmVersions            string
-	AdditionalArgs          []string
+	Namespace       string
+	TillerNamespace string
+	SSHSecretName   string
+	HelmVersions    string
+	AdditionalArgs  []string
 }
 
 func FillInTemplates(params TemplateParameters) (map[string][]byte, error) {
+	if params.Namespace == "" {
+		// Set the default namespace
+		params.Namespace = defaultNamespace
+	}
+	if params.TillerNamespace == "" {
+		// Set the default Tiller namespace
+		params.TillerNamespace = defaultTillerNamespace
+	}
 	result := map[string][]byte{}
 	err := vfsutil.WalkFiles(templates, "/", func(path string, info os.FileInfo, rs io.ReadSeeker, err error) error {
 		if err != nil {

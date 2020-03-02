@@ -2,22 +2,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flux-helm-operator
+  name: helm-operator
+{{- if .Namespace }}
+  namespace: {{ .Namespace }}
+{{- end }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: flux-helm-operator
+      name: helm-operator
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        name: flux-helm-operator
+        name: helm-operator
       annotations:
         prometheus.io/scrape: "true"
     spec:
-      serviceAccountName: flux-helm-operator
+      serviceAccountName: helm-operator
       volumes:
       #
       # You will need these two volumes if you want to establish validated TLS
@@ -30,7 +33,7 @@ spec:
       # Secret type kubernetes.io/tls
       # - name: flux-helm-tls-cert
       #   secret:
-      #     secretName: flux-helm-tls-cert
+      #     secretName: tiller-tls-cert
       #     defaultMode: 0400
       #
       # The following volume is for using a customised known_hosts file,
@@ -47,6 +50,13 @@ spec:
       #   configMap:
       #     name: flux-ssh-config
       #     defaultMode: 0400
+{{- if .SSHSecretName }}
+      # SSH key to access the Git repository
+        - name: git-key
+          secret:
+            secretName: {{ .SSHSecretName }}
+            defaultMode: 0400 # when mounted read-only, we won't be able to chmod
+{{- else }}
       #
       # You will need this volume if you're using a git repo that
       # needs an SSH key for access; e.g., a GitHub deploy key. If
@@ -61,6 +71,7 @@ spec:
       #     secretName: flux-git-deploy
       #     defaultMode: 0400 # when mounted read-only, we won't be able to chmod
       #
+{{- end}}
       # These two volumes are for mounting a repositories.yaml file,
       # and providing a cache directory. The latter is needed because
       # mounting the former will make the cache/ directory read-only.
@@ -72,7 +83,7 @@ spec:
       #   emptyDir: {}
 
       containers:
-      - name: flux-helm-operator
+      - name: helm-operator
         # There are no ":latest" images for helm-operator. Find the most recent
         # release or image version at https://hub.docker.com/r/weaveworks/helm-operator/tags
         # and replace the tag here.
@@ -103,8 +114,13 @@ spec:
         # - name: sshdir
         #   mountPath: /root/.ssh
         #   readOnly: true
+{{- if .SSHSecretName }}
+          - name: git-key
+            mountPath: /etc/fluxd/ssh
+{{- else }}
         # - name: git-key
         #   mountPath: /etc/fluxd/ssh
+{{- end }}
         # - name: repositories-yaml
         #   mountPath: /var/fluxd/helm/repository
         # - name: repositories-cache
@@ -117,7 +133,7 @@ spec:
         #   readOnly: true
         args:
         # How to find Tiller
-        - --tiller-namespace=kube-system
+        - --tiller-namespace={{ .TillerNamespace }}
         # Comment out to to establish validated TLS connections against Tiller
         # - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt
         # - --tiller-tls-enable=true
@@ -125,5 +141,10 @@ spec:
         # - --tiller-tls-cert-path=/etc/fluxd/helm/tls.crt
         # - --tiller-tls-verify=true
         # - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt
-
-
+{{ if .HelmVersions }}
+        - --enabled-helm-versions={{ .HelmVersions }}
+{{- end }}
+{{- if .AdditionalArgs }}
+        # Additional arguments{{ range .AdditionalArgs }}
+        - {{ . }}{{ end }}
+{{- end }}

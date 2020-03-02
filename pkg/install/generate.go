@@ -37,7 +37,7 @@ func main() {
 			log.Fatalln(err)
 		}
 	case "deploy":
-		manifests, err := install.FillInTemplates(install.TemplateParameters{})
+		manifests, err := install.FillInTemplates(install.TemplateParameters{Namespace: "flux"})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: failed to fill in templates: %s\n", err)
 			os.Exit(1)

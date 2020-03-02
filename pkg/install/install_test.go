@@ -37,10 +37,7 @@ func TestFillInTemplates(t *testing.T) {
 		Namespace:               "flux",
 		TillerNamespace:         "tiller",
 		SSHSecretName:           "mysshsecretname",
-		EnableTillerTLS:         true,
-		TillerTLSCACertContent:  "foo\nbar\n",
-		TillerTLSCertSecretName: "mytlssecretname",
-	}, 4)
+	}, 3)
 }
 
 func TestFillInTemplatesEmpty(t *testing.T) {
