@@ -8,8 +8,8 @@ Helm operator
    :maxdepth: 2
 
    references/index
-   guides/index
-   tutorials/index
+   helmrelease-guide/index
+   how-to/index
 
    faq
    troubleshooting

@@ -3,7 +3,7 @@
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/guides/upgrading-to-ga.md).
+> found [here](./docs/how-to/upgrading-to-ga.md).
 
 > **Notice:**  due to the multiple added fields, you need to
 > re-apply the `HelmRelease` CRD.
@@ -86,7 +86,7 @@ release, feedback, and reporting issues.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/guides/upgrading-to-ga.md).
+> found [here](./docs/how-to/upgrading-to-ga.md).
 
 > **Notice:**  due to the multiple added fields, you need to
 > re-apply the `HelmRelease` CRD.
@@ -179,7 +179,7 @@ this release, feedback, and reporting issues.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/guides/upgrading-to-ga.md).
+> found [here](./docs/how-to/upgrading-to-ga.md).
 
 ### Bug fixes
 
@@ -221,7 +221,7 @@ to this release, feedback, and reporting issues.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/guides/upgrading-to-ga.md).
+> found [here](./docs/how-to/upgrading-to-ga.md).
 
 This release fixes some (but not all) of the more critical bugs
 reported since Helm v3 was introduced in the last release.
@@ -265,7 +265,7 @@ issues.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/guides/upgrading-to-ga.md).
+> found [here](./docs/how-to/upgrading-to-ga.md).
 
 > **Notice:**  due to the added `helmVersion` field, you need
 > to re-apply the `HelmRelease` CRD.
@@ -347,7 +347,7 @@ v3 support, notably @gsf, @dminca, @rowecharles, @eschereisin,
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/guides/upgrading-to-ga.md).
+> found [here](./docs/how-to/upgrading-to-ga.md).
 
 ### Improvements
 
@@ -379,7 +379,7 @@ and @stefanprodan for contributions to this release.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/guides/upgrading-to-ga.md).
+> found [here](./docs/how-to/upgrading-to-ga.md).
 
 This is the third release candidate.
 
@@ -412,7 +412,7 @@ for contributions to this release.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/guides/upgrading-to-ga.md).
+> found [here](./docs/how-to/upgrading-to-ga.md).
 
 This is the second release candidate.
 
@@ -467,7 +467,7 @@ for contributions to this release.
 
 > **Notice:** upgrading to this version by just updating your Helm
 > Operator image tag is not possible as the CRD domain and version
-> have changed. An upgrade guide can be found [here](./docs/guides/upgrading-to-ga.md).
+> have changed. An upgrade guide can be found [here](./docs/how-to/upgrading-to-ga.md).
 
 This is the first `1.0.0` release candidate, there is no rule about
 the amount of published release candidates before it is officially
