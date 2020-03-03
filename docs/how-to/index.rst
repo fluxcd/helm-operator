@@ -1,11 +1,11 @@
 .. You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Guides
+How-to
 ======
 
 .. toctree::
    :maxdepth: 1
 
-   upgrading-to-ga
-   upgrading-to-beta
+   upgrade-to-ga
+   upgrade-to-beta
