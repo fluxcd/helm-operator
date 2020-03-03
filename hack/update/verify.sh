@@ -18,31 +18,31 @@ set -o errexit -o nounset -o pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 
-DIFFROOT="${REPO_ROOT}/pkg"
-TMP_DIFFROOT="${REPO_ROOT}/_tmp/pkg"
-_tmp="${REPO_ROOT}/_tmp"
+TMP_DIFFROOT="${REPO_ROOT}/_tmp"
+DIFFROOT="${REPO_ROOT}"
 
 cleanup() {
-  rm -rf "${_tmp}"
+  rm -rf "${TMP_DIFFROOT}"
 }
 trap "cleanup" EXIT SIGINT
 
 cleanup
 
 mkdir -p "${TMP_DIFFROOT}"
-cp -a "${DIFFROOT}"/* "${TMP_DIFFROOT}"
+cp -a "${DIFFROOT}"/{pkg,docs,deploy} "${TMP_DIFFROOT}"
 
-"${REPO_ROOT}/hack/update/generate-codegen.sh"
-"${REPO_ROOT}/hack/update/generate-crds.sh"
+"${REPO_ROOT}/hack/update/generate-all.sh"
 
-echo "diffing ${DIFFROOT} against freshly generated codegen"
+echo "diffing ${DIFFROOT} against freshly generated files"
 ret=0
-diff -Naupr "${DIFFROOT}" "${TMP_DIFFROOT}" || ret=$?
-cp -a "${TMP_DIFFROOT}"/* "${DIFFROOT}"
+for i in {pkg,docs,deploy}; do
+  diff -Naupr "${TMP_DIFFROOT}/${i}" "${DIFFROOT}/${i}" || ret=$?
+done
+cp -a "${TMP_DIFFROOT}"/{pkg,docs,deploy} "${DIFFROOT}"
 if [[ $ret -eq 0 ]]
 then
   echo "${DIFFROOT} up to date."
 else
-  echo "${DIFFROOT} is out of date. Please run hack/update/generated.sh"
+  echo "${DIFFROOT} is out of date. Please run hack/update/generate-all.sh"
   exit 1
 fi
