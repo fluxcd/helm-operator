@@ -26,7 +26,7 @@ cd "${REPO_ROOT}"
 # build the generators using the tools module
 cd "hack/tools"
 "${REPO_ROOT}/hack/go_container.sh" go build -o /out/controller-gen sigs.k8s.io/controller-tools/cmd/controller-gen
-# go back to the root
+"${REPO_ROOT}/hack/go_container.sh" go build -o /out/crd-reference-gen github.com/ahmetb/gen-crd-api-reference-docs
 cd "${REPO_ROOT}"
 
 # turn off module mode before running the generators
@@ -48,7 +48,7 @@ cd "${FAKE_REPOPATH}"
 
 # run the generators
 CRD_DIR="./chart/helm-operator/crds"
-echo "Generate OpenAPI v3 schemas for chart CRDs"
+echo "Generating OpenAPI v3 schemas for chart CRDs"
 bin/controller-gen \
   schemapatch:manifests="${CRD_DIR}" \
   output:dir="${CRD_DIR}" \
@@ -64,6 +64,13 @@ for file in $(find "${CRD_DIR}" -type f | sort -V); do
   < "$file" sed '/^$$/d' >> "$out"
 done
 chmod 644 "$out"
+
+echo "Generating CRD reference documentation"
+bin/crd-reference-gen \
+  -api-dir=./pkg/apis/helm.fluxcd.io/v1 \
+  -config=./hack/crd-reference-doc-gen/config.json \
+  -template-dir=./hack/crd-reference-doc-gen/template \
+  -out-file=./docs/references/helmrelease-custom-resource.md
 
 # set module mode back, return to repo root
 export GO111MODULE="on"
