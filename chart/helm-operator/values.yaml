@@ -180,6 +180,12 @@ prometheus:
     namespace:
     additionalLabels: {}
 
+# The contents of the secret will be defined as environment variables
+# in the Flux container. Once defined, you can use the variables ala
+# `git.url`: `https://$(GIT_AUTHUSER):$(GIT_AUTHKEY)@github.com/fluxcd/flux-get-started.git`
+env:
+  secretName: ""
+
 # Additional environment variables to set
 extraEnvs: []
 # extraEnvs:

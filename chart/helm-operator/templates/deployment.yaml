@@ -249,6 +249,11 @@ spec:
         env:
 {{ toYaml .Values.extraEnvs | indent 8 }}
       {{- end }}
+    {{- if .Values.env.secretName }}
+        envFrom:
+        - secretRef:
+            name: {{ .Values.env.secretName }}
+        {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
       {{- if .Values.tillerSidecar.enabled }}
@@ -292,4 +297,3 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
       {{- end }}
-

@@ -236,6 +236,7 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `tolerations`                                     | `[]`                                                 | Tolerations properties for the deployment
 | `affinity`                                        | `{}`                                                 | Affinity properties for the deployment
 | `extraEnvs`                                       | `[]`                                                 | Extra environment variables for the Helm Operator pod(s)
+| `env.secretName`                                  | ``                                                   |	Name of the secret that contains environment variables which should be defined in the container (using envFrom)
 | `podAnnotations`                                  | `{}`                                                 | Additional pod annotations
 | `podLabels`                                       | `{}`                                                 | Additional pod labels
 | `rbac.create`                                     | `true`                                               | If `true`, create and use RBAC resources
