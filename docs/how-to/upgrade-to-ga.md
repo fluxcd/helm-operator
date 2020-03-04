@@ -32,17 +32,21 @@ since the new operator will ignore them.
 
 ## Updating custom resources
 
-> **Note:** once the new CRD is applied it is no longer possible
-> to list your old and new `HelmRelease` resources with just `kubectl
-> get <hr|helmrelease>`, due to them sharing the same names. It is
-> however still possible to list them by their full name.
->
-> ```bash
-> # Old `HelmRelease` resources
-> $ kubectl get helmreleases.flux.weave.works
-> # New `HelmRelease` resources
-> $ kubectl get helmreleases.helm.fluxcd.io
-> ```
+```eval_rst
+.. note::
+  Once the new CRD is applied it is no longer possible to list your old
+  and new ``HelmRelease`` resources with just ``kubectl get
+  <hr|helmrelease>`` due to them sharing the same names. It is however
+  still possible to list them by their full name:
+
+  .. code-block:: bash
+
+    # Old `HelmRelease` resources
+    kubectl get helmreleases.flux.weave.works
+
+    # New `HelmRelease` resources
+    kubectl get helmreleases.helm.fluxcd.io
+```
 
 The only difference between the old resource format and the new is
 the changed API version.

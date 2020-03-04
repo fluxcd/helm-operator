@@ -14,6 +14,8 @@
 #
 import os
 import sys
+import recommonmark
+from recommonmark.transform import AutoStructify
 sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
@@ -174,3 +176,4 @@ epub_exclude_files = ['search.html']
 
 def setup(app):
     app.add_stylesheet('custom.css')
+    app.add_transform(AutoStructify)
