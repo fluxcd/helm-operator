@@ -198,11 +198,7 @@ of a [Helm downloader plugin](https://helm.sh/docs/topics/plugins/#downloader-pl
 this allows you for example to use charts hosted on [Amazon S3](https://github.com/hypnoglow/helm-s3)
 or [Google Cloud Storage](https://github.com/hayorov/helm-gcs).
 
-```eval_rst
-.. attention::
-  The Helm operator only offers support for *downloader plugins*,
-  other plugins will not be recognized nor used.
-```
+r
 
 #### Installing a Helm downloader plugin
 

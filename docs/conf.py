@@ -6,17 +6,26 @@
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
+import os
+import re
+import sys
+import recommonmark
+from docutils import nodes
+
+from recommonmark.transform import AutoStructify
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-import recommonmark
-from recommonmark.transform import AutoStructify
-sys.path.insert(0, os.path.abspath('.'))
+
+docs_dir = os.path.dirname(__file__)
+
+# -- Environment -------------------------------------------------------------
+
+IS_READTHEDOCS = os.environ.get('READTHEDOCS') == 'True'
 
 # -- Project information -----------------------------------------------------
 
@@ -50,7 +59,7 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = ['.rst', '.md']
+source_suffix = ['.md']
 
 # The master toctree document.
 master_doc = 'index'
@@ -98,7 +107,6 @@ html_static_path = ['_static']
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
-
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -176,4 +184,27 @@ epub_exclude_files = ['search.html']
 
 def setup(app):
     app.add_stylesheet('custom.css')
+
+    # Fixing how references (local links) work with Markdown
+    app.connect('doctree-read', replace_missed_md_refs)
+
+    # Enriched Markdwon support
+    app.add_config_value('recommonmark_config', {
+        'enable_eval_rst': True,
+        'enable_auto_toc_tree': False,
+    }, True)
     app.add_transform(AutoStructify)
+
+
+def replace_missed_md_refs(app, doctree):
+    """
+    Recommonmark does not parse all `.md` references properly,
+    especially for URIs with an anchor in them.
+    This simply replaces the `.md` in any URI reference that
+    does not have a protocol specified with `.html`. The links
+    themselves are checked at a later stage.
+    """
+    for node in doctree.traverse(nodes.reference):
+        uri = node.get('refuri')
+        if uri and not uri.startswith(('http://', 'https://')):
+             node['refuri'] = uri.replace('.md', '.html')

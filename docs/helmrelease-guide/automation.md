@@ -18,7 +18,7 @@ for the `HelmRelease` integration](https://docs.fluxcd.io/en/stable/references/h
 ## Helm repository chart updates
 
 Another much requested feature is automated updates for charts from [Helm
-repository chart sources](./chart-sources.md#helm-repositories). The
+repository chart sources](chart-sources.md#helm-repositories). The
 development of this feature is currently blocked until the automation logic
 has been untangled from Flux, to keep up-to-date about new developments of
 this feature you can subscribe to
@@ -26,10 +26,10 @@ this feature you can subscribe to
 
 It is possible to get a likewise functionality by making use of an
 [umbrella chart](https://helm.sh/docs/howto/charts_tips_and_tricks/#complex-charts-with-many-dependencies)
-from a [Git repository chart source](./chart-sources.md#git-repositories) with
+from a [Git repository chart source](chart-sources.md#git-repositories) with
 a [version range set](https://helm.sh/docs/topics/chart_best_practices/dependencies/#versions),
 as for charts from Git repository sources a [dependency update is performed by
-default](./chart-sources.md#dependency-updates) that will download the latest
+default](chart-sources.md#dependency-updates) that will download the latest
 available version within the defined range.
 
 For example, to make the Helm operator install the latest `1.2.x` patch release

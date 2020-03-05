@@ -36,7 +36,7 @@ and defines the Helm chart that should be installed by the Helm operator. This
 > a tiny web application made with Go that showcases best practices of running
 > microservices in Kubernetes
 
-from a [Helm repository chart source](./chart-sources.md#helm-repositories).
+from a [Helm repository chart source](chart-sources.md#helm-repositories).
 
 Applying this to the cluster and making the Helm operator do the release pseudo
 equals to a human running the following `helm` commands:
