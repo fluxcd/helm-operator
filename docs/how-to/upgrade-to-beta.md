@@ -71,8 +71,8 @@ since it expects the SSH key for the git repo to be in the same place.
 
 Once you want to use the new capabilities of the operator -- e.g.,
 releasing charts from Helm repos -- you will probably need to adapt
-the manifest further. The [`HelmRelease` Custom Resource](./../references/helmrelease-custom-resource.md)
-and [operator](./../references/operator.md) references explain all
+the manifest further. The [`HelmRelease` Custom Resource](../references/helmrelease-custom-resource.md)
+and [operator](../references/operator.md) references explain all
 the details.
 
 ## Updating custom resources

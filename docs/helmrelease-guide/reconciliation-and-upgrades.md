@@ -8,7 +8,7 @@ have a better look at how the Helm operator performs the actual Helm release.
 On the creation and update of a `HelmRelease` the resource is queued for
 reconciliation, besides this all `HelmRelease` resources handled by the Helm
 operator instance are also queued for reconciliation every
-[`--charts-sync-interval`](./../references/operator.md) (defaults to 3
+[`--charts-sync-interval`](../references/operator.md) (defaults to 3
 minutes).
 
 Once the queued resource has been picked up by a worker, the Helm operator
