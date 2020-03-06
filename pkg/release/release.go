@@ -177,7 +177,7 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 		return hr, ErrComposingValues
 	}
 
-	ok, diff, err := shouldSync(logger, client, hr, curRel, chartPath, revision, composedValues, r.config.LogDiffs)
+	ok, err := shouldSync(logger, client, hr, curRel, chartPath, revision, composedValues, r.config.LogDiffs)
 	if !ok {
 		if err != nil {
 			_ = status.SetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, status.NewCondition(
@@ -186,9 +186,6 @@ func (r *Release) Sync(client helm.Client, hr *v1.HelmRelease) (rHr *v1.HelmRele
 			return hr, ErrShouldSync
 		}
 		return hr, nil
-	}
-	if diff {
-		status.UnsetCondition(r.helmReleaseClient.HelmReleases(hr.Namespace), hr, v1.HelmReleaseRolledBack)
 	}
 
 	// `shouldSync` above has already validated the YAML output of our
@@ -317,40 +314,39 @@ func (r *Release) Uninstall(client helm.Client, hr *v1.HelmRelease) {
 // with Helm. The cheapest checks which do not require a dry-run are
 // consulted first (e.g. is this our first sync, have we already seen
 // this revision of the resource); before running the dry-run release to
-// determine if any undefined mutations have occurred. It returns two
-// booleans indicating if the release should be synced and if the reason
-// it should happen is because of a diff, or an error.
+// determine if any undefined mutations have occurred. It returns a
+// booleans indicating if the release should be synced, or an error.
 func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRel *helm.Release,
-	chartPath, revision string, values helm.Values, logDiffs bool) (bool, bool, error) {
+	chartPath, revision string, values helm.Values, logDiffs bool) (bool, error) {
 
 	// Without valid YAML we will not get anywhere, return early.
 	b, err := values.YAML()
 	if err != nil {
-		return false, false, ErrComposingValues
+		return false, ErrComposingValues
 	}
 
 	// If there is no existing release, we should simply sync.
 	if curRel == nil {
 		logger.Log("info", "no existing release", "action", "install")
-		return true, false, nil
+		return true, nil
 	}
 
 	// If the release is not managed by our resource, we skip to avoid conflicts.
 	if ok, resourceID := managedByHelmRelease(curRel, *hr); !ok {
 		logger.Log("warning", "release appears to be managed by "+resourceID, "action", "skip")
-		return false, false, nil
+		return false, nil
 	}
 
 	// If the current state of the release does not allow us to safely upgrade, we skip.
 	if s := curRel.Info.Status; !s.AllowsUpgrade() {
 		logger.Log("warning", "unable to sync release with status "+s.String(), "action", "skip")
-		return false, false, nil
+		return false, nil
 	}
 
 	// If we have not processed this generation of the release, we should sync.
 	if !status.HasSynced(*hr) {
 		logger.Log("info", "release has not yet been processed", "action", "upgrade")
-		return true, true, nil
+		return true, nil
 	}
 
 	// Next, we perform a dry-run upgrade and compare the result against the
@@ -364,7 +360,7 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 		ResetValues: hr.Spec.ResetValues,
 	})
 	if err != nil {
-		return false, false, err
+		return false, err
 	}
 
 	var vDiff, cDiff string
@@ -372,12 +368,12 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 	case status.HasRolledBack(*hr):
 		if status.ShouldRetryUpgrade(*hr) {
 			logger.Log("info", "release has been rolled back", "rollbackCount", hr.Status.RollbackCount, "maxRetries", hr.Spec.Rollback.GetMaxRetries(), "action", "upgrade")
-			return true, false, nil
+			return true, nil
 		}
 		logger.Log("info", "release has been rolled back, comparing dry-run output with latest failed release")
 		rels, err := client.History(hr.GetReleaseName(), helm.HistoryOptions{Namespace: hr.GetTargetNamespace()})
 		if err != nil {
-			return false, false, err
+			return false, err
 		}
 		for _, r := range rels {
 			if r.Info.Status == helm.StatusFailed {
@@ -399,12 +395,11 @@ func shouldSync(logger log.Logger, client helm.Client, hr *v1.HelmRelease, curRe
 
 	if cDiff != "" || vDiff != "" {
 		logger.Log("info", "dry-run differed", "action", "upgrade")
-	} else {
-		logger.Log("info", "no changes", "action", "skip")
+		return true, nil
 	}
 
-	diff := vDiff != "" || cDiff != ""
-	return diff, diff, nil
+	logger.Log("info", "no changes", "action", "skip")
+	return false, nil
 }
 
 // compareRelease compares the values and charts of the two given

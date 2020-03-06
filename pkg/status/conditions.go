@@ -62,42 +62,10 @@ func SetCondition(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, cond
 
 		switch {
 		case condition.Type == v1.HelmReleaseReleased && condition.Status == v1.ConditionTrue:
+			cHr.Status.Conditions = filterOutCondition(cHr.Status.Conditions, v1.HelmReleaseRolledBack)
 			cHr.Status.RollbackCount = 0
 		case condition.Type == v1.HelmReleaseRolledBack && condition.Status == v1.ConditionTrue:
-			cHr.Status.RollbackCount = hr.Status.RollbackCount + 1
-		}
-
-		_, err = client.UpdateStatus(cHr)
-		firstTry = false
-		return
-	})
-	return err
-}
-
-// UnsetCondition updates the HelmRelease to exclude the given condition.
-func UnsetCondition(client v1client.HelmReleaseInterface,
-	hr *v1.HelmRelease, conditionType v1.HelmReleaseConditionType) error {
-
-	firstTry := true
-	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
-		if !firstTry {
-			var getErr error
-			hr, getErr = client.Get(hr.Name, metav1.GetOptions{})
-			if getErr != nil {
-				return getErr
-			}
-		}
-
-		if GetCondition(hr.Status, conditionType) == nil {
-			return
-		}
-
-		cHr := hr.DeepCopy()
-		cHr.Status.Conditions = filterOutCondition(cHr.Status.Conditions, conditionType)
-
-		switch {
-		case conditionType == v1.HelmReleaseRolledBack:
-			cHr.Status.RollbackCount = 0
+			cHr.Status.RollbackCount = cHr.Status.RollbackCount + 1
 		}
 
 		_, err = client.UpdateStatus(cHr)
