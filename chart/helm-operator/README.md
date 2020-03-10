@@ -289,3 +289,4 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `prometheus.serviceMonitor.namespace`             | ``                                                   | The namespace where the ServiceMonitor is deployed
 | `prometheus.serviceMonitor.additionalLabels`      | `{}`                                                 | Additional labels to add to the ServiceMonitor
 | `initContainers`                                  | `[]`                                                 | Init containers and their specs
+| `hostAliases`                                     | `{}`                                                 | Host aliases allow the modification of the hosts file (/etc/hosts) inside Helm Operator container. See <https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/>

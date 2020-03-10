@@ -198,3 +198,14 @@ resources:
   requests:
     cpu: 50m
     memory: 64Mi
+# Host aliases allow the modification of the hosts file (/etc/hosts) inside Helm Operator container.
+hostAliases: {}
+# - ip: "127.0.0.1"
+#   hostnames:
+#   - "foo.local"
+#   - "bar.local"
+# - ip: "10.1.2.3"
+#   hostnames:
+#   - "foo.remote"
+#   - "bar.remote"
+
