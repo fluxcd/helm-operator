@@ -13,7 +13,6 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-kit/kit v0.9.0
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
-	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.4.0
 	github.com/gorilla/mux v1.7.3
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
@@ -35,6 +34,7 @@ require (
 	k8s.io/klog v1.0.0
 	k8s.io/kubectl v0.17.2
 	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+	sigs.k8s.io/yaml v1.1.0
 )
 
 // github.com/fluxcd/helm-operator/pkg/install lives in this very reprository, so use that

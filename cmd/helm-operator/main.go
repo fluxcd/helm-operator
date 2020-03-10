@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/spf13/pflag"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -20,6 +21,7 @@ import (
 
 	"github.com/fluxcd/flux/pkg/checkpoint"
 
+	"github.com/fluxcd/helm-operator/pkg/annotator"
 	"github.com/fluxcd/helm-operator/pkg/chartsync"
 	clientset "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned"
 	ifinformers "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions"
@@ -200,6 +202,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	dynamicClient, err := dynamic.NewForConfig(cfg)
+	if err != nil {
+		mainLogger.Log("error", fmt.Sprintf("error building dynmic client: %v", err))
+		os.Exit(1)
+	}
+
 	// initialize versioned Helm clients
 	helmClients := &helm.Clients{}
 	for _, v := range *enabledHelmVersions {
@@ -271,6 +279,7 @@ func main() {
 		kubeClient.CoreV1(),
 		ifClient.HelmV1(),
 		gitChartSync,
+		annotator.NewAnnotator(ifClient.DiscoveryClient, dynamicClient),
 		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies},
 	)
 

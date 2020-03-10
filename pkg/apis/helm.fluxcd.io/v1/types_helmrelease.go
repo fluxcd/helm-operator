@@ -10,6 +10,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// AntecedentAnnotation is an annotation on a resource indicating that
+// the cause of that resource is a HelmRelease. We use this rather than
+// the `OwnerReference` type built into Kubernetes as this does not
+// allow cross-namespace references by design. The value is expected to
+// be a serialised `resource.ID`.
+const AntecedentAnnotation = "helm.fluxcd.io/antecedent"
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
