@@ -8,7 +8,7 @@ It assumes you have the Helm operator already installed in your cluster, and
 for the sake of simplicity it was written while making use of Helm 3 but tries
 not to presume a specific enabled Helm version.
 
-## A minimal `HelmRelease`
+## A minimal HelmRelease
 
 To get started, we will first create the most minimal `HelmRelease` possible.
 We will use (parts) of this minimal `HelmRelease` as an example throughout the

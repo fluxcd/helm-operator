@@ -1,43 +1,36 @@
 # Helm operator
 
-```eval_rst
-.. toctree::
-   :caption: References
-   :maxdepth: 2
 
-   references/operator
-   references/helmrelease-custom-resource
-```
+![Flux Helm Operator diagram](_files/fluxcd-helm-operator-diagram.png)
 
-```eval_rst
-.. toctree::
-   :caption: HelmRelease guide
-   :maxdepth: 2
+## Tutorials
 
-   helmrelease-guide/introduction
-   helmrelease-guide/chart-sources
-   helmrelease-guide/values
-   helmrelease-guide/release-configuration
-   helmrelease-guide/reconciliation-and-upgrades
-   helmrelease-guide/rollbacks
-   helmrelease-guide/automation
-   helmrelease-guide/debugging
-```
+- [How to bootstrap Helm operator using Kustomize](tutorials/get-started-kustomize.md)
+- [Get started with the Helm operator and Tiller](tutorials/get-started.md)
 
-```eval_rst
-.. toctree::
-   :caption: How-to
-   :maxdepth: 1
+## References
 
-   how-to/upgrade-to-ga
-   how-to/upgrade-to-beta
-```
+- [Operator reference](references/operator.md)
+- [HelmRelease Custom Resource](references/helmrelease-custom-resource.md)
 
-```eval_rst
-.. toctree::
-   :caption: Troubleshooting
-   :maxdepth: 2
+## HelmRelase guide
 
-   faq
-   troubleshooting
-```
+- [Introduction](helmrelease-guide/introduction.md)
+- [Chart sources](helmrelease-guide/chart-sources.md)
+- [Values](helmrelease-guide/values.md)
+- [Release configuration](helmrelease-guide/release-configuration.md)
+- [Reconciliation and upgrades](helmrelease-guide/reconciliation-and-upgrades.md)
+- [Rollbacks](helmrelease-guide/rollbacks.md)
+- [Automation](helmrelease-guide/automation.md)
+- [Debugging](helmrelease-guide/debugging.md)
+
+## How-to
+
+- [Upgrade to GA](how-to/upgrade-to-ga.md)
+- [Upgrade to Beta](how-to/upgrade-to-beta.md)
+
+
+## Troubleshooting
+
+- [FAQ](faq.md)
+- [Troubleshooting](troubleshooting.md)

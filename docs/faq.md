@@ -18,7 +18,7 @@ If you are using Helm 3+ the default behaviour is to purge - enabling flux to re
 For Helm<=2, if you delete a Helm release with `helm delete my-release`, the release name can't be reused.
 You need to use the `helm delete --purge` option only then Flux will be able reinstall a release.
 
-### It takes a long time before the operator processes an update to a `HelmRelease` resource. How can I speed up the processing of releases?
+### It takes a long time before the operator processes an update to a HelmRelease resource. How can I speed up the processing of releases?
 
 The operator watches for changes of Custom Resources of kind `HelmRelease`. It receives Kubernetes
 Events and queues these to be processed, all resources will also be re-queued every

@@ -112,8 +112,9 @@ The definition of the listed keys is as follows:
 
 ### Chart files
 
-> **Note:** Values from chart files are only supported for charts from a [Git
-> repository](chart-sources.md#git-repositories).
+!!! note
+         Values from chart files are only supported for charts from a [Git
+         repository](chart-sources.md#git-repositories).
 
 When making use of a chart sourced from a Git repository, it is possible to
 refer to a values file relative to the path of the chart. This can for example

@@ -120,12 +120,10 @@ helm repo add \
     <alias> <URL>
 ```
 
-```eval_rst
-.. note::
-   For Azure ACR repositories, you will need to `create a service principal
-   <https://docs.microsoft.com/en-us/azure/container-registry/container-registry-auth-service-principal#create-a-service-principal>`_
-   and use the plain text ID and password this gives you.
-```
+!!! note
+    For Azure ACR repositories, you will need to [create a service
+    principal](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-auth-service-principal#create-a-service-principal)
+    and use the plain text ID and password this gives you.
 
 If you need to define any certificates, edit the respective `caFile`, `certFile`
 and `keyFile` values of the entry you just added to the mount paths you will
@@ -171,24 +169,20 @@ container for your enabled Helm versions:
         - --helm-repository-import=v2:/root/.helm/repository/repositories.yaml,v3:/root/.helm/repository/repositories.yaml
 ```
 
-```eval_rst
-.. note::
-  There is no limit to the amount of repository files that can be imported
-  as the ``--helm-repository-import`` flag accepts a comma separated string
-  slice of ``<Helm version>:<filepath>``, e.g. ``v3:/my/path.yaml``.
-  Adding all entries to the same file and/or secret is thus not a requirement.
-```
+!!! note
+    There is no limit to the amount of repository files that can be imported
+    as the `--helm-repository-import` flag accepts a comma separated string
+    slice of `<Helm version>:<filepath>`, e.g. `v3:/my/path.yaml`.
+    Adding all entries to the same file and/or secret is thus not a requirement.
 
-```eval_rst
-.. hint::
-  For the `Helm chart
-  <https://github.com/fluxcd/helm-operator/tree/master/chart/helm-operator>`_
-  this all can be done by setting ``configureRepositories.enable`` to ``true``,
-  it will automatically pick up the ``flux-helm-reposities`` secret created
-  earlier in this guide and configure the ``--helm-repository-import`` flag for
-  the enabled Helm versions. The certificate secret can be mounted by
-  configuring the ``extraVolumes`` and ``extraVolumeMounts`` values.
-```
+!!! hint
+         For the `Helm chart
+         <https://github.com/fluxcd/helm-operator/tree/master/chart/helm-operator>`_
+         this all can be done by setting ``configureRepositories.enable`` to ``true``,
+         it will automatically pick up the ``flux-helm-reposities`` secret created
+         earlier in this guide and configure the ``--helm-repository-import`` flag for
+         the enabled Helm versions. The certificate secret can be mounted by
+         configuring the ``extraVolumes`` and ``extraVolumeMounts`` values.
 
 ### Extending the supported Helm repository protocols
 
@@ -197,8 +191,6 @@ HTTP/S. It is however possible to extend the supported protocols by making use
 of a [Helm downloader plugin](https://helm.sh/docs/topics/plugins/#downloader-plugins),
 this allows you for example to use charts hosted on [Amazon S3](https://github.com/hypnoglow/helm-s3)
 or [Google Cloud Storage](https://github.com/hayorov/helm-gcs).
-
-r
 
 #### Installing a Helm downloader plugin
 
@@ -275,7 +267,7 @@ spec:
      subPath: v3-config
 ```
 
-#### Using an installed protocol in your `HelmRelease`
+#### Using an installed protocol in your HelmRelease
 
 Once a Helm downloader plugin has been successfully installed, the newly added
 protocol can be used in the `.chart.repository` value of a `HelmRelease`:
@@ -288,13 +280,11 @@ spec:
     version: 1.0.0
 ```
 
-```eval_rst
-.. attention::
-  Most downloader plugins expect some form of credentials to be present to be
-  able to download a chart, make sure those are available in the Helm
-  operator's container before attempting to make use of the newly added
-  protocol.
-```
+!!! caution
+        Most downloader plugins expect some form of credentials to be present to be
+        able to download a chart, make sure those are available in the Helm
+        operator's container before attempting to make use of the newly added
+        protocol.
 
 ## Git repositories
 
@@ -347,11 +337,9 @@ however likely that most of the time you will be using a Git repository
 chart source some form of authentication is required before the repository
 can be accessed by the Helm operator.
 
-```eval_rst
-.. tip::
-  Because the Helm operator does not perform any write operations on the Git
-  repository, credentials with read permissions are always sufficient.
-```
+!!! tip
+        Because the Helm operator does not perform any write operations on the Git
+        repository, credentials with read permissions are always sufficient.
 
 #### SSH
 
@@ -400,11 +388,9 @@ Host bitbucket.org
     IdentitiesOnly yes
 ```
 
-```eval_rst
-.. note::
-  The ``IdentitiesOnly`` ensures that only the ``IdentityFile`` for the
-  ``Host`` is used and any other identity files known are ignored.
-```
+!!! note
+    The `IdentitiesOnly` ensures that only the `IdentityFile` for the
+    `Host` is used and any other identity files known are ignored.
 
 ###### Multiple private keys for Git repositories on the same host
 
@@ -439,7 +425,7 @@ spec:
 
 For Git over HTTPS the Helm operator offers two ways of providing credentials.
 
-##### Per-resource credentials using `.chart.secretRef`
+##### Per-resource credentials using .chart.secretRef
 
 To provide HTTPS credentials per `HelmRelease` resource you can make use of
 a `secretRef` in the `.chart` and a secret with a username and password.
@@ -467,19 +453,17 @@ spec:
       name: git-https-credentials
 ```
 
-##### Global credentials using `.netrc`
+##### Global credentials using .netrc
 
 It is also possible to provide `HelmRelease` resources access to global
 credentials via a
 [`.netrc` file](https://ec.haxx.se/usingcurl/usingcurl-netrc) mounted in the
 `/root/` directory of the Helm operator container.
 
-```eval_rst
-.. caution::
-   This approach suffers essentially from `the same caveat as
-   mentioned for Git over SSH
-   <#multiple-private-keys-for-git-repositories-on-the-same-host>`_.
-```
+!!! caution
+     This approach suffers essentially from `the same caveat as
+     mentioned for Git over SSH
+     <#multiple-private-keys-for-git-repositories-on-the-same-host>`_.
 
 To provide credentials for `github.com`, you would create a `.netrc` file like
 this:
@@ -533,9 +517,7 @@ $ curl -XPOST http://localhost:3030/api/v1/sync-git
 OK
 ```
 
-```eval_rst
-.. warning::
-  The HTTP API has no built-in authentication, this means you either need to
-  port forward before making the request or put something in front of it to
-  serve as a gatekeeper.
-```
+!!! warning
+      The HTTP API has no built-in authentication, this means you either need to
+      port forward before making the request or put something in front of it to
+      serve as a gatekeeper.

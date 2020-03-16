@@ -4,7 +4,8 @@
 
 Generate certificates for Tiller and Flux. This will provide a CA, servercerts for Tiller and client certs for Helm / Flux.
 
-> **Note:** When creating the certificate for Tiller the Common Name should match the hostname you are connecting to from the Helm operator.
+!!! note
+         When creating the certificate for Tiller the Common Name should match the hostname you are connecting to from the Helm operator.
 
 The following script can be used for that (requires [cfssl](https://github.com/cloudflare/cfssl)):
 
@@ -145,7 +146,8 @@ First create a new Kubernetes TLS secret for the client certs:
 kubectl create secret tls helm-client --cert=tls/flux-helm-operator.pem --key=./tls/flux-helm-operator-key.pem
 ```
 
-> **Note:** this has to be in the same namespace as the flux-helm-operator is deployed in.
+!!! note
+         this has to be in the same namespace as the flux-helm-operator is deployed in.
 
 Deploy Flux with Helm:
 
@@ -164,10 +166,9 @@ helm upgrade --install \
     fluxcd/flux
 ```
 
-> **Note:**
->
-> - include --tls flags for `helm` as in the `helm ls` example, if talking to a tiller with TLS
-> - optionally specify target --namespace
+!!! note
+         - include --tls flags for `helm` as in the `helm ls` example, if talking to a tiller with TLS
+         - optionally specify target --namespace
 
 ## Check if it worked
 
