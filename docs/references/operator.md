@@ -1,4 +1,4 @@
-# Helm operator (`helm-operator`)
+# Helm operator (helm-operator)
 
 The Helm operator deals with Helm chart releases. The operator watches for
 changes of Custom Resources of kind `HelmRelease`. It receives Kubernetes

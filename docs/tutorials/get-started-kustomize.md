@@ -67,9 +67,10 @@ patchesStrategicMerge:
 EOF
 ```
 
-> **Note:** If you want to install a specific Helm operator release,
-> add the version number to the base URL:
-> `github.com/fluxcd/helm-operator//deploy?ref=v1.0.0-rc2`
+!!! note
+         If you want to install a specific Helm operator release,
+         add the version number to the base URL:
+         `github.com/fluxcd/helm-operator//deploy?ref=v1.0.0-rc2`
 
 
 Create a patch file for Helm operator and mount the repositories secret:
@@ -113,7 +114,7 @@ Wait for Helm operator to start:
 kubectl -n flux rollout status deployment/flux-helm-operator
 ```
 
-## Use the `HelmRelease` custom resource
+## Use the HelmRelease custom resource
 
 Install podinfo by referring to its Helm repository:
 

@@ -1,4 +1,4 @@
-# `HelmRelease` Custom Resource
+# HelmRelease Custom Resource
 <div class="section">
 <p>Packages:</p>
 <ul class="simple">

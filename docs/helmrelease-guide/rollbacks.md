@@ -4,13 +4,11 @@ From time to time a release made by the Helm operator may fail, this section
 of the guide will explain how you can recover from a failed release by enabling
 rollbacks.
 
-```eval_rst
-.. caution::
-  Rollbacks of Helm charts containing ``StatefulSet`` resources can be a
-  tricky operation, and are one of the main reasons automated rollbacks are not
-  enabled by default. Verify a manual rollback (using ``helm``) of your Helm
-  chart does not cause any problems before enabling it.
-```
+!!! caution
+      Rollbacks of Helm charts containing ``StatefulSet`` resources can be a
+      tricky operation, and are one of the main reasons automated rollbacks are not
+      enabled by default. Verify a manual rollback (using ``helm``) of your Helm
+      chart does not cause any problems before enabling it.
 
 ## Enabling rollbacks
 

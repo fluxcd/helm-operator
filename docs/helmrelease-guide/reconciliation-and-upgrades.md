@@ -40,8 +40,9 @@ being performed, otherwise no action is taken:
 1. The result of a dry-run upgrade for the `HelmRelease` differs from the
    latest release in the Helm storage.
    
-> **Note:** Mutations to live cluster-state are not detected and thus not
-> reverted. This will however be added in the foreseeable future.
+!!! note
+         Mutations to live cluster-state are not detected and thus not
+         reverted. This will however be added in the foreseeable future.
 
 ## The antecedent annotation
 
