@@ -1,7 +1,31 @@
 # Helm operator
 
-
 ![Flux Helm Operator diagram](_files/fluxcd-helm-operator-diagram.png)
+
+## Helm Operator features
+
+* Declarative install, upgrade, and delete of Helm releases
+* Pulls chart from _any_ chart source;
+  * Public or private Helm repositories over HTTP/S
+  * Public or private Git repositories over HTTPS or SSH
+  * Any other public or private chart source using one of the available
+    [Helm downloader plugins](https://helm.sh/docs/topics/plugins/#downloader-plugins)
+* Allows Helm values to be specified;
+  * In-line in the `HelmRelease` resource
+  * In (external) sources, e.g. `ConfigMap` and `Secret` resources,
+    or a (local) URL
+* Automated purging on release install failures
+* Automated (optional) rollback on upgrade failures
+* Automated image upgrades [using Flux](https://docs.fluxcd.io/en/latest/references/helm-operator-integration.html)
+* Automated (configurable) chart dependency updates for Helm charts
+  from Git sources on install or upgrade
+* Detection and recovery from Helm storage mutations
+  (e.g. a manual Helm release that was made but conflicts with the
+  declared configuration for the release)
+* Parallel and scalable processing of different `HelmRelease` resources
+  using workers
+* Supports both Helm 2 and 3
+
 
 ## Tutorials
 
