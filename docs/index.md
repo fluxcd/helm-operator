@@ -1,43 +1,28 @@
 # Helm operator
 
-```eval_rst
-.. toctree::
-   :caption: References
-   :maxdepth: 2
+## References
 
-   references/operator
-   references/helmrelease-custom-resource
-```
+- [Operator reference](references/operator.md)
+- [HelmRelease Custom Resource](references/helmrelease-custom-resource.md)
 
-```eval_rst
-.. toctree::
-   :caption: HelmRelease guide
-   :maxdepth: 2
+## HelmRelase guide
 
-   helmrelease-guide/introduction
-   helmrelease-guide/chart-sources
-   helmrelease-guide/values
-   helmrelease-guide/release-configuration
-   helmrelease-guide/reconciliation-and-upgrades
-   helmrelease-guide/rollbacks
-   helmrelease-guide/automation
-   helmrelease-guide/debugging
-```
+- [Introduction](helmrelease-guide/introduction.md)
+- [Chart sources](helmrelease-guide/chart-sources.md)
+- [Values](helmrelease-guide/values.md)
+- [Release configuration](helmrelease-guide/release-configuration.md)
+- [Reconciliation and upgrades](helmrelease-guide/reconciliation-and-upgrades.md)
+- [Rollbacks](helmrelease-guide/rollbacks.md)
+- [Automation](helmrelease-guide/automation.md)
+- [Debugging](helmrelease-guide/debugging.md)
 
-```eval_rst
-.. toctree::
-   :caption: How-to
-   :maxdepth: 1
+## How-to
 
-   how-to/upgrade-to-ga
-   how-to/upgrade-to-beta
-```
+- [Upgrade to GA](how-to/upgrade-to-ga.md)
+- [Upgrade to Beta](how-to/upgrade-to-beta.md)
 
-```eval_rst
-.. toctree::
-   :caption: Troubleshooting
-   :maxdepth: 2
 
-   faq
-   troubleshooting
-```
+## Troubleshooting
+
+- [FAQ](faq.md)
+- [Troubleshooting](troubleshooting.md)

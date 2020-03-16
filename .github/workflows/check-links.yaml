@@ -1,0 +1,11 @@
+on: [push, pull_request]
+name: Check links
+jobs:
+  linkChecker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Link Checker
+        uses: peter-evans/link-checker@v1
+        with:
+          args: liche -r -d site/ -v site/index.html

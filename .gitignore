@@ -52,4 +52,4 @@ test/bin/
 test/e2e/bats
 
 # Docs
-docs/_build
+site/
