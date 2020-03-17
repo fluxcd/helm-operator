@@ -37,7 +37,7 @@
 - [Operator reference](references/operator.md)
 - [HelmRelease Custom Resource](references/helmrelease-custom-resource.md)
 
-## HelmRelase guide
+## HelmRelease guide
 
 - [Introduction](helmrelease-guide/introduction.md)
 - [Chart sources](helmrelease-guide/chart-sources.md)
