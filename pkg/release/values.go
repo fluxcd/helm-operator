@@ -7,20 +7,20 @@ import (
 	"net/url"
 	"path/filepath"
 
-	"github.com/fluxcd/helm-operator/pkg/helm"
 	"github.com/ghodss/yaml"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	"github.com/fluxcd/helm-operator/pkg/helm"
 )
 
-// values attempts to compose the final values for the given
+// composeValues attempts to compose the final values for the given
 // `HelmRelease`. It returns the values as bytes and a checksum,
 // or an error in case anything went wrong.
-func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, chartPath string) (helm.Values, error) {
+func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease, chartPath string) ([]byte, error) {
 	result := helm.Values{}
 
 	for _, v := range hr.GetValuesFromSources() {
@@ -43,20 +43,20 @@ func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, char
 				if errors.IsNotFound(err) && cm.Optional {
 					continue
 				}
-				return result, err
+				return nil, err
 			}
 			d, ok := configMap.Data[key]
 			if !ok {
 				if cm.Optional {
 					continue
 				}
-				return result, fmt.Errorf("could not find key %v in ConfigMap %s/%s", key, ns, name)
+				return nil, fmt.Errorf("could not find key %v in ConfigMap %s/%s", key, ns, name)
 			}
 			if err := yaml.Unmarshal([]byte(d), &valueFile); err != nil {
 				if cm.Optional {
 					continue
 				}
-				return result, fmt.Errorf("unable to yaml.Unmarshal %v from %s in ConfigMap %s/%s", d, key, ns, name)
+				return nil, fmt.Errorf("unable to yaml.Unmarshal %v from %s in ConfigMap %s/%s", d, key, ns, name)
 			}
 		case v.SecretKeyRef != nil:
 			s := v.SecretKeyRef
@@ -73,17 +73,17 @@ func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, char
 				if errors.IsNotFound(err) && s.Optional {
 					continue
 				}
-				return result, err
+				return nil, err
 			}
 			d, ok := secret.Data[key]
 			if !ok {
 				if s.Optional {
 					continue
 				}
-				return result, fmt.Errorf("could not find key %s in Secret %s/%s", key, ns, name)
+				return nil, fmt.Errorf("could not find key %s in Secret %s/%s", key, ns, name)
 			}
 			if err := yaml.Unmarshal(d, &valueFile); err != nil {
-				return result, fmt.Errorf("unable to yaml.Unmarshal %v from %s in Secret %s/%s", d, key, ns, name)
+				return nil, fmt.Errorf("unable to yaml.Unmarshal %v from %s in Secret %s/%s", d, key, ns, name)
 			}
 		case v.ExternalSourceRef != nil:
 			es := v.ExternalSourceRef
@@ -94,13 +94,13 @@ func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, char
 				if optional {
 					continue
 				}
-				return result, fmt.Errorf("unable to read value file from URL %s", u)
+				return nil, fmt.Errorf("unable to read value file from URL %s", u)
 			}
 			if err := yaml.Unmarshal(b, &valueFile); err != nil {
 				if optional {
 					continue
 				}
-				return result, fmt.Errorf("unable to yaml.Unmarshal %v from URL %s", b, u)
+				return nil, fmt.Errorf("unable to yaml.Unmarshal %v from URL %s", b, u)
 			}
 		case v.ChartFileRef != nil:
 			cf := v.ChartFileRef
@@ -111,20 +111,20 @@ func composeValues(coreV1Client corev1.CoreV1Interface, hr *v1.HelmRelease, char
 				if optional {
 					continue
 				}
-				return result, fmt.Errorf("unable to read value file from path %s", filePath)
+				return nil, fmt.Errorf("unable to read value file from path %s", filePath)
 			}
 			if err := yaml.Unmarshal(f, &valueFile); err != nil {
 				if optional {
 					continue
 				}
-				return result, fmt.Errorf("unable to yaml.Unmarshal %v from path %s", f, filePath)
+				return nil, fmt.Errorf("unable to yaml.Unmarshal %v from path %s", f, filePath)
 			}
 		}
 		result = mergeValues(result, valueFile)
 	}
 
 	result = mergeValues(result, hr.Spec.Values.Data)
-	return result, nil
+	return result.YAML()
 }
 
 // readURL attempts to read a file from an HTTP(S) URL.

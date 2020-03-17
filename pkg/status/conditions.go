@@ -1,6 +1,8 @@
 package status
 
 import (
+	"fmt"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
 	"k8s.io/utils/clock"
@@ -12,24 +14,7 @@ import (
 // Clock is defined as a var so it can be stubbed during tests.
 var Clock clock.Clock = clock.RealClock{}
 
-// NewCondition creates a new HelmReleaseCondition.
-func NewCondition(conditionType v1.HelmReleaseConditionType, status v1.ConditionStatus,
-	reason, message string) v1.HelmReleaseCondition {
-
-	nowTime := metav1.NewTime(Clock.Now())
-	return v1.HelmReleaseCondition{
-		Type:               conditionType,
-		Status:             status,
-		LastUpdateTime:     &nowTime,
-		LastTransitionTime: &nowTime,
-		Reason:             reason,
-		Message:            message,
-	}
-}
-
-// GetCondition returns the condition with the given type.
 func GetCondition(status v1.HelmReleaseStatus, conditionType v1.HelmReleaseConditionType) *v1.HelmReleaseCondition {
-
 	for i := range status.Conditions {
 		c := status.Conditions[i]
 		if c.Type == conditionType {
@@ -39,9 +24,7 @@ func GetCondition(status v1.HelmReleaseStatus, conditionType v1.HelmReleaseCondi
 	return nil
 }
 
-// SetCondition updates the HelmRelease to include the given condition.
-func SetCondition(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, condition v1.HelmReleaseCondition) error {
-
+func SetCondition(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, condition v1.HelmReleaseCondition, set func(*v1.HelmRelease)) error {
 	firstTry := true
 	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
 		if !firstTry {
@@ -52,20 +35,22 @@ func SetCondition(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, cond
 			}
 		}
 
-		cHr := hr.DeepCopy()
-		currCondition := GetCondition(cHr.Status, condition.Type)
+		currCondition := GetCondition(hr.Status, condition.Type)
 		if currCondition != nil && currCondition.Status == condition.Status {
 			condition.LastTransitionTime = currCondition.LastTransitionTime
 		}
-		newConditions := filterOutCondition(cHr.Status.Conditions, condition.Type)
-		cHr.Status.Conditions = append(newConditions, condition)
 
+		cHr := hr.DeepCopy()
+		cHr.Status.Conditions = append(filterOutCondition(cHr.Status.Conditions, condition.Type), condition)
 		switch {
 		case condition.Type == v1.HelmReleaseReleased && condition.Status == v1.ConditionTrue:
 			cHr.Status.Conditions = filterOutCondition(cHr.Status.Conditions, v1.HelmReleaseRolledBack)
 			cHr.Status.RollbackCount = 0
 		case condition.Type == v1.HelmReleaseRolledBack && condition.Status == v1.ConditionTrue:
 			cHr.Status.RollbackCount = cHr.Status.RollbackCount + 1
+		}
+		if set != nil {
+			set(cHr)
 		}
 
 		_, err = client.UpdateStatus(cHr)
@@ -75,8 +60,69 @@ func SetCondition(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, cond
 	return err
 }
 
-// filterOutCondition returns a new slice of conditions without the
-// conditions of the given type.
+func SetStatusPhase(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, phase v1.HelmReleasePhase) error {
+	condition, ok := ConditionForPhase(hr, phase)
+	if !ok {
+		return nil
+	}
+	return SetCondition(client, hr, condition, func(cHr *v1.HelmRelease) {
+		cHr.Status.Phase = phase
+	})
+}
+
+// ConditionForPhrase returns a condition for the given phase.
+func ConditionForPhase(hr *v1.HelmRelease, phase v1.HelmReleasePhase) (v1.HelmReleaseCondition, bool) {
+	nowTime := metav1.NewTime(Clock.Now())
+	condition := &v1.HelmReleaseCondition{
+		Reason:             string(phase),
+		LastUpdateTime:     &nowTime,
+		LastTransitionTime: &nowTime,
+	}
+	switch phase {
+	case v1.HelmReleasePhaseInstalling:
+		condition.Type = v1.HelmReleaseReleased
+		condition.Status = v1.ConditionUnknown
+		condition.Message = fmt.Sprintf(`Running installation for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseUpgrading:
+		condition.Type = v1.HelmReleaseReleased
+		condition.Status = v1.ConditionUnknown
+		condition.Message = fmt.Sprintf(`Running upgrade for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseSucceeded:
+		condition.Type = v1.HelmReleaseReleased
+		condition.Status = v1.ConditionTrue
+		condition.Message = fmt.Sprintf(`Release was successful for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseFailed:
+		condition.Type = v1.HelmReleaseReleased
+		condition.Status = v1.ConditionFalse
+		condition.Message = fmt.Sprintf(`Release failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseRollingBack:
+		condition.Type = v1.HelmReleaseRolledBack
+		condition.Status = v1.ConditionUnknown
+		condition.Message = fmt.Sprintf(`Rolling back Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseRolledBack:
+		condition.Type = v1.HelmReleaseRolledBack
+		condition.Status = v1.ConditionTrue
+		condition.Message = fmt.Sprintf(`Rolled back Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseRollbackFailed:
+		condition.Type = v1.HelmReleaseRolledBack
+		condition.Status = v1.ConditionFalse
+		condition.Message = fmt.Sprintf(`Rollback failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseChartFetched:
+		condition.Type = v1.HelmReleaseChartFetched
+		condition.Status = v1.ConditionTrue
+		condition.Message = fmt.Sprintf(`Chart fetch was successful for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseChartFetchFailed:
+		condition.Type = v1.HelmReleaseChartFetched
+		condition.Status = v1.ConditionFalse
+		condition.Message = fmt.Sprintf(`Chart fetch failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	default:
+		return v1.HelmReleaseCondition{}, false
+	}
+	return *condition, true
+}
+
+// filterOutCondition returns a new slice of condition without the
+// condition of the given type.
 func filterOutCondition(conditions []v1.HelmReleaseCondition,
 	conditionType v1.HelmReleaseConditionType) []v1.HelmReleaseCondition {
 

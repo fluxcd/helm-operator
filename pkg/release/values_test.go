@@ -4,9 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
+	"sigs.k8s.io/yaml"
 
 	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/helm"
@@ -211,7 +213,9 @@ func TestComposeValues(t *testing.T) {
 			t.Log(values)
 			assert.NoError(t, err)
 			for _, assertion := range c.assertions {
-				assertion(t, values)
+				var hv helm.Values
+				yaml.Unmarshal(values, &hv)
+				assertion(t, hv)
 			}
 		})
 	}

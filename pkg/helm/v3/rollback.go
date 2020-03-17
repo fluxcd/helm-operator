@@ -1,7 +1,6 @@
 package v3
 
 import (
-	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
 
 	"github.com/fluxcd/helm-operator/pkg/helm"
@@ -17,7 +16,7 @@ func (h *HelmV3) Rollback(releaseName string, opts helm.RollbackOptions) (*helm.
 	rollbackOptions(opts).configure(rollback)
 
 	if err := rollback.Run(releaseName); err != nil {
-		return nil, errors.Wrapf(err, "failed to perform rollback for release '%s'", releaseName)
+		return nil, err
 	}
 
 	// As rolling back does no longer return information about

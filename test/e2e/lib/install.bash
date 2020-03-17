@@ -34,7 +34,7 @@ function install_helm_operator_with_helm() {
     --tiller-namespace "${E2E_NAMESPACE}" \
     --namespace "${E2E_NAMESPACE}" \
     --set createCRD="${create_crds}" \
-    --set chartsSyncInterval=3s \
+    --set chartsSyncInterval=30s \
     --set image.repository=docker.io/fluxcd/helm-operator \
     --set image.tag=latest \
     --set git.pollInterval=3s \

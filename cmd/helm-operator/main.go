@@ -268,10 +268,11 @@ func main() {
 
 	rel := release.New(
 		log.With(logger, "component", "release"),
+		helmClients,
 		kubeClient.CoreV1(),
 		ifClient.HelmV1(),
 		gitChartSync,
-		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies},
+		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, DefaultHelmVersion: *defaultHelmVersion},
 	)
 
 	// prepare operator and start FluxRelease informer
@@ -279,7 +280,7 @@ func main() {
 	// _before_ starting it or else the cache sync seems to hang at
 	// random
 	opr := operator.New(log.With(logger, "component", "operator"),
-		*logReleaseDiffs, kubeClient, hrInformer, queue, rel, helmClients, *defaultHelmVersion)
+		*logReleaseDiffs, kubeClient, hrInformer, queue, rel)
 	go ifInformerFactory.Start(shutdown)
 
 	// wait for the caches to be synced before starting _any_ workers

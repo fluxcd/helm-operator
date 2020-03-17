@@ -13,7 +13,6 @@ CACHE_DIR="${ROOT_DIR}/cache/$CURRENT_OS_ARCH"
 KIND_VERSION=v0.7.0
 KUBE_VERSION=v1.14.10
 KIND_CACHE_PATH="${CACHE_DIR}/kind-$KIND_VERSION"
-KIND_CLUSTER_PREFIX=helm-operator-e2e
 BATS_EXTRA_ARGS=""
 
 # shellcheck disable=SC1090
@@ -30,9 +29,9 @@ function install_kind() {
   chmod +x "${ROOT_DIR}/test/bin/kind"
 }
 
-# Create multiple Kind clusters and run jobs in parallel?
 # Let users specify how many, e.g. with E2E_KIND_CLUSTER_NUM=3 make e2e
 E2E_KIND_CLUSTER_NUM=${E2E_KIND_CLUSTER_NUM:-1}
+KIND_CLUSTER_PREFIX=${KIND_CLUSTER_PREFIX:-helm-operator-e2e}
 
 # Check if there is a kubernetes cluster running, otherwise use Kind
 if ! kubectl version > /dev/null 2>&1; then

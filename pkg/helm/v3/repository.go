@@ -11,7 +11,6 @@ import (
 var repositoryConfigLock sync.RWMutex
 
 func (h *HelmV3) RepositoryIndex() error {
-
 	repositoryConfigLock.RLock()
 	f, err := loadRepositoryConfig()
 	repositoryConfigLock.RUnlock()
@@ -113,7 +112,6 @@ func (h *HelmV3) RepositoryImport(path string) error {
 			h.logger.Log("error", err, "name", c.Name, "url", c.URL)
 			continue
 		}
-
 		t.Add(c)
 		h.logger.Log("info", "successfully imported repository", "name", c.Name, "url", c.URL)
 	}

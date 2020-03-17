@@ -7,9 +7,17 @@ spec:
   - JSONPath: .status.releaseName
     name: Release
     type: string
+    description: ReleaseName is the name of the Helm release managed by the HelmRelease,
+      as given by Helm.
+  - JSONPath: .status.phase
+    name: Phase
+    type: string
+    description: Phase is the current release phase being performed for the HelmRelease.
   - JSONPath: .status.releaseStatus
     name: Status
     type: string
+    description: ReleaseStatus is the status of the Helm release managed by the HelmRelease,
+      as given by Helm.
   - JSONPath: .status.conditions[?(@.type=="Released")].message
     name: Message
     type: string
@@ -323,6 +331,21 @@ spec:
                 by the operator.
               type: integer
               format: int64
+            phase:
+              description: Phase the release is in, one of ('ChartFetched', 'ChartFetchFailed',
+                'Installing', 'Upgrading', 'Succeeded', 'RollingBack', 'RolledBack',
+                'RollbackFailed')
+              type: string
+              enum:
+              - ChartFetched
+              - ChartFetchFailed
+              - Installing
+              - Upgrading
+              - Succeeded
+              - Failed
+              - RollingBack
+              - RolledBack
+              - RollbackFailed
             releaseName:
               description: ReleaseName is the name as either supplied or generated.
               type: string

@@ -18,13 +18,13 @@ function setup() {
   kubectl apply -f "$FIXTURES_DIR/releases/helm-repository.yaml" >&3
 
   # Wait for it to be deployed
-  poll_until_equals 'release deploy' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o 'custom-columns=status:status.releaseStatus' --no-headers"
+  poll_until_equals 'release deploy' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Apply a faulty patch
   kubectl patch -f "$FIXTURES_DIR/releases/helm-repository.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/values/faults/unready", "value":"true"}]' >&3
 
   # Wait for release failure
-  poll_until_equals 'upgrade failure' 'HelmUpgradeFailed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_true 'upgrade failure' "kubectl -n $E2E_NAMESPACE logs deploy/helm-operator | grep -E \"upgrade failed\""
 
   # Wait for rollback
   poll_until_equals 'rollback' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"RolledBack\")].status}'"
@@ -33,7 +33,7 @@ function setup() {
   kubectl apply -f "$FIXTURES_DIR/releases/helm-repository.yaml" >&3
 
   # Assert recovery
-  poll_until_equals 'recovery' 'HelmSuccess' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_equals 'recovery' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 }
 
 @test "When rollback.retry is set, upgrades are reattempted after a rollback" {
@@ -41,13 +41,13 @@ function setup() {
   kubectl apply -f "$FIXTURES_DIR/releases/helm-repository.yaml" >&3
 
   # Wait for it to be deployed
-  poll_until_equals 'release deploy' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o 'custom-columns=status:status.releaseStatus' --no-headers"
+  poll_until_equals 'release deploy' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Apply a faulty patch and enable retries
   kubectl patch -f "$FIXTURES_DIR/releases/helm-repository.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/values/faults/unready", "value": true},{"op": "add", "path": "/spec/rollback/retry", "value": true}]' >&3
 
   # Wait for release failure
-  poll_until_equals 'upgrade failure' 'HelmUpgradeFailed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_true 'upgrade failure' "kubectl -n $E2E_NAMESPACE logs deploy/helm-operator | grep -E \"upgrade failed\""
 
   # Wait for rollback count to increase
   poll_until_equals 'rollback count == 3' '3' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.rollbackCount}'"
@@ -64,19 +64,19 @@ function setup() {
   kubectl apply -f "$FIXTURES_DIR/releases/helm-repository.yaml" >&3
 
   # Wait for it to be deployed
-  poll_until_equals 'release deploy' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o 'custom-columns=status:status.releaseStatus' --no-headers"
+  poll_until_equals 'release deploy' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Apply a faulty patch and enable retries
   kubectl patch -f "$FIXTURES_DIR/releases/helm-repository.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/values/faults/unready", "value": true},{"op": "add", "path": "/spec/rollback/retry", "value": true},{"op": "add", "path": "/spec/rollback/maxRetries", "value": 1}]' >&3
 
   # Wait for release failure
-  poll_until_equals 'upgrade failure' 'HelmUpgradeFailed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_true 'upgrade failure' "kubectl -n $E2E_NAMESPACE logs deploy/helm-operator | grep -E \"upgrade failed\""
 
   # Wait for rollback count to increase
   poll_until_equals 'rollback count == 2' '2' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.rollbackCount}'"
 
   # Wait for dry-run to be compared, instead of retry
-  poll_until_true 'dry-run comparison to failed release' "kubectl -n $E2E_NAMESPACE logs deploy/helm-operator | grep -E \"comparing dry-run output with latest failed release\""
+  poll_until_true 'dry-run comparison to failed release' "kubectl -n $E2E_NAMESPACE logs deploy/helm-operator | grep -E \"running dry-run upgrade to compare with release\""
 }
 
 @test "When rollback.enable is set, validation error does not trigger a rollback" {
@@ -88,13 +88,13 @@ function setup() {
   kubectl apply -f "$FIXTURES_DIR/releases/git.yaml" >&3
 
   # Wait for it to be deployed
-  poll_until_equals 'release deploy' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o 'custom-columns=status:status.releaseStatus' --no-headers"
+  poll_until_equals 'release deploy' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Apply a faulty patch
   kubectl patch -f "$FIXTURES_DIR/releases/git.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/values/replicaCount", "value":"faulty"}]' >&3
 
   # Wait for release failure
-  poll_until_equals 'upgrade failure' 'False' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.reason==\"HelmUpgradeFailed\")].status}'"
+  poll_until_equals 'upgrade failure' 'False' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Assert release version
   version=$(kubectl exec -n "$E2E_NAMESPACE" deploy/helm-operator -- helm3 status podinfo-git --namespace "$DEMO_NAMESPACE" -o json | jq .version)

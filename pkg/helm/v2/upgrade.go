@@ -1,7 +1,7 @@
 package v2
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
 
 	"k8s.io/helm/pkg/chartutil"
 	helmv2 "k8s.io/helm/pkg/helm"
@@ -19,7 +19,7 @@ func (h *HelmV2) UpgradeFromPath(chartPath string, releaseName string, values []
 	// Load the chart from the given path
 	chartRequested, err := chartutil.Load(chartPath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to load chart from path [%s] for release [%s]", chartPath, releaseName)
+		return nil, err
 	}
 
 	var res releaseResponse
@@ -39,7 +39,7 @@ func (h *HelmV2) UpgradeFromPath(chartPath string, releaseName string, values []
 			_, dErr := h.client.DeleteRelease(releaseName,
 				helmv2.DeletePurge(true), helmv2.DeleteDisableHooks(opts.DisableHooks))
 			if dErr != nil {
-				return nil, errors.Wrapf(statusMessageErr(dErr), "failed to uninstall release, original installation error: %s", statusMessageErr(err))
+				return nil, fmt.Errorf("%s, original installation error: %w", statusMessageErr(dErr), statusMessageErr(err))
 			}
 		}
 	} else {
@@ -65,7 +65,7 @@ func (h *HelmV2) UpgradeFromPath(chartPath string, releaseName string, values []
 				helmv2.RollbackDryRun(opts.DryRun),
 				helmv2.RollbackRecreate(opts.Recreate),
 				helmv2.RollbackForce(opts.Force))
-			return nil, errors.Wrapf(statusMessageErr(rErr), "failed to roll back release, original installation error: %s", statusMessageErr(err))
+			return nil, fmt.Errorf("%s, original installation error: %w", statusMessageErr(rErr), statusMessageErr(err))
 		}
 	}
 	if err != nil {

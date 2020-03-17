@@ -22,22 +22,13 @@ import (
 	ifscheme "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/scheme"
 	hrv1 "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/helm.fluxcd.io/v1"
 	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/helm.fluxcd.io/v1"
-	"github.com/fluxcd/helm-operator/pkg/helm"
 	"github.com/fluxcd/helm-operator/pkg/release"
 )
 
 const (
 	controllerAgentName = "helm-operator"
-)
-
-const (
-	// ChartSynced is used as part of the Event 'reason' when the Chart related to the
-	// a HelmRelease gets released/updated
-	ChartSynced = "ChartSynced"
-
-	// MessageChartSynced - the message used for an Event fired when a HelmRelease
-	// is synced.
-	MessageChartSynced = "Chart managed by HelmRelease processed"
+	ReleaseSynced       = "ReleaseSynced"
+	FailedReleaseSync   = "FailedReleaseSync"
 )
 
 // Controller is the operator implementation for HelmRelease resources
@@ -49,9 +40,6 @@ type Controller struct {
 	hrSynced cache.InformerSynced
 
 	release *release.Release
-
-	helmClients        *helm.Clients
-	defaultHelmVersion string
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
@@ -72,9 +60,7 @@ func New(
 	kubeclientset kubernetes.Interface,
 	hrInformer hrv1.HelmReleaseInformer,
 	releaseWorkqueue workqueue.RateLimitingInterface,
-	release *release.Release,
-	helmClients *helm.Clients,
-	defaultHelmVersion string) *Controller {
+	release *release.Release) *Controller {
 
 	// Add helm-operator types to the default Kubernetes Scheme so Events can be
 	// logged for helm-operator types.
@@ -84,20 +70,16 @@ func New(
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
 
 	controller := &Controller{
-		logger:             logger,
-		logDiffs:           logReleaseDiffs,
-		hrLister:           hrInformer.Lister(),
-		hrSynced:           hrInformer.Informer().HasSynced,
-		releaseWorkqueue:   releaseWorkqueue,
-		recorder:           recorder,
-		release:            release,
-		helmClients:        helmClients,
-		defaultHelmVersion: defaultHelmVersion,
+		logger:           logger,
+		logDiffs:         logReleaseDiffs,
+		hrLister:         hrInformer.Lister(),
+		hrSynced:         hrInformer.Informer().HasSynced,
+		releaseWorkqueue: releaseWorkqueue,
+		recorder:         recorder,
+		release:          release,
 	}
 
 	controller.logger.Log("info", "setting up event handlers")
-
-	// ----- EVENT HANDLERS for HelmRelease resources change ---------
 	hrInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(new interface{}) {
 			if _, ok := checkCustomResourceType(controller.logger, new); ok {
@@ -108,9 +90,8 @@ func New(
 			controller.enqueueUpdateJob(old, new)
 		},
 		DeleteFunc: func(old interface{}) {
-			hr, ok := checkCustomResourceType(controller.logger, old)
-			if ok {
-				controller.deleteRelease(hr)
+			if hr, ok := checkCustomResourceType(controller.logger, old); ok {
+				controller.release.Uninstall(hr.DeepCopy())
 			}
 		},
 	})
@@ -226,46 +207,23 @@ func (c *Controller) syncHandler(key string) error {
 		c.logger.Log("error", err.Error())
 		return err
 	}
-
-	helmClient, err := c.getHelmClientForRelease(*hr)
+	err = c.release.Sync(hr.DeepCopy())
 	if err != nil {
-		c.logger.Log("warning", err.Error(), "resource", hr.ResourceID().String())
-		return nil
+		c.recorder.Event(hr, corev1.EventTypeWarning, FailedReleaseSync,
+			fmt.Sprintf("synchronization of release '%s' in namespace '%s' failed: %s", hr.GetReleaseName(), hr.GetTargetNamespace(), err.Error()))
+	} else {
+		c.recorder.Event(hr, corev1.EventTypeNormal, ReleaseSynced,
+			fmt.Sprintf("managed release '%s' in namespace '%s' sychronized", hr.GetReleaseName(), hr.GetTargetNamespace()))
 	}
-	c.release.Sync(helmClient, hr.DeepCopy())
-	c.recorder.Event(hr, corev1.EventTypeNormal, ChartSynced, MessageChartSynced)
-
 	return nil
-}
-
-func checkCustomResourceType(logger log.Logger, obj interface{}) (helmfluxv1.HelmRelease, bool) {
-	var hr *helmfluxv1.HelmRelease
-	var ok bool
-	if hr, ok = obj.(*helmfluxv1.HelmRelease); !ok {
-		logger.Log("error", fmt.Sprintf("HelmRelease Event Watch received an invalid object: %#v", obj))
-		return helmfluxv1.HelmRelease{}, false
-	}
-	return *hr, true
-}
-
-func getCacheKey(obj interface{}) (string, error) {
-	var key string
-	var err error
-
-	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
-		runtime.HandleError(err)
-		return "", err
-	}
-	return key, nil
 }
 
 // enqueueJob takes a HelmRelease resource and converts it into a namespace/name
 // string which is then put onto the work queue. This method should not be
 // passed resources of any type other than HelmRelease.
 func (c *Controller) enqueueJob(obj interface{}) {
-	var key string
-	var err error
-	if key, err = getCacheKey(obj); err != nil {
+	key, err := getCacheKey(obj)
+	if err != nil {
 		return
 	}
 	c.releaseWorkqueue.AddRateLimited(key)
@@ -294,37 +252,24 @@ func (c *Controller) enqueueUpdateJob(old, new interface{}) {
 		return
 	}
 
-	logStr := []string{"info", "enqueuing release"}
-	if diff != "" && c.logDiffs {
-		logStr = append(logStr, "diff", diff)
-	}
-	logStr = append(logStr, "resource", newHr.ResourceID().String())
-
-	l := make([]interface{}, len(logStr))
-	for i, v := range logStr {
-		l[i] = v
-	}
-	c.logger.Log(l...)
-
 	c.enqueueJob(new)
 }
 
-func (c *Controller) deleteRelease(hr helmfluxv1.HelmRelease) {
-	logger := log.With(c.logger, "release", hr.GetReleaseName(), "targetNamespace", hr.GetTargetNamespace(), "resource", hr.ResourceID().String())
-	logger.Log("info", "deleting release")
-	helmClient, err := c.getHelmClientForRelease(hr)
-	if err != nil {
-		logger.Log("warning", "failed to delete release", "err", err.Error())
-		return
+func checkCustomResourceType(logger log.Logger, obj interface{}) (helmfluxv1.HelmRelease, bool) {
+	var hr *helmfluxv1.HelmRelease
+	var ok bool
+	if hr, ok = obj.(*helmfluxv1.HelmRelease); !ok {
+		logger.Log("error", fmt.Sprintf("HelmRelease Event Watch received an invalid object: %#v", obj))
+		return helmfluxv1.HelmRelease{}, false
 	}
-	c.release.Uninstall(helmClient, hr.DeepCopy())
+	return *hr, true
 }
 
-func (c *Controller) getHelmClientForRelease(hr helmfluxv1.HelmRelease) (helm.Client, error) {
-	version := hr.GetHelmVersion(c.defaultHelmVersion)
-	client, ok := c.helmClients.Load(version)
-	if !ok {
-		return nil, fmt.Errorf("no Helm client for targeted version: %s", version)
+func getCacheKey(obj interface{}) (string, error) {
+	key, err := cache.MetaNamespaceKeyFunc(obj)
+	if err != nil {
+		runtime.HandleError(err)
+		return "", err
 	}
-	return client, nil
+	return key, nil
 }

@@ -19,7 +19,7 @@ function setup() {
   kubectl apply -n "$DEMO_NAMESPACE" -f "$FIXTURES_DIR/values_from/configmap.yaml" >&3
 
   # Wait for install failure
-  poll_until_equals 'install failure due to missing config map' 'failed to compose values for chart release' "kubectl -n $DEMO_NAMESPACE get helmrelease/configmap-values -o jsonpath='{.status.conditions[?(@.reason==\"HelmInstallFailed\")].message}'"
+  poll_until_equals 'install failure due to missing config map' 'False' "kubectl -n $DEMO_NAMESPACE get helmrelease/configmap-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Add missing config map
   cat <<EOF | kubectl create -n "$DEMO_NAMESPACE" -f -
@@ -33,13 +33,13 @@ data:
 EOF
 
   # Wait for release recovery
-  poll_until_equals 'recovery after adding config map' 'HelmSuccess' "kubectl -n $DEMO_NAMESPACE get helmrelease/configmap-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_equals 'recovery after adding config map' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/configmap-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Patch the release to make use of the config map in the other namespace
   kubectl patch -n "$DEMO_NAMESPACE" -f "$FIXTURES_DIR/values_from/configmap.yaml" --type='json' -p="[{\"op\": \"add\", \"path\": \"/spec/valuesFrom/0/configMapKeyRef/namespace\", \"value\":\"$E2E_NAMESPACE\"}]" >&3
 
- # Wait for upgrade failure
-  poll_until_equals 'upgrade failure due to missing config map in namespace' 'failed to compose values for chart release' "kubectl -n $DEMO_NAMESPACE get helmrelease/configmap-values -o jsonpath='{.status.conditions[?(@.reason==\"HelmUpgradeFailed\")].message}'"
+  # Wait for upgrade failure
+  poll_until_equals 'install failure due to missing config map in namespace' 'False' "kubectl -n $DEMO_NAMESPACE get helmrelease/configmap-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
     # Add config map in different namespace
   cat <<EOF | kubectl create -n "$E2E_NAMESPACE" -f -
@@ -53,7 +53,7 @@ data:
 EOF
 
   # Wait for release recovery
-  poll_until_equals 'recovery after adding config map in namespace' 'HelmSuccess' "kubectl -n $DEMO_NAMESPACE get helmrelease/configmap-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_equals 'recovery after adding config map in namespace' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/configmap-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 }
 
 @test "When valuesFrom.secretKeyRefs are defined, they are sourced" {
@@ -61,7 +61,7 @@ EOF
   kubectl apply -n "$DEMO_NAMESPACE" -f "$FIXTURES_DIR/values_from/secret.yaml" >&3
 
   # Wait for install failure
-  poll_until_equals 'install failure due to missing secret' 'failed to compose values for chart release' "kubectl -n $DEMO_NAMESPACE get helmrelease/secret-values -o jsonpath='{.status.conditions[?(@.reason==\"HelmInstallFailed\")].message}'"
+  poll_until_equals 'install failure due to missing secret' 'False' "kubectl -n $DEMO_NAMESPACE get helmrelease/secret-values  -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Add missing config map
   cat <<EOF | kubectl create -n "$DEMO_NAMESPACE" -f -
@@ -75,13 +75,13 @@ data:
 EOF
 
   # Wait for release recovery
-  poll_until_equals 'recovery after adding secret' 'HelmSuccess' "kubectl -n $DEMO_NAMESPACE get helmrelease/secret-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_equals 'recovery after adding secret' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/secret-values  -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Patch the release to make use of the config map in the other namespace
   kubectl patch -n "$DEMO_NAMESPACE" -f "$FIXTURES_DIR/values_from/secret.yaml" --type='json' -p="[{\"op\": \"add\", \"path\": \"/spec/valuesFrom/0/secretKeyRef/namespace\", \"value\":\"$E2E_NAMESPACE\"}]" >&3
 
  # Wait for upgrade failure
-  poll_until_equals 'upgrade failure due to missing secret in namespace' 'failed to compose values for chart release' "kubectl -n $DEMO_NAMESPACE get helmrelease/secret-values -o jsonpath='{.status.conditions[?(@.reason==\"HelmUpgradeFailed\")].message}'"
+  poll_until_equals 'upgrade failure due to missing secret in namespace' 'False' "kubectl -n $DEMO_NAMESPACE get helmrelease/secret-values  -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
     # Add config map in different namespace
   cat <<EOF | kubectl create -n "$E2E_NAMESPACE" -f -
@@ -95,7 +95,7 @@ data:
 EOF
 
   # Wait for release recovery
-  poll_until_equals 'recovery after adding secret in namespace' 'HelmSuccess' "kubectl -n $DEMO_NAMESPACE get helmrelease/secret-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_equals 'recovery after adding secret in namespace' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/secret-values  -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 }
 
 @test "When valuesFrom.externalSourceRefs are defined, they are sourced" {
@@ -103,19 +103,19 @@ EOF
   kubectl apply -n "$DEMO_NAMESPACE" -f "$FIXTURES_DIR/values_from/externalsource.yaml" >&3
 
   # Wait for release
-  poll_until_equals 'successful release with external source' 'HelmSuccess' "kubectl -n $DEMO_NAMESPACE get helmrelease/external-source-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_equals 'successful release with external source' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/external-source-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Patch the release with an invalid URL
   kubectl patch -n "$DEMO_NAMESPACE" -f "$FIXTURES_DIR/values_from/externalsource.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/valuesFrom/0/externalSourceRef/url", "value": "https://raw.githubusercontent.com/stefanprodan/podinfo/3.2.0/charts/podinfo/invalid.yaml"}]' >&3
 
   # Wait for upgrade failure
-  poll_until_equals 'upgrade failure due to invalid external source url' 'failed to compose values for chart release' "kubectl -n $DEMO_NAMESPACE get helmrelease/external-source-values -o jsonpath='{.status.conditions[?(@.reason==\"HelmUpgradeFailed\")].message}'"
+  poll_until_equals 'upgrade failure due to invalid external source url' 'False' "kubectl -n $DEMO_NAMESPACE get helmrelease/external-source-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Make source optional
   kubectl patch -n "$DEMO_NAMESPACE" -f "$FIXTURES_DIR/values_from/externalsource.yaml" --type='json' -p='[{"op": "add", "path": "/spec/valuesFrom/0/externalSourceRef/optional", "value": true}]' >&3
 
   # Wait for release recovery
-  poll_until_equals 'recovery after making external source optional' 'HelmSuccess' "kubectl -n $DEMO_NAMESPACE get helmrelease/external-source-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_equals 'recovery after making external source optional' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/external-source-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 }
 
 @test "When valuesFrom.chartFileRefs are defined, they are sourced" {
@@ -123,19 +123,19 @@ EOF
   kubectl apply -n "$DEMO_NAMESPACE" -f "$FIXTURES_DIR/values_from/chartfile.yaml" >&3
 
   # Wait for release
-  poll_until_equals 'successful release with chart file' 'HelmSuccess' "kubectl -n $DEMO_NAMESPACE get helmrelease/chartfile-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_equals 'successful release with chart file' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/chartfile-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Patch release with invalid path
   kubectl patch -n "$DEMO_NAMESPACE" -f "$FIXTURES_DIR/values_from/chartfile.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/valuesFrom/0/chartFileRef/path", "value": "invalid.yaml"}]' >&3
 
    # Wait for upgrade failure
-  poll_until_equals 'upgrade failure due to invalid chart file' 'failed to compose values for chart release' "kubectl -n $DEMO_NAMESPACE get helmrelease/chartfile-values -o jsonpath='{.status.conditions[?(@.reason==\"HelmUpgradeFailed\")].message}'"
+  poll_until_equals 'upgrade failure due to invalid chart file' 'False' "kubectl -n $DEMO_NAMESPACE get helmrelease/chartfile-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Make source optional
   kubectl patch -n "$DEMO_NAMESPACE" -f "$FIXTURES_DIR/values_from/chartfile.yaml" --type='json' -p='[{"op": "add", "path": "/spec/valuesFrom/0/chartFileRef/optional", "value": true}]' >&3
 
   # Wait for release recovery
-  poll_until_equals 'recovery after making chart file optional' 'HelmSuccess' "kubectl -n $DEMO_NAMESPACE get helmrelease/chartfile-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].reason}'"
+  poll_until_equals 'recovery after making chart file optional' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/chartfile-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
 }
 
