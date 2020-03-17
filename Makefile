@@ -32,8 +32,6 @@ IMAGE_TAG:=$(shell ./docker/image-tag)
 VCS_REF:=$(shell git rev-parse HEAD)
 BUILD_DATE:=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-DOCS_PORT:=8000
-
 all: $(GOBIN)/bin/helm-operator build/.helm-operator.done
 
 clean:
