@@ -6,14 +6,14 @@
 
 * Declarative install, upgrade, and delete of Helm releases
 * Pulls chart from _any_ chart source;
-  * Public or private Helm repositories over HTTP/S
-  * Public or private Git repositories over HTTPS or SSH
-  * Any other public or private chart source using one of the available
-    [Helm downloader plugins](https://helm.sh/docs/topics/plugins/#downloader-plugins)
+    * Public or private Helm repositories over HTTP/S
+    * Public or private Git repositories over HTTPS or SSH
+    * Any other public or private chart source using one of the available
+      [Helm downloader plugins](https://helm.sh/docs/topics/plugins/#downloader-plugins)
 * Allows Helm values to be specified;
-  * In-line in the `HelmRelease` resource
-  * In (external) sources, e.g. `ConfigMap` and `Secret` resources,
-    or a (local) URL
+    * In-line in the `HelmRelease` resource
+    * In (external) sources, e.g. `ConfigMap` and `Secret` resources,
+      or a (local) URL
 * Automated purging on release install failures
 * Automated (optional) rollback on upgrade failures
 * Automated image upgrades [using Flux](https://docs.fluxcd.io/en/stable/references/helm-operator-integration.html)
