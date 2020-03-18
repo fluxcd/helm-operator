@@ -16,7 +16,7 @@
     or a (local) URL
 * Automated purging on release install failures
 * Automated (optional) rollback on upgrade failures
-* Automated image upgrades [using Flux](https://docs.fluxcd.io/en/latest/references/helm-operator-integration.html)
+* Automated image upgrades [using Flux](https://docs.fluxcd.io/en/latest/references/helm-operator-integration)
 * Automated (configurable) chart dependency updates for Helm charts
   from Git sources on install or upgrade
 * Detection and recovery from Helm storage mutations
