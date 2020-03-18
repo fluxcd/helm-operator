@@ -44,7 +44,7 @@ clean:
 realclean: clean
 	rm -rf ./cache
 
-test: test/bin/helm2 test/bin/helm3
+test:
 	PATH="${PWD}/bin:${PWD}/test/bin:${PATH}" go test ${TEST_FLAGS} $(shell go list $(patsubst %, %/..., $(LOCAL_GO_MODULES)) | sort -u)
 
 e2e: test/bin/helm2 test/bin/helm3 test/bin/kubectl test/e2e/bats build/.helm-operator.done

@@ -1,55 +1,35 @@
 version: 2.1
-commands:
-  e2e_tests:
-    parameters:
-      helm_version:
-        type: string
-    steps:
-      - run:
-          name: End-to-end Helm <<parameters.helm_version>>
-          command: make e2e
-          environment:
-            E2E_KIND_CLUSTER_NUM: 4
-            HELM_VERSION: <<parameters.helm_version>>
-jobs:
-  build:
-    working_directory: /home/circleci/go/src/github.com/fluxcd/helm-operator
+
+executors:
+  builder:
     machine:
       image: ubuntu-1604:201903-01
     resource_class: large
+    working_directory: /home/circleci/go/src/github.com/fluxcd/helm-operator
     environment:
-      GO_VERSION: 1.13.3
       # We don't need a GOPATH but CircleCI defines it, so we override it
       GOPATH: /home/circleci/go
       GOPROXY: https://proxy.golang.org
       PATH: /bin:/usr/bin:/usr/local/go/bin:/home/circleci/go/bin
-    steps:
-      - checkout
-      - run:
-          name: Install Golang
-          command: |
-            curl -OL https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
-            tar -xf go${GO_VERSION}.linux-amd64.tar.gz
-            sudo rm -rf /usr/local/go
-            sudo mv go /usr/local
-            mkdir -p "$HOME/go/bin"
-            rm -rf go${GO_VERSION}.linux-amd64.tar.gz
-            go version
-      - run:
-          name: Update packages
-          no_output_timeout: 10m
-          command: |
-            # Kill any apt-get processes that may be hanging due to
-            # networking related issues, and thus holding on to
-            # `/var/lib/apt/lists/lock`.
-            # https://support.circleci.com/hc/en-us/articles/360021256633-Apt-Get-Update-Is-Slow-Or-Locked
-            sudo killall apt-get || true
 
-            sudo apt-get update
-            sudo apt-get install jq
-            git version
-            docker version
-            jq --version
+commands:
+  save_build_cache:
+    steps:
+      - save_cache:
+          key: cache-{{ checksum "Makefile" }}
+          paths:
+            - "cache"
+      - save_cache:
+          key: go-build-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - "~/.cache/go-build/"
+      - save_cache:
+          key: go-mod-{{ checksum "go.mod" }}
+          paths:
+            - "~/go/pkg/mod/"
+
+  restore_build_cache:
+    steps:
       - restore_cache:
           keys:
             - cache-{{ checksum "Makefile" }}
@@ -63,62 +43,138 @@ jobs:
           keys:
             - go-mod-{{ checksum "go.mod" }}
             - go-mod-
-      - run: make check-generated
-      - run: make test TEST_FLAGS="-race -timeout 5m"
+
+  save_build_docker_image:
+    parameters:
+      target:
+        type: string
+    steps:
+      - run: |
+          TARGET_DIR=$(dirname "<<parameters.target>>")
+          if [ -z "$TARGET_DIR" ]; then
+            echo "Empty target directory for image"; exit 1
+          fi
+          mkdir -p "${TARGET_DIR}"
+          docker save "fluxcd/helm-operator:$(docker/image-tag)" -o <<parameters.target>>
+
+  load_build_docker_image:
+    parameters:
+      input:
+        type: string
+    steps:
+      - run: |
+          docker load -i <<parameters.input>>
+
+  pkg_install:
+    parameters:
+      packages:
+        type: string
+    steps:
+      - run:
+          name: Install packages <<parameters.packages>>
+          command: |
+            # Kill any apt-get processes that may be hanging due to
+            # networking related issues, and thus holding on to
+            # `/var/lib/apt/lists/lock`.
+            # https://support.circleci.com/hc/en-us/articles/360021256633-Apt-Get-Update-Is-Slow-Or-Locked
+            sudo killall apt-get || true
+
+            sudo apt-get update
+
+            sudo apt-get install <<parameters.packages>>
+
+  go_install:
+    parameters:
+      version:
+        type: string
+    steps:
+      - run:
+          name: Install Golang <<parameters.version>>
+          environment:
+            GO_VERSION: <<parameters.version>>
+          command: |
+            curl -OL https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
+            tar -xf go${GO_VERSION}.linux-amd64.tar.gz
+            sudo rm -rf /usr/local/go
+            sudo mv go /usr/local
+            mkdir -p "$HOME/go/bin"
+            rm -rf go${GO_VERSION}.linux-amd64.tar.gz
+            go version | grep -E "${GO_VERSION}"
+
+  e2e_tests:
+    parameters:
+      kind_cluster_num:
+        type: integer
+        default: 4
+      helm_version:
+        type: string
+    steps:
+      - run:
+          name: End-to-end Helm <<parameters.helm_version>>
+          command: make e2e
+          environment:
+            E2E_KIND_CLUSTER_NUM: <<parameters.kind_cluster_num>>
+            HELM_VERSION: <<parameters.helm_version>>
+
+jobs:
+  build:
+    executor: builder
+    steps:
+      - checkout
+      - go_install:
+          version: 1.13.3
       - run: make all
+      - save_build_docker_image:
+          target: build/docker/helm-operator.tar.gz
+      - persist_to_workspace:
+          root: build
+          paths:
+            - docker/helm-operator.tar.gz
+            - .helm-operator.done
+
+  test_unit:
+    executor: builder
+    steps:
+      - checkout
+      - go_install:
+          version: 1.13.3
+      - run: make test TEST_FLAGS="-race -timeout 5m"
+
+  test_generated:
+    executor: builder
+    steps:
+      - checkout
+      - go_install:
+          version: 1.13.3
+      - run: make check-generated
+
+  test_docs:
+    executor: builder
+    steps:
+      - checkout
+      - go_install:
+          version: 1.13.3
       - run: make test-docs
+
+  test_e2e:
+    executor: builder
+    parameters:
+      helm_version:
+        type: string
+    steps:
+      - checkout
+      - go_install:
+          version: 1.13.3
+      - pkg_install:
+          packages: jq
+      - attach_workspace:
+          at: build
+      - load_build_docker_image:
+          input: build/docker/helm-operator.tar.gz
       - e2e_tests:
-          helm_version: v2
-      - e2e_tests:
-          helm_version: v3
-      - save_cache:
-          key: cache-{{ checksum "Makefile" }}
-          paths:
-            - "cache"
-      - save_cache:
-          key: go-build-{{ .Branch }}-{{ .Revision }}
-          paths:
-            - "~/.cache/go-build/"
-      - save_cache:
-          key: go-mod-{{ checksum "go.mod" }}
-          paths:
-            - "~/go/pkg/mod/"
-      - deploy:
-          name: Maybe push prerelease images
-          command: |
-            if [ -z "${CIRCLE_TAG}" -a "${CIRCLE_BRANCH}" == "master" ]; then
-              echo "$DOCKER_FLUXCD_PASSWORD" | docker login --username "$DOCKER_FLUXCD_USER" --password-stdin
+          helm_version: <<parameters.helm_version>>
 
-              docker tag "docker.io/fluxcd/helm-operator:$(docker/image-tag)" "docker.io/fluxcd/helm-operator-prerelease:$(docker/image-tag)"
-              docker push "docker.io/fluxcd/helm-operator-prerelease:$(docker/image-tag)"
-            fi
-            if [ -z "${CIRCLE_TAG}" -a "${CIRCLE_BRANCH}" == "helm-v3-dev" ]; then
-              echo "$DOCKER_FLUXCD_PASSWORD" | docker login --username "$DOCKER_FLUXCD_USER" --password-stdin
-
-              docker tag "docker.io/fluxcd/helm-operator:$(docker/image-tag)" "docker.io/fluxcd/helm-operator-prerelease:$(docker/image-tag)"
-              docker push "docker.io/fluxcd/helm-operator-prerelease:$(docker/image-tag)"
-            fi
-      - deploy:
-          name: Maybe push release image
-          command: |
-            if echo "${CIRCLE_TAG}" | grep -Eq "^v[0-9]+(\.[0-9]+)*(-[a-z0-9]+)?$"; then
-              echo "$DOCKER_FLUXCD_PASSWORD" | docker login --username "$DOCKER_FLUXCD_USER" --password-stdin
-              docker push "docker.io/fluxcd/helm-operator:$(docker/image-tag)"
-
-              # Republish tag _without_ the `v` prefix, for historical reasons
-              git config --global user.email fluxcdbot@users.noreply.github.com
-              git config --global user.name fluxcdbot
-
-              REPOSITORY="https://fluxcdbot:${GITHUB_TOKEN}@github.com/fluxcd/helm-operator.git"
-              git remote set-url origin ${REPOSITORY}
-
-              # Remove `v` prefix using bash string manipulation
-              VLESS_TAG=${CIRCLE_TAG#v}
-              git tag ${VLESS_TAG} $(git rev-list -n1 ${CIRCLE_TAG})
-              git push origin ${VLESS_TAG}
-            fi
-
-  helm:
+  helm_chart:
     docker:
       - image: circleci/golang:1.13
     steps:
@@ -162,17 +218,30 @@ jobs:
             else
               echo "Not a chart release! Skip chart publish"
             fi
+
 workflows:
   version: 2
   build-and-push:
     jobs:
+      - test_unit
+      - test_generated
+      - test_docs
       - build:
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*(-[a-z0-9]+)?/
+          requires:
+            - test_unit
+            - test_generated
+            - test_docs
+      - test_e2e:
+          helm_version: v2
+          requires:
+            - build
+      - test_e2e:
+          helm_version: v3
+          requires:
+            - build
   release-helm:
     jobs:
-      - helm:
+      - helm_chart:
           filters:
             branches:
               ignore: /.*/
