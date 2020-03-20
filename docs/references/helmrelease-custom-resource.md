@@ -1,5 +1,4 @@
-# HelmRelease Custom Resource
-<div class="section">
+# `HelmRelease` Custom Resource
 <p>Packages:</p>
 <ul class="simple">
 <li>
@@ -16,8 +15,9 @@ Resource Types:
 <h3 id="helm.fluxcd.io/v1.HelmRelease">HelmRelease
 </h3>
 <p>HelmRelease is a type to represent a Helm release.</p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -66,7 +66,7 @@ HelmReleaseSpec
 </em>
 </td>
 <td>
-<table class="docutils" border="1">
+<table>
 <tr>
 <td>
 <code>helmVersion</code><br>
@@ -89,7 +89,7 @@ ChartSource
 </em>
 </td>
 <td>
-<table class="docutils" border="1">
+<table>
 <tr>
 <td>
 <code>GitChartSource</code><br>
@@ -286,7 +286,7 @@ HelmReleaseStatus
 </em>
 </td>
 <td>
-<table class="docutils" border="1">
+<table>
 <tr>
 <td>
 <code>releaseName</code><br>
@@ -373,14 +373,16 @@ has the chart which it refers to been fetched.</p>
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.ChartFileSelector">ChartFileSelector
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.ValuesFromSource">ValuesFromSource</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -416,14 +418,16 @@ the source, due to it e.g. being temporarily unavailable.</p>
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.ChartSource">ChartSource
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.HelmReleaseSpec">HelmReleaseSpec</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -466,6 +470,7 @@ RepoChartSource
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.ConditionStatus">ConditionStatus
 (<code>string</code> alias)</h3>
 <p>
@@ -478,8 +483,9 @@ RepoChartSource
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.OptionalConfigMapKeySelector">OptionalConfigMapKeySelector</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -527,14 +533,16 @@ string
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.ExternalSourceSelector">ExternalSourceSelector
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.ValuesFromSource">ValuesFromSource</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -570,6 +578,7 @@ the source, due to it e.g. being temporarily unavailable.</p>
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.GitChartSource">GitChartSource
 </h3>
 <p>
@@ -577,8 +586,9 @@ the source, due to it e.g. being temporarily unavailable.</p>
 <a href="#helm.fluxcd.io/v1.ChartSource">ChartSource</a>)
 </p>
 <p>GitChartSource describes a Helm chart sourced from Git.</p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -655,14 +665,16 @@ chart dependencies <em>must</em> be present for this to succeed.</p>
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.HelmReleaseCondition">HelmReleaseCondition
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.HelmReleaseStatus">HelmReleaseStatus</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -694,7 +706,7 @@ ConditionStatus
 </td>
 <td>
 <p>Status of the condition, one of (&lsquo;True&rsquo;, &lsquo;False&rsquo;, &lsquo;Unknown&rsquo;).</p>
-<table class="docutils" border="1">
+<table>
 </table>
 </td>
 </tr>
@@ -757,6 +769,7 @@ transition, complementing reason.</p>
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.HelmReleaseConditionType">HelmReleaseConditionType
 (<code>string</code> alias)</h3>
 <p>
@@ -774,8 +787,9 @@ Valid HelmReleaseConditionType values are:
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.HelmRelease">HelmRelease</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -805,7 +819,7 @@ ChartSource
 </em>
 </td>
 <td>
-<table class="docutils" border="1">
+<table>
 <tr>
 <td>
 <code>GitChartSource</code><br>
@@ -992,6 +1006,7 @@ HelmValues
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.HelmReleaseStatus">HelmReleaseStatus
 </h3>
 <p>
@@ -999,8 +1014,9 @@ HelmValues
 <a href="#helm.fluxcd.io/v1.HelmRelease">HelmRelease</a>)
 </p>
 <p>HelmReleaseStatus contains status information about an HelmRelease.</p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -1091,14 +1107,16 @@ has the chart which it refers to been fetched.</p>
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.HelmValues">HelmValues
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.HelmReleaseSpec">HelmReleaseSpec</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -1121,6 +1139,7 @@ Work around for <a href="https://github.com/kubernetes-sigs/kubebuilder/issues/5
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.HelmVersion">HelmVersion
 (<code>string</code> alias)</h3>
 <p>
@@ -1142,8 +1161,9 @@ Valid HelmVersion values are:
 <a href="#helm.fluxcd.io/v1.RepoChartSource">RepoChartSource</a>, 
 <a href="#helm.fluxcd.io/v1.SecretKeySelector">SecretKeySelector</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -1164,14 +1184,16 @@ string
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.OptionalConfigMapKeySelector">OptionalConfigMapKeySelector
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.ValuesFromSource">ValuesFromSource</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -1208,14 +1230,16 @@ bool
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.OptionalSecretKeySelector">OptionalSecretKeySelector
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.ValuesFromSource">ValuesFromSource</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -1252,6 +1276,7 @@ bool
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.RepoChartSource">RepoChartSource
 </h3>
 <p>
@@ -1260,8 +1285,9 @@ bool
 </p>
 <p>RepoChartSources describes a Helm chart sourced from a Helm
 repository.</p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -1324,14 +1350,16 @@ NOT IMPLEMENTED!</p>
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.Rollback">Rollback
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.HelmReleaseSpec">HelmReleaseSpec</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -1447,14 +1475,16 @@ the release as successful.</p>
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.SecretKeySelector">SecretKeySelector
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.OptionalSecretKeySelector">OptionalSecretKeySelector</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -1502,14 +1532,16 @@ string
 </tbody>
 </table>
 </div>
+</div>
 <h3 id="helm.fluxcd.io/v1.ValuesFromSource">ValuesFromSource
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.HelmReleaseSpec">HelmReleaseSpec</a>)
 </p>
-<div class="wy-table-responsive">
-<table class="docutils" border="1">
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
 <thead>
 <tr>
 <th>Field</th>
@@ -1576,7 +1608,7 @@ ChartFileSelector
 </tbody>
 </table>
 </div>
+</div>
 <div class="admonition note">
 <p class="last">This page was automatically generated with <code>gen-crd-api-reference-docs</code></p>
-</div>
 </div>

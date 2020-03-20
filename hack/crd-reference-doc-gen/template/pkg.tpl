@@ -2,48 +2,46 @@
 # `HelmRelease` Custom Resource
 
 <!-- Generated with gen-crd-api-reference-docs {{ with .gitCommit }} on git commit {{ . }}{{end}}. -->
-<div class="section">
-    {{ with .packages}}
-        <p>Packages:</p>
-        <ul class="simple">
-            {{ range . }}
-                <li>
-                    <a href="#{{- packageAnchorID . -}}">{{ packageDisplayName . }}</a>
-                </li>
-            {{ end }}
-        </ul>
-    {{ end}}
-
-    {{ range .packages }}
-        <h2 id="{{- packageAnchorID . -}}">
-            {{- packageDisplayName . -}}
-        </h2>
-
-        {{ with (index .GoPackages 0 )}}
-            {{ with .DocComments }}
-                {{ safe (renderComments .) }}
-            {{ end }}
+{{ with .packages}}
+    <p>Packages:</p>
+    <ul class="simple">
+        {{ range . }}
+            <li>
+                <a href="#{{- packageAnchorID . -}}">{{ packageDisplayName . }}</a>
+            </li>
         {{ end }}
+    </ul>
+{{ end}}
 
-        Resource Types:
+{{ range .packages }}
+    <h2 id="{{- packageAnchorID . -}}">
+        {{- packageDisplayName . -}}
+    </h2>
 
-        <ul class="simple">
-        {{- range (visibleTypes (sortedTypes .Types)) -}}
-            {{ if isExportedType . -}}
-                <li>
-                    <a href="{{ linkForType . }}">{{ typeDisplayName . }}</a>
-                </li>
-            {{- end }}
-        {{- end -}}
-        </ul>
-
-        {{ range (visibleTypes (sortedTypes .Types))}}
-            {{ template "type" .  }}
+    {{ with (index .GoPackages 0 )}}
+        {{ with .DocComments }}
+            {{ safe (renderComments .) }}
         {{ end }}
     {{ end }}
 
-    <div class="admonition note">
-        <p class="last">This page was automatically generated with <code>gen-crd-api-reference-docs</code></p>
-    </div>
+    Resource Types:
+
+    <ul class="simple">
+    {{- range (visibleTypes (sortedTypes .Types)) -}}
+        {{ if isExportedType . -}}
+            <li>
+                <a href="{{ linkForType . }}">{{ typeDisplayName . }}</a>
+            </li>
+        {{- end }}
+    {{- end -}}
+    </ul>
+
+    {{ range (visibleTypes (sortedTypes .Types))}}
+        {{ template "type" .  }}
+    {{ end }}
+{{ end }}
+
+<div class="admonition note">
+    <p class="last">This page was automatically generated with <code>gen-crd-api-reference-docs</code></p>
 </div>
 {{ end }}

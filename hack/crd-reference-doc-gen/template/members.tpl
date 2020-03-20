@@ -33,7 +33,7 @@
                     {{ end }}
 
                     {{ if or (eq (fieldName .) "spec") (eq (fieldName .) "status") (eq (fieldName .) "chart") }}
-                        <table class="docutils" border="1">
+                        <table>
                             {{ template "members" .Type }}
                         </table>
                     {{ end }}
