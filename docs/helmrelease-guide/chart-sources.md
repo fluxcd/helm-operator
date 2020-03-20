@@ -1,7 +1,7 @@
 # Chart sources
 
 In the introduction we created a simple `HelmRelease` that made use of a chart
-from a Helm repository, but the Helm operator does support multiple chart
+from a Helm repository, but the Helm Operator does support multiple chart
 sources, and virtually any protocol and/or source that can be shelled-in
 through a [Helm downloader plugin](#extending-the-supported-helm-repository-protocols).
 
@@ -19,7 +19,7 @@ different behaviour.
 
 - Are immutable and non-moving (i.e. no updates for the chart itself are
   received unless the `.chart.version` is changed).
-- Are cached for the lifetime duration of the Helm operator pod.
+- Are cached for the lifetime duration of the Helm Operator pod.
 - Are shared between `HelmRelease` resources making use of the same chart
   and version.
 - Require a custom `repositories.yaml` to be [mounted and imported](#authentication-and-certificates)
@@ -74,18 +74,18 @@ In the [introduction](introduction.md) you already had a brief exposure to this
 chart source, and in essence Helm repositories are the simplest way to make use
 of a Helm chart in a `HelmRelease`.
 
-To be able to perform releases with them the Helm operator only makes use of
+To be able to perform releases with them the Helm Operator only makes use of
 native Helm functionalities and a tiny bit of glue to wire things together:
 
 It will first attempt a reverse lookup for a repository alias in the local
 `repositories.yaml` for the defined `repository` URL, if an alias is found it
 will use this alias with the given `name` and `version` to instruct Helm to
-fetch the chart to a cache path defined by the Helm operator.
+fetch the chart to a cache path defined by the Helm Operator.
 
 If the reverse lookup failed and no alias was found for the given URL it will
 fallback to attempting to retrieve the absolute URL of the chart from the index
 of the given `repository` URL, this URL is then used to instruct Helm to fetch
-the chart to a cache path defined by the Helm operator.
+the chart to a cache path defined by the Helm Operator.
 
 When this does not succeed either a status condition of type `ChartFetched`
 will be recorded on the `HelmRelease` resource with the returned error.
@@ -99,7 +99,7 @@ Custom Resource does include a field `chartPullSecret` for attaching a
 `repositories.yaml` file, but this has not been actually implemented.
 
 As a workaround, you can mount a `repositories.yaml` file with authentication
-already configured (and any required certificates) into the Helm operator
+already configured (and any required certificates) into the Helm Operator
 container, and import it using the `--helm-repository-import` flag.
 
 First, create a new empty `repositories.yaml` file _locally_:
@@ -127,7 +127,7 @@ helm repo add \
 
 If you need to define any certificates, edit the respective `caFile`, `certFile`
 and `keyFile` values of the entry you just added to the mount paths you will
-later add to the Helm operator _container_  (example path used here is
+later add to the Helm Operator _container_  (example path used here is
 `/var/certs/*`):
 
 ```yaml
@@ -146,7 +146,7 @@ kubectl create secret generic flux-helm-repositories \
 ```
 
 In case you defined any certificate entries, also create a secret for those
-files in the same namespace as you are running the Helm operator:
+files in the same namespace as you are running the Helm Operator:
 
 ```sh
 kubectl create secret generic flux-helm-repository-certs \
@@ -156,12 +156,12 @@ kubectl create secret generic flux-helm-repository-certs \
 ```
 
 Mount the created secret(s) by adding to `volumes` in the pod spec of the Helm
-operator deployment, and `volumeMounts` of the Helm operator container. A good
+operator deployment, and `volumeMounts` of the Helm Operator container. A good
 mount path for the `repositories.yaml` file that does not give conflicts with
 any Helm paths is `/root/.helm/repository/repositories.yaml`. Examples of this
 can be found in the commented-out sections of the [example deployment](https://github.com/fluxcd/helm-operator/blob/master/deploy/helm-operator-deployment.yaml).
 
-Lastly, configure the `--helm-repository-import` argument on the Helm operator
+Lastly, configure the `--helm-repository-import` argument on the Helm Operator
 container for your enabled Helm versions:
 
 ```yaml
@@ -186,7 +186,7 @@ container for your enabled Helm versions:
 
 ### Extending the supported Helm repository protocols
 
-By default, the Helm operator is able to pull charts from repositories using
+By default, the Helm Operator is able to pull charts from repositories using
 HTTP/S. It is however possible to extend the supported protocols by making use
 of a [Helm downloader plugin](https://helm.sh/docs/topics/plugins/#downloader-plugins),
 this allows you for example to use charts hosted on [Amazon S3](https://github.com/hypnoglow/helm-s3)
@@ -196,7 +196,7 @@ or [Google Cloud Storage](https://github.com/hayorov/helm-gcs).
 
 The easiest way to install a plugin so that it becomes accessible to the Helm
 operator to use an [init container](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
-and one of the available `helm` binaries in the Helm operator's image and a
+and one of the available `helm` binaries in the Helm Operator's image and a
 volume mount. For the Helm chart,
 [refer to the chart the documentation](https://github.com/fluxcd/helm-operator/tree/master/chart/helm-operator#use-helm-downloader-plugins).
 
@@ -209,7 +209,7 @@ volume mount. For the Helm chart,
 | Helm 3  | `/root/.cache/helm/plugins`     | `/root/.local/share/helm/plugins` |
 
 Add a volume entry of [type `emptyDir`](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir)
-to the deployment of your Helm operator, this is where the plugins will be
+to the deployment of your Helm Operator, this is where the plugins will be
 stored for the lifetime duration of the pod:
    
 ```yaml
@@ -247,7 +247,7 @@ spec:
      subPath: v3-config
 ```
 
-Last, add the same volume mounts to the Helm operator container so that the
+Last, add the same volume mounts to the Helm Operator container so that the
 downloaded plugin becomes available:
 
 ```yaml
@@ -288,7 +288,7 @@ spec:
 
 ## Git repositories
 
-Besides the extensive support for Helm repositories, the Helm operator also
+Besides the extensive support for Helm repositories, the Helm Operator also
 offers support for charts from Git repository sources. You can refer to a chart
 from a _Git_ repository, rather than a Helm repository, with a `.chart` section
 like this:
@@ -312,14 +312,14 @@ The definition of the listed keys is as follows:
    hash. When omitted, defaults to `master` or the configured `--git-default-ref`.
 * `path`: The path of the chart relative to the root of the Git repository.
 
-In this case, the Helm operator will start a mirror for the Git repository, and
+In this case, the Helm Operator will start a mirror for the Git repository, and
 a temporary working clone at the current `HEAD` of the defined `ref` of the
 mirror will be created before performing a release with the `path` defined
 chart.
 
 Mirrored Git repositories are polled for changes by fetching from the upstream
 on the configured `--git-poll-interval` (defaults to 5 minutes). When a change
-is detected the Helm operator will collect all `HelmRelease` resources making
+is detected the Helm Operator will collect all `HelmRelease` resources making
 use of the mirror and inspect if the change updates the chart at the `path`
 given, when this is true it will schedule a new release and an upgrade will
 follow.
@@ -332,20 +332,20 @@ returned error.
 ### Authentication
 
 Unauthenticated cloning from Git repositories is possible for public Git
-repositories by making the Helm operator fetch them over HTTP/S. It is
+repositories by making the Helm Operator fetch them over HTTP/S. It is
 however likely that most of the time you will be using a Git repository
 chart source some form of authentication is required before the repository
-can be accessed by the Helm operator.
+can be accessed by the Helm Operator.
 
 !!! tip
-    Because the Helm operator does not perform any write operations on the Git
+    Because the Helm Operator does not perform any write operations on the Git
     repository, credentials with read permissions are always sufficient.
 
 #### SSH
 
-For Git over SSH the Helm operator makes use of private keys available in the
+For Git over SSH the Helm Operator makes use of private keys available in the
 container. Because of this, any `HelmRelease` under the management of a
-Helm operator instance has access to the same repositories once a private key
+Helm Operator instance has access to the same repositories once a private key
 has been provided and no additional configuration is required for the resource
 itself other than defining the Git repository in the `.chart.repo`.
 
@@ -357,10 +357,10 @@ kubectl create secret generic flux-git-deploy \
     --from-file=identity=<path to key file>
 ```
 
-Next, mount it into the Helm operator container as shown in the
+Next, mount it into the Helm Operator container as shown in the
 [example deployment](https://github.com/fluxcd/helm-operator/blob/master/deploy/helm-operator-deployment.yaml).
 
-The default `ssh_config` that ships with the Helm operator's Docker image
+The default `ssh_config` that ships with the Helm Operator's Docker image
 expects an identity file at `/etc/fluxd/ssh/identity`, which is where it will
 be if you just uncomment the blocks from the example.
 
@@ -423,7 +423,7 @@ spec:
 
 #### HTTPS
 
-For Git over HTTPS the Helm operator offers two ways of providing credentials.
+For Git over HTTPS the Helm Operator offers two ways of providing credentials.
 
 ##### Per-resource credentials using .chart.secretRef
 
@@ -458,7 +458,7 @@ spec:
 It is also possible to provide `HelmRelease` resources access to global
 credentials via a
 [`.netrc` file](https://ec.haxx.se/usingcurl/usingcurl-netrc) mounted in the
-`/root/` directory of the Helm operator container.
+`/root/` directory of the Helm Operator container.
 
 !!! caution
      This approach suffers essentially from `the same caveat as
@@ -487,7 +487,7 @@ spec:
 
 ### Dependency updates
 
-For a chart from a Git repository the Helm operator runs a dependency update
+For a chart from a Git repository the Helm Operator runs a dependency update
 by default, this is done through an action that equals to `helm dep update`.
 You may want to disable this behaviour, for example because your dependencies
 are already in git, to do so set `skipDepUpdate` to `true` in `.chart`:
@@ -501,14 +501,14 @@ spec:
     skipDepUpdate: true
 ```
 
-### Notifying the Helm operator about Git changes
+### Notifying the Helm Operator about Git changes
 
-As earlier laid out in this guide the Helm operator fetches the upstream of
+As earlier laid out in this guide the Helm Operator fetches the upstream of
 mirrored Git repositories on the configured `--git-poll-interval` (defaults
 to 5 minutes). In some scenarios (think CI/CD), you may not want to wait for
 this interval to occur.
 
-To help you with this the Helm operator serves a HTTP API endpoint to
+To help you with this the Helm Operator serves a HTTP API endpoint to
 instruct it to immediately refresh all Git mirrors:
 
 ```console

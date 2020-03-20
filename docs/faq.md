@@ -10,7 +10,7 @@ more details [here](tutorials/get-started.md).
 Flux doesn't delete resources by default, you can enable Flux garbage collection feature
 by passing the command-line flag `--sync-garbage-collection` to `fluxd`.
 
-With Flux garbage collection enabled, Helm operator will receive the delete event and will purge the Helm release.
+With Flux garbage collection enabled, Helm Operator will receive the delete event and will purge the Helm release.
 
 ### I've manually deleted a Helm release. Why is Flux not able to restore it?
 
@@ -40,7 +40,7 @@ there are two other tweaks possible:
 
 1. increasing the `--charts-sync-interval`; this causes the queue to be less heavy occupied at the
    cost of detecting mutations less rapidly
-1. using multiple Helm operator instances, i.e. by having one operator per namespace; namespace
+1. using multiple Helm Operator instances, i.e. by having one operator per namespace; namespace
    scoping is possible by configuring the `--allow-namespace` flag
 
 ### I have a dedicated Kubernetes cluster per environment and I want to use the same Git repo for all. How can I do that?

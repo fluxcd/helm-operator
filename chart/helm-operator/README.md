@@ -1,4 +1,4 @@
-# Flux Helm Operator
+# Helm Operator chart
 
 This chart bootstraps Flux [Helm Operator](https://github.com/fluxcd/helm-operator) on
 a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
@@ -245,7 +245,7 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `serviceAccount.name`                             | `flux`                                               | Service account to be used
 | `clusterRole.create`                              | `true`                                               | If `false`, Helm Operator will be restricted to the namespace where is deployed
 | `createCRD`                                       | `false`                                              | Create the HelmRelease CRD
-| `service.type`                                    | `ClusterIP`                                          | Service type to be used (exposing the Helm operator API outside of the cluster is not advised)
+| `service.type`                                    | `ClusterIP`                                          | Service type to be used (exposing the Helm Operator API outside of the cluster is not advised)
 | `service.port`                                    | `3030`                                               | Service port to be used
 | `updateChartDeps`                                 | `true`                                               | Update dependencies for charts
 | `git.pollInterval`                                | `git.pollInterval`                                   | Period on which to poll git chart sources for changes
@@ -259,7 +259,7 @@ The following tables lists the configurable parameters of the Flux chart and the
 | `statusUpdateInterval`                            | `None`                                               | Period on which to update the Helm release status in `HelmRelease` resources
 | `workers`                                         | `None`                                               | Amount of workers processing releases
 | `logFormat`                                       | `fmt`                                                | Log format (fmt or json)
-| `logReleaseDiffs`                                 | `false`                                              | Helm operator should log the diff when a chart release diverges (possibly insecure)
+| `logReleaseDiffs`                                 | `false`                                              | Helm Operator should log the diff when a chart release diverges (possibly insecure)
 | `allowNamespace`                                  | `None`                                               | If set, this limits the scope to a single namespace. If not specified, all namespaces will be watched
 | `helm.versions`                                   | `v2,v3`                                              | Helm versions supported by this operator instance, if v2 is specified then Tiller is required
 | `tillerNamespace`                                 | `kube-system`                                        | Namespace in which the Tiller server can be found

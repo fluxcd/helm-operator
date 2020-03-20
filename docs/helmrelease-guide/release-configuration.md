@@ -3,16 +3,16 @@
 When making use of the `helm` binary you can pass along various flags while
 making a release that influence how a release is performed. Most of these flags
 are also available as parameters in the `spec` of the `HelmRelease` resource,
-others are not available for `helm` but fine-tune how the Helm operator itself
+others are not available for `helm` but fine-tune how the Helm Operator itself
 functions.
 
 This section of the guide documents the parameters, and the effect they have
-when the Helm operator performs a release for the `HelmRelease` they are
+when the Helm Operator performs a release for the `HelmRelease` they are
 configured on.
 
 ## Targeting a Helm version
 
-When you install the Helm operator with multiple Helm versions enabled, the
+When you install the Helm Operator with multiple Helm versions enabled, the
 lowest enabled version is targeted by default. To target another version or to
 ensure it does not accidentally target the wrong version due to a configuration
 mistake, you can set the `.helmVersion`:
@@ -27,7 +27,7 @@ spec:
 It is possible to target a different namespace for the release than the
 `HelmRelease` lives in using `.targetNamespace`, this can come in handy when
 you have to deploy releases into a namespace that is also managed by another
-team running their own namespace restricted Helm operator in this same
+team running their own namespace restricted Helm Operator in this same
 namespace:
 
 ```yaml
@@ -37,7 +37,7 @@ spec:
 
 ## Specifying a release name
 
-The default release name used by by the Helm operator is a composition of the
+The default release name used by by the Helm Operator is a composition of the
 following values:
 
 ```text

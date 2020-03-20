@@ -1,6 +1,6 @@
 # Rollbacks
 
-From time to time a release made by the Helm operator may fail, this section
+From time to time a release made by the Helm Operator may fail, this section
 of the guide will explain how you can recover from a failed release by enabling
 rollbacks.
 
@@ -12,7 +12,7 @@ rollbacks.
 
 ## Enabling rollbacks
 
-When rollbacks for a `HelmRelease` are enabled, the Helm operator will detect
+When rollbacks for a `HelmRelease` are enabled, the Helm Operator will detect
 a faulty upgrade and instruct Helm to perform a rollback, it will not attempt
 a new upgrade unless it detects a change in values and/or the chart, or [retries
 have been enabled](#enabling-retries-of-rolled-back-releases). Changes are
@@ -57,9 +57,9 @@ The definition of the listed keys is as follows:
 ## Enabling retries of rolled back releases
 
 Sometimes the cause of an upgrade failure may be transient, to guard yourself
-against this it is possible to instruct the Helm operator to retry the upgrade
+against this it is possible to instruct the Helm Operator to retry the upgrade
 of a rolled back release by setting `.rollback.retry` to `true`. This will
-cause the Helm operator to retry the upgrade until the `.rollback.maxRetries`
+cause the Helm Operator to retry the upgrade until the `.rollback.maxRetries`
 is reached:
 
 ```yaml

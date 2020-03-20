@@ -4,7 +4,7 @@ The intention of this guide is to give you more detailed information on various
 elements of the `HelmRelease` Custom Resource. You can follow it in one take,
 use it as a more explanatory reference, or a combination of both.
 
-It assumes you have the Helm operator already installed in your cluster, and
+It assumes you have the Helm Operator already installed in your cluster, and
 for the sake of simplicity it was written while making use of Helm 3 but tries
 not to presume a specific enabled Helm version.
 
@@ -30,7 +30,7 @@ spec:
 ```
 
 The `spec.chart` object is the only mandatory property of the `HelmRelease`
-and defines the Helm chart that should be installed by the Helm operator. This
+and defines the Helm chart that should be installed by the Helm Operator. This
 `HelmRelease` will manage [`stefanprodan/podinfo`](https://github.com/stefanprodan/podinfo)
 
 > a tiny web application made with Go that showcases best practices of running
@@ -38,7 +38,7 @@ and defines the Helm chart that should be installed by the Helm operator. This
 
 from a [Helm repository chart source](chart-sources.md#helm-repositories).
 
-Applying this to the cluster and making the Helm operator do the release pseudo
+Applying this to the cluster and making the Helm Operator do the release pseudo
 equals to a human running the following `helm` commands:
 
 ```console
@@ -61,7 +61,7 @@ commands should stand out:
 1. The `spec.chart.version` is mandatory.
 
    The reasoning behind this is the same as the explanation given above.
-1. The default release name used by the Helm operator is composed from the
+1. The default release name used by the Helm Operator is composed from the
   `metadata.namespace` and the `metadata.name` of the `HelmRelease` resource
   (`<namespace>-<name>`).
   
@@ -75,7 +75,7 @@ using `kubectl`:
 $ kubectl apply -f podinfo.yaml
 ```
 
-Take a look at the logs of the Helm operator deployment and you will see the
+Take a look at the logs of the Helm Operator deployment and you will see the
 Helm installation was performed almost instantly after applying the resource:
 
 ```console

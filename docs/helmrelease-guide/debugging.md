@@ -3,7 +3,7 @@
 Even after having read everything this guide has to offer it is possible that a
 `HelmRelease` fails and you want to debug it to get to the cause. This may be
 a bit harder than you were used to while working with just `helm` because you
-are no longer in direct controlm but the Helm operator is doing the work for
+are no longer in direct controlm but the Helm Operator is doing the work for
 you.
 
 This last section of the guide will give you some pointers on how to debug a
@@ -11,7 +11,7 @@ failing `HelmRelease` resource.
 
 ## Getting the reason of failure
 
-If a release fails the reason of failure will be logged in the Helm operator's
+If a release fails the reason of failure will be logged in the Helm Operator's
 logs _and_ recorded as a condition on the `HelmRelease` resource. You can view
 this condition by describing the `HelmRelease` resource using `kubectl`:
 

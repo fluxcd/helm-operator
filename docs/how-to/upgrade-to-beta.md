@@ -1,12 +1,12 @@
 # Upgrade from alpha (<=0.4.0) to beta
 
-The Helm operator has undergone changes that necessitate some changes
+The Helm Operator has undergone changes that necessitate some changes
 to custom resources, and the deployment of the operator itself.
 
-The central difference is that the Helm operator now works with
+The central difference is that the Helm Operator now works with
 resources of the kind `HelmRelease` in the API version
 `flux.weave.works/v1beta1`, which have a different format to the
-custom resources used by the old Helm operator (`FluxHelmRelease`).
+custom resources used by the old Helm Operator (`FluxHelmRelease`).
 
 Here are some things to know:
 
@@ -53,7 +53,7 @@ as described below.
 ### Using manifests
 
 You will need to adapt any existing manifest that you use to run the
-Helm operator. The arguments to the operator executable have changed,
+Helm Operator. The arguments to the operator executable have changed,
 since it no longer needs the git repo to be specified (and in some
 cases, just to tidy up):
 
@@ -124,7 +124,7 @@ spec:
       tag: v1
 ```
 
-Say the arguments given to the old Helm operator were
+Say the arguments given to the old Helm Operator were
 
 ```yaml
 args:

@@ -1,11 +1,11 @@
-# Get started with the Helm operator and Tiller
+# Get started with the Helm Operator and Tiller
 
 ## Install Helm / Tiller
 
 Generate certificates for Tiller and Flux. This will provide a CA, servercerts for Tiller and client certs for Helm / Flux.
 
 !!! note
-         When creating the certificate for Tiller the Common Name should match the hostname you are connecting to from the Helm operator.
+         When creating the certificate for Tiller the Common Name should match the hostname you are connecting to from the Helm Operator.
 
 The following script can be used for that (requires [cfssl](https://github.com/cloudflare/cfssl)):
 

@@ -1,6 +1,6 @@
-# Helm operator
+# Helm Operator
 
-![Flux Helm Operator diagram](_files/fluxcd-helm-operator-diagram.png)
+![Helm Operator diagram](_files/fluxcd-helm-operator-diagram.png)
 
 ## Helm Operator features
 
@@ -29,8 +29,8 @@
 
 ## Tutorials
 
-- [How to bootstrap Helm operator using Kustomize](tutorials/get-started-kustomize.md)
-- [Get started with the Helm operator and Tiller](tutorials/get-started.md)
+- [How to bootstrap Helm Operator using Kustomize](tutorials/get-started-kustomize.md)
+- [Get started with the Helm Operator and Tiller](tutorials/get-started.md)
 
 ## References
 

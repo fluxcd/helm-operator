@@ -1,7 +1,7 @@
 # Reconciliation and upgrades
 
 Now that you know the in's and out's of configuring a release, we are going to
-have a better look at how the Helm operator performs the actual Helm release.
+have a better look at how the Helm Operator performs the actual Helm release.
 
 ## Reconciliation
 
@@ -11,14 +11,14 @@ operator instance are also queued for reconciliation every
 [`--charts-sync-interval`](../references/operator.md) (defaults to 3
 minutes).
 
-Once the queued resource has been picked up by a worker, the Helm operator
+Once the queued resource has been picked up by a worker, the Helm Operator
 attempts to receive the chart for the resource and performs several [safe guard
 checks](#what-triggers-an-upgrade), if those do not result in an error or
 instruct to return early, the Helm installation or upgrade is performed.
 
 ## What triggers an upgrade
 
-To prevent spurious upgrades from happening the Helm operator performs several
+To prevent spurious upgrades from happening the Helm Operator performs several
 safe guard checks before performing the actual upgrade. Bellow you will find an
 overview of the checks it performs, and what effect they have.
 
@@ -46,7 +46,7 @@ being performed, otherwise no action is taken:
 
 ## The antecedent annotation
 
-Right after the Helm operator performs a Helm release for the
+Right after the Helm Operator performs a Helm release for the
 `HelmRelease` resource, all resources that were the result of this release
 are annotated with the antecedent annotation `helm.fluxcd.io/antecedent`,
 the value of the annotation equals to `<namespace>:helmrelease/<name>`.

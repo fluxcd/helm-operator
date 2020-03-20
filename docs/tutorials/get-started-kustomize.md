@@ -1,4 +1,4 @@
-# How to bootstrap Helm operator using Kustomize
+# How to bootstrap Helm Operator using Kustomize
 
 This guide shows you how to use Kustomize to bootstrap Helm Operator on a Kubernetes cluster.
 
@@ -49,7 +49,7 @@ repositories:
 EOF
 ```
 
-Create a kustomization file and use the Helm operator deploy YAMLs as base:
+Create a kustomization file and use the Helm Operator deploy YAMLs as base:
 
 ```sh
 cat > fluxcd/kustomization.yaml <<EOF
@@ -68,12 +68,12 @@ EOF
 ```
 
 !!! note
-         If you want to install a specific Helm operator release,
+         If you want to install a specific Helm Operator release,
          add the version number to the base URL:
          `github.com/fluxcd/helm-operator//deploy?ref=v1.0.0-rc2`
 
 
-Create a patch file for Helm operator and mount the repositories secret:
+Create a patch file for Helm Operator and mount the repositories secret:
 
 ```sh
 cat > fluxcd/patch.yaml <<EOF
@@ -108,7 +108,7 @@ In the next step, deploy Flux to the cluster (you'll need kubectl **1.14** or ne
 kubectl apply -k fluxcd
 ```
 
-Wait for Helm operator to start:
+Wait for Helm Operator to start:
 
 ```sh
 kubectl -n flux rollout status deployment/flux-helm-operator

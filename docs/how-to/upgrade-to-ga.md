@@ -1,10 +1,10 @@
 # Upgrade from beta (>=0.5.0) to stable (>=1.0.0)
 
 Due to the Flux CD project joining the CNCF Sandbox and the API
-becoming stable, the Helm operator has undergone changes that
+becoming stable, the Helm Operator has undergone changes that
 necessitate some changes to your `HelmRelease` resources.
 
-The central difference is that the Helm operator now works with
+The central difference is that the Helm Operator now works with
 resources of the kind `HelmRelease` in the API version
 `helm.fluxcd.io/v1`, the format of the resource is backwards
 compatible.

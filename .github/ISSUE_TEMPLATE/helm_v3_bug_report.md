@@ -1,6 +1,6 @@
 ---
 name: Helm v3 bug report
-about: Create a bug report for Flux Helm operator with Helm v3
+about: Create a bug report for Helm Operator with Helm v3
 title: ''
 labels: blocked needs validation, bug, helm-v3
 assignees: ''
@@ -26,7 +26,7 @@ If applicable, please provide logs. In a standard stand-alone installation, you'
 
 **Additional context**
 Add any other context about the problem here, e.g 
-- Helm operator version: 
+- Helm Operator version: 
 - Targeted Helm version:
 - Kubernetes version:
 - Git provider:

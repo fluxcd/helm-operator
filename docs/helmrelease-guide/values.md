@@ -3,7 +3,7 @@
 Now that we have a good understanding of where we can get our charts from and
 what they have to offer, it is time to examine how you can supply
 [values](https://helm.sh/docs/glossary/#values-values-files-values-yaml) to
-be used with the chart when the Helm operator makes a release.
+be used with the chart when the Helm Operator makes a release.
 
 ### Inlined values
 
