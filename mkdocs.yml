@@ -37,8 +37,7 @@ markdown_extensions:
   - pymdownx.superfences
 
 nav:
-  - Overview:
-    - Overview: index.md
+  - Overview: index.md
   - Tutorials:
     - How to bootstrap Helm operator using Kustomize: tutorials/get-started-kustomize.md
     - Get started with the Helm operator and Tiller: tutorials/get-started.md

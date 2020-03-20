@@ -176,13 +176,13 @@ container for your enabled Helm versions:
     Adding all entries to the same file and/or secret is thus not a requirement.
 
 !!! hint
-         For the `Helm chart
-         <https://github.com/fluxcd/helm-operator/tree/master/chart/helm-operator>`_
-         this all can be done by setting ``configureRepositories.enable`` to ``true``,
-         it will automatically pick up the ``flux-helm-reposities`` secret created
-         earlier in this guide and configure the ``--helm-repository-import`` flag for
-         the enabled Helm versions. The certificate secret can be mounted by
-         configuring the ``extraVolumes`` and ``extraVolumeMounts`` values.
+    For the [Helm chart](
+    https://github.com/fluxcd/helm-operator/tree/master/chart/helm-operator),
+    this all can be done by setting ``configureRepositories.enable`` to ``true``,
+    it will automatically pick up the ``flux-helm-reposities`` secret created
+    earlier in this guide and configure the ``--helm-repository-import`` flag for
+    the enabled Helm versions. The certificate secret can be mounted by
+    configuring the ``extraVolumes`` and ``extraVolumeMounts`` values.
 
 ### Extending the supported Helm repository protocols
 
@@ -281,10 +281,10 @@ spec:
 ```
 
 !!! caution
-        Most downloader plugins expect some form of credentials to be present to be
-        able to download a chart, make sure those are available in the Helm
-        operator's container before attempting to make use of the newly added
-        protocol.
+    Most downloader plugins expect some form of credentials to be present to be
+    able to download a chart, make sure those are available in the Helm
+    operator's container before attempting to make use of the newly added
+    protocol.
 
 ## Git repositories
 
@@ -338,8 +338,8 @@ chart source some form of authentication is required before the repository
 can be accessed by the Helm operator.
 
 !!! tip
-        Because the Helm operator does not perform any write operations on the Git
-        repository, credentials with read permissions are always sufficient.
+    Because the Helm operator does not perform any write operations on the Git
+    repository, credentials with read permissions are always sufficient.
 
 #### SSH
 
@@ -518,6 +518,6 @@ OK
 ```
 
 !!! warning
-      The HTTP API has no built-in authentication, this means you either need to
-      port forward before making the request or put something in front of it to
-      serve as a gatekeeper.
+    The HTTP API has no built-in authentication, this means you either need to
+    port forward before making the request or put something in front of it to
+    serve as a gatekeeper.

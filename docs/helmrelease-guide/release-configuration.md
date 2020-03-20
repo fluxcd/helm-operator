@@ -95,10 +95,10 @@ spec:
 ## Wait for resources to be ready
 
 !!! note
-         When you have many `HelmRelease` resources with the `.wait` flag
-         set, it is likely that you want to increase the amount of `--workers` to
-         ensure other releases are still processed, given the waiting process blocks
-         the worker from processing other `HelmRelease` resources.
+    When you have many `HelmRelease` resources with the `.wait` flag
+    set, it is likely that you want to increase the amount of `--workers` to
+    ensure other releases are still processed, given the waiting process blocks
+    the worker from processing other `HelmRelease` resources.
 
 Normally Helm will mark a release as successfully deployed as soon as the
 changes have been applied to the cluster. To instruct Helm to wait until
@@ -114,9 +114,9 @@ spec:
 ## Configuring the max number of revision saved
 
 !!! note
-         Setting this only has effect for a `HelmRelease` targeting Helm 3.
-         You can configure a global history limit for Helm 2 by [passing `--history-max
-         <int>` to `helm init`](https://v2.helm.sh/docs/using_helm/#initialize-helm-and-install-tiller).
+    Setting this only has effect for a `HelmRelease` targeting Helm 3.
+    You can configure a global history limit for Helm 2 by [passing `--history-max
+    <int>` to `helm init`](https://v2.helm.sh/docs/using_helm/#initialize-helm-and-install-tiller).
 
 To configure the maximum number of revision saved by Helm for a `HelmRelease`,
 you can set `.maxHistory`. Use `0` for an unlimited number of revisions,

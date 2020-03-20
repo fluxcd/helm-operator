@@ -41,8 +41,8 @@ being performed, otherwise no action is taken:
    latest release in the Helm storage.
    
 !!! note
-         Mutations to live cluster-state are not detected and thus not
-         reverted. This will however be added in the foreseeable future.
+    Mutations to live cluster-state are not detected and thus not
+    reverted. This will however be added in the foreseeable future.
 
 ## The antecedent annotation
 
