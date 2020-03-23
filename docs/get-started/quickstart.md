@@ -44,7 +44,7 @@ Helm 3 enabled.
 
 !!! hint
     See the [operator reference](../references/operator.md) and [chart
-    documentation](https://github.com/fluxcd/helm-operator/tree/master/chart/helm-operator#configuration)
+    documentation](../references/chart.md#configuration)
     for detailed configuration options.
 
 ## Create your first `HelmRelease`

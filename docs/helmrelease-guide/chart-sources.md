@@ -176,13 +176,12 @@ container for your enabled Helm versions:
     Adding all entries to the same file and/or secret is thus not a requirement.
 
 !!! hint
-    For the [Helm chart](
-    https://github.com/fluxcd/helm-operator/tree/master/chart/helm-operator),
-    this all can be done by setting ``configureRepositories.enable`` to ``true``,
-    it will automatically pick up the ``flux-helm-reposities`` secret created
-    earlier in this guide and configure the ``--helm-repository-import`` flag for
-    the enabled Helm versions. The certificate secret can be mounted by
-    configuring the ``extraVolumes`` and ``extraVolumeMounts`` values.
+    For the [Helm chart](../references/chart.md), this all can be done by setting
+    `configureRepositories.enable` to `true`, it will automatically pick up the 
+    `flux-helm-reposities` secret created earlier in this guide and configure the
+    `--helm-repository-import` flag for the enabled Helm versions. The certificate
+    secret can be mounted by configuring the `extraVolumes` and `extraVolumeMounts`
+    values.
 
 ### Extending the supported Helm repository protocols
 
@@ -198,7 +197,7 @@ The easiest way to install a plugin so that it becomes accessible to the Helm
 operator to use an [init container](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
 and one of the available `helm` binaries in the Helm Operator's image and a
 volume mount. For the Helm chart,
-[refer to the chart the documentation](https://github.com/fluxcd/helm-operator/tree/master/chart/helm-operator#use-helm-downloader-plugins).
+[refer to the chart the documentation](../references/chart.md#use-helm-downloader-plugins).
 
 **Plugin folder paths per Helm version:**
  

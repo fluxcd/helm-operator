@@ -104,7 +104,7 @@ ts=2020-01-01T12:00:00.556712443Z caller=helm.go:71 component=helm version=v2 in
 ## Next
 
 - Learn all about the available configuration options in the [chart
-  documentation](https://github.com/fluxcd/helm-operator/tree/master/chart/helm-operator)
+  documentation](../references/chart.md#configuration)
   and [operator reference](../references/operator.md).
 - Continue learning about `HelmRelease` resources [in the
   guide](../helmrelease-guide/introduction.md).
