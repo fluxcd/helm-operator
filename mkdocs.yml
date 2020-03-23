@@ -8,6 +8,9 @@ repo_name: fluxcd/helm-operator
 repo_url: https://github.com/fluxcd/helm-operator
 edit_uri: ""
 
+extra:
+  version: master
+
 theme:
   name: material
   logo: _files/flux-icon@2x.png
@@ -25,6 +28,7 @@ extra_css:
 
 plugins:
   - search
+  - markdownextradata: {}
   - redirects:
       redirect_maps:
         'guides/upgrading-to-ga.md': 'how-to/upgrade-to-ga.md'
@@ -38,9 +42,11 @@ markdown_extensions:
 
 nav:
   - Overview: index.md
-  - Tutorials:
-    - How to bootstrap Helm operator using Kustomize: tutorials/get-started-kustomize.md
-    - Get started with the Helm operator and Tiller: tutorials/get-started.md
+  - Get started:
+    - Quickstart: get-started/quickstart.md
+    - Using Helm: get-started/using-helm.md
+    - Using Kustomize: get-started/using-kustomize.md
+    - Using YAMLs: get-started/using-yamls.md
   - References:
     - Operator reference: references/operator.md
     - HelmRelease Custom Resource: references/helmrelease-custom-resource.md

@@ -27,10 +27,12 @@
 * Supports both Helm 2 and 3
 
 
-## Tutorials
+## Get started
 
-- [How to bootstrap Helm Operator using Kustomize](tutorials/get-started-kustomize.md)
-- [Get started with the Helm Operator and Tiller](tutorials/get-started.md)
+- [Quickstart](get-started/quickstart.md)
+- [Get started using Helm](get-started/using-helm.md)
+- [Get started using Kustomize](get-started/using-kustomize.md)
+- [Get started using YAMLs](get-started/using-yamls.md)
 
 ## References
 
@@ -51,7 +53,7 @@
 ## How-to
 
 - [Upgrade to GA](how-to/upgrade-to-ga.md)
-- [Upgrade to Beta](how-to/upgrade-to-beta.md)
+- [Upgrade to beta](how-to/upgrade-to-beta.md)
 
 
 ## Troubleshooting
