@@ -4,9 +4,12 @@ The intention of this guide is to give you more detailed information on various
 elements of the `HelmRelease` Custom Resource. You can follow it in one take,
 use it as a more explanatory reference, or a combination of both.
 
-It assumes you have the Helm Operator already installed in your cluster, and
-for the sake of simplicity it was written while making use of Helm 3 but tries
-not to presume a specific enabled Helm version.
+It assumes you have the Helm Operator already installed in your cluster, if
+you have not done this yet, [follow the installation instructions from the
+quickstart](../get-started/quickstart.md#install-the-helm-operator)
+
+The guide tries not to presume a specific enabled Helm version but for the sake
+of simplicity it was written while making use of Helm 3.
 
 ## A minimal HelmRelease
 
@@ -50,21 +53,18 @@ A couple of differences between the `HelmRelease` resource and listed `helm`
 commands should stand out:
 
 1. The `HelmRelease` does not make use of a repository alias, instead the
-   absolute URL of the Helm repository is used.
-
+   absolute URL of the Helm repository is used.<br><br>
    This is to ensure the `HelmRelease` is able to stand on its own. If we used
    names in the spec, which were resolved to URLs elsewhere (e.g., in a
    `repositories.yaml` supplied to the operator), it would be possible to
    change the meaning of a `HelmRelease` without altering it. This is
    undesirable because it makes it hard to specify exactly what you want, in
    the one place; or to read exactly what is being specified, in the one place.
-1. The `spec.chart.version` is mandatory.
-
+1. The `spec.chart.version` is mandatory.<br><br>
    The reasoning behind this is the same as the explanation given above.
 1. The default release name used by the Helm Operator is composed from the
   `metadata.namespace` and the `metadata.name` of the `HelmRelease` resource
-  (`<namespace>-<name>`).
-  
+  (`<namespace>-<name>`).<br><br>
    This to ensure it does not collide with other `HelmRelease` resources that
    may have the same `.metadata.name` but different namespace definitions.
 
