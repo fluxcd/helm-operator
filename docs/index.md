@@ -1,8 +1,19 @@
 # Helm Operator
 
-![Helm Operator diagram](_files/fluxcd-helm-operator-diagram.png)
+The Helm Operator is a [Kubernetes operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/),
+allowing one to declaratively manage Helm chart releases. Combined with
+[Flux](https://github.com/fluxcd/flux) this can be utilized to automate
+releases in a GitOps manner, but the usage of Flux is not a strict
+requirement.
 
-## Helm Operator features
+The desired state of a Helm release is described through a Kubernetes
+Custom Resource named `HelmRelease`. Based on the creation, mutation or
+removal of a `HelmRelease` resource in the cluster, Helm actions are
+performed by the operator.
+
+![Helm Operator](_files/fluxcd-helm-operator-diagram.png)
+
+## Features
 
 * Declarative install, upgrade, and delete of Helm releases
 * Pulls chart from _any_ chart source;
@@ -26,37 +37,33 @@
   using workers
 * Supports both Helm 2 and 3
 
-
 ## Get started
+
+Get started installing the Helm Operator:
 
 - [Quickstart](get-started/quickstart.md)
 - [Get started using Helm](get-started/using-helm.md)
 - [Get started using Kustomize](get-started/using-kustomize.md)
 - [Get started using YAMLs](get-started/using-yamls.md)
 
-## References
+## Integrations
 
-- [Operator reference](references/operator.md)
-- [HelmRelease Custom Resource](references/helmrelease-custom-resource.md)
+As the Helm Operator is Open Source, integrations are very straight-forward. Here are
+a few popular ones you might want to check out:
 
-## HelmRelease guide
+- [Progressive Delivery workshop](https://helm.workshop.flagger.dev/)
+- [Managing Helm releases the GitOps way](https://github.com/fluxcd/helm-operator-get-started)
+- [GitOps for Istio Canary deployments](https://github.com/stefanprodan/gitops-istio)
 
-- [Introduction](helmrelease-guide/introduction.md)
-- [Chart sources](helmrelease-guide/chart-sources.md)
-- [Values](helmrelease-guide/values.md)
-- [Release configuration](helmrelease-guide/release-configuration.md)
-- [Reconciliation and upgrades](helmrelease-guide/reconciliation-and-upgrades.md)
-- [Rollbacks](helmrelease-guide/rollbacks.md)
-- [Automation](helmrelease-guide/automation.md)
-- [Debugging](helmrelease-guide/debugging.md)
+##Getting Help
 
-## How-to
+If you have any questions about the Helm Operator and continuous delivery:
 
-- [Upgrade to GA](how-to/upgrade-to-ga.md)
-- [Upgrade to beta](how-to/upgrade-to-beta.md)
+- Invite yourself to the <a href="https://slack.cncf.io" target="_blank">CNCF community</a>
+  slack and ask a question on the [#flux](https://cloud-native.slack.com/messages/flux/)
+  channel.
+- To be part of the conversation about Helm Operator's development, join the
+  [flux-dev mailing list](https://lists.cncf.io/g/cncf-flux-dev).
+- [File an issue.](https://github.com/fluxcd/helm-operator/issues/new)
 
-
-## Troubleshooting
-
-- [FAQ](faq.md)
-- [Troubleshooting](troubleshooting.md)
+Your feedback is always welcome!

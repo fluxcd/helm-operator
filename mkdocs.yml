@@ -62,7 +62,7 @@ nav:
     - Debugging: helmrelease-guide/debugging.md
   - How-to:
     - Upgrade to GA: how-to/upgrade-to-ga.md
-    - Upgrade to Beta: how-to/upgrade-to-beta.md
+    - Upgrade to beta: how-to/upgrade-to-beta.md
   - Troubleshooting:
     - FAQ: faq.md
     - Troubleshooting: troubleshooting.md

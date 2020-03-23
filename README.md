@@ -51,16 +51,16 @@ or just [browse through the documentation](https://docs.fluxcd.io/projects/helm-
 As the Helm Operator is Open Source, integrations are very straight-forward. Here are
 a few popular ones you might want to check out:
 
-- [Progressive Delivery workshop (Helm v3 alpha)](https://helm.workshop.flagger.dev/)
+- [Progressive Delivery workshop](https://helm.workshop.flagger.dev/)
 - [Managing Helm releases the GitOps way](https://github.com/fluxcd/helm-operator-get-started)
 - [GitOps for Istio Canary deployments](https://github.com/stefanprodan/gitops-istio)
 
 ## Community & Developer information
 
-We welcome all kinds of contributions to Helm Operator, be it code, issues you found,
-documentation, external tools, help and support or anything else really.
+We welcome all kinds of contributions to the Helm Operator, be it code, issues you
+found, documentation, external tools, help and support or anything else really.
 
-The FluxCD projects adheres to the [CNCF Code of
+Flux and its umbrella projects adhere to the [CNCF Code of
 Conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md).
 
 Instances of abusive, harassing, or otherwise unacceptable behavior
@@ -76,7 +76,7 @@ be interested in the following:
 
 ## <a name="help"></a>Getting Help
 
-If you have any questions about Helm Operator and continuous delivery:
+If you have any questions about the Helm Operator and continuous delivery:
 
 - Read [the Helm Operator docs](https://docs.fluxcd.io/projects/helm-operator/).
 - Invite yourself to the <a href="https://slack.cncf.io" target="_blank">CNCF community</a>
