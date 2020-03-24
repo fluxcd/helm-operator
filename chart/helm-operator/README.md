@@ -24,26 +24,30 @@ cluster:
 kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/{{ version }}/deploy/crds.yaml
 ```
 
----
+Install the Helm operator using the chart:
 
-Install the Helm Operator with support for Helm 2 and 3 enabled:
-
-
-```sh
+```sh tab="Default (Helm 2 and 3)"
+# Default with support for Helm 2 and 3 enabled
+# NB: the presence of Tiller is a requirement when
+# Helm 2 is enabled.
 helm upgrade -i helm-operator fluxcd/helm-operator \
---namespace flux
+    --namespace flux
 ```
 
-> **Note:** In this mode Tiller is required.
-    
----
-
-Install the Helm Operator with only support for Helm 3 enabled:
-
-```sh
+```sh tab="Helm 3"
+# Only Helm 3 support enabled using helm.versions
 helm upgrade -i helm-operator fluxcd/helm-operator \
---namespace flux \
---set helm.versions=v3
+    --namespace flux \
+    --set helm.versions=v3
+```
+
+```sh tab="Helm 2"
+# Only Helm 2 support enabled using helm.versions
+# NB: the presence of Tiller is a requirement when
+# Helm 2 is enabled.
+helm upgrade -i helm-operator fluxcd/helm-operator \
+    --namespace flux \
+    --set helm.versions=v2
 ```
 
 ## Configuration
@@ -151,12 +155,12 @@ protection:
 
 ```sh
 helm upgrade -i helm-operator fluxcd/helm-operator \
---namespace flux \
---set configureRepositories.enable=true \
---set 'configureRepositories.repositories[0].name=example' \
---set 'configureRepositories.repositories[0].url=https://charts.example.com' \
---set 'configureRepositories.repositories[0].username=john' \
---set 'configureRepositories.repositories[0].password=s3cr3t!'
+    --namespace flux \
+    --set configureRepositories.enable=true \
+    --set 'configureRepositories.repositories[0].name='example' \
+    --set 'configureRepositories.repositories[0].url='https://charts.example.com' \
+    --set 'configureRepositories.repositories[0].username='john' \
+    --set 'configureRepositories.repositories[0].password='s3cr3t!'
 ```
 
 After adding the entry, the Helm chart in the repository can then be referred
@@ -205,8 +209,8 @@ the Helm Operator:
 ```sh
 helm upgrade -i helm-operator fluxcd/helm-operator \
 --namespace flux \
---set git.ssh.secretName=helm-operator-ssh \
---set-file git.ssh.known_hosts=/tmp/flux_known_hosts
+    --set git.ssh.secretName=helm-operator-ssh \
+    --set-file git.ssh.known_hosts=/tmp/flux_known_hosts
 ```
 
 You can refer to a chart from your private Git with:
@@ -262,11 +266,11 @@ using init containers:
 
 ```sh
 helm upgrade -i helm-operator fluxcd/helm-operator \
---namespace flux \
---set initPlugins.enable=true \
---set 'initPlugins.plugins[0].plugin=https://github.com/hypnoglow/helm-s3.git' \
---set 'initPlugins.plugins[0].version=0.9.2' \
---set 'initPlugins.plugins[0].helmVersion=v3'
+    --namespace flux \
+    --set initPlugins.enable=true \
+    --set 'initPlugins.plugins[0].plugin=https://github.com/hypnoglow/helm-s3.git' \
+    --set 'initPlugins.plugins[0].version=0.9.2' \
+    --set 'initPlugins.plugins[0].helmVersion=v3'
 ```
 
 > **Note:** Most plugins assume credentials are available on the system they
