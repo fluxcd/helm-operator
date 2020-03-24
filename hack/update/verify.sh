@@ -36,7 +36,7 @@ cp -a "${DIFFROOT}"/{pkg,docs,deploy} "${TMP_DIFFROOT}"
 echo "diffing ${DIFFROOT} against freshly generated files"
 ret=0
 for i in {pkg,docs,deploy}; do
-  diff -Naupr "${TMP_DIFFROOT}/${i}" "${DIFFROOT}/${i}" || ret=$?
+  diff -Naupr --no-dereference "${TMP_DIFFROOT}/${i}" "${DIFFROOT}/${i}" || ret=$?
 done
 cp -a "${TMP_DIFFROOT}"/{pkg,docs,deploy} "${DIFFROOT}"
 if [[ $ret -eq 0 ]]
