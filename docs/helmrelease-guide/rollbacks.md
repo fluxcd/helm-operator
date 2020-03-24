@@ -56,7 +56,7 @@ The definition of the listed keys is as follows:
 
 ## Enabling retries of rolled back releases
 
-Sometimes the cause of an upgrade failure may be transient, to guard yourself
+Sometimes the cause of an upgrade failure may be transient. To guard yourself
 against this it is possible to instruct the Helm Operator to retry the upgrade
 of a rolled back release by setting `.rollback.retry` to `true`. This will
 cause the Helm Operator to retry the upgrade until the `.rollback.maxRetries`

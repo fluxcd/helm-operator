@@ -25,9 +25,9 @@ spec:
 ## Configuring a target namespace
 
 It is possible to target a different namespace for the release than the
-`HelmRelease` lives in using `.targetNamespace`, this can come in handy when
+`HelmRelease` lives in using `.targetNamespace`. This can come in handy when
 you have to deploy releases into a namespace that is also managed by another
-team running their own namespace restricted Helm Operator in this same
+team running their own namespace-restricted Helm Operator in this same
 namespace:
 
 ```yaml
@@ -37,13 +37,13 @@ spec:
 
 ## Specifying a release name
 
-The default release name used by by the Helm Operator is a composition of the
+The default release name used by the Helm Operator is a composition of the
 following values:
 
 ```text
 <namespace>-[<target namespace>-]<name>
 ```
-This format was originally invented for Helm 2 to ensure release names from
+This format was invented for Helm 2 to ensure release names from
 `HelmRelease` resources in different namespaces would never accidentally
 collide with each if they would have the same name, as release names
 [were not scoped in this version like they are in Helm 3](
@@ -119,7 +119,7 @@ spec:
     <int>` to `helm init`](https://v2.helm.sh/docs/using_helm/#initialize-helm-and-install-tiller).
 
 To configure the maximum number of revision saved by Helm for a `HelmRelease`,
-you can set `.maxHistory`. Use `0` for an unlimited number of revisions,
+you can set `.maxHistory`. Use `0` for an unlimited number of revisions;
 defaults to `10`:
 
 ```yaml

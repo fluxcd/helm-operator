@@ -28,6 +28,7 @@ It is possible to define a list of config maps, secrets (in the same namespace
 as the `HelmRelease` by default, or in a configured namespace) or external
 sources (URLs) from which to take values. For charts from a Git
 repository, there is an additional option available to refer to a file in
+the chart folder.
 
 The values are merged in the order given, with later values overwriting
 earlier. These values always have a lower priority than the values
@@ -36,6 +37,11 @@ inlined in the `HelmRelease` via the `spec.values` parameter.
 This is useful if you want to have defaults such as the `region`,
 `clustername`, `environment`, a local docker registry URL, etc., or if you
 simply do not want the values to be visible as plaintext in the `HelmRelease`.
+
+!!! note
+    The Helm Operator does not watch the sources for updates. Changes to
+    sources are detected during the [reconciliation
+    loop](reconciliation-and-upgrades.md#reconciliation).
 
 ### Config maps
 

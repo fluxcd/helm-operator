@@ -46,7 +46,7 @@ different behaviour.
 ## Helm repositories
 
 The Helm repository chart source is defined as follows in the `.spec` of a
-`HelmRelease`, all listed fields are mandatory:
+`HelmRelease`. All listed fields are mandatory:
 
 ```yaml
 spec:
@@ -75,7 +75,7 @@ chart source, and in essence Helm repositories are the simplest way to make use
 of a Helm chart in a `HelmRelease`.
 
 To be able to perform releases with them the Helm Operator only makes use of
-native Helm functionalities and a tiny bit of glue to wire things together:
+native Helm features and a tiny bit of glue to wire things together:
 
 It will first attempt a reverse lookup for a repository alias in the local
 `repositories.yaml` for the defined `repository` URL, if an alias is found it
@@ -108,7 +108,7 @@ First, create a new empty `repositories.yaml` file _locally_:
 touch repositories.yaml
 ```
 
-You can now use `helm` to write the repository entry to this new file, using
+You can now use `helm` to write the repository entry to this new file. Using
 Helm 3 for this is the best option as it offers a `--repository-config` flag
 and the generated output works for both versions:
 
@@ -218,10 +218,10 @@ spec:
    emptyDir: {}
 ```
 
-Next, add a new init container that utilizes the same image as the Helm
-operator's container and makes use of the earlier mentioned volume with correct
-volume mounts for the Helm version your are making use of. The available
-`helm2` and `helm3` binaries can then be used to install the plugin:
+Next, add a new init container that uses the same image as the Helm
+operator's container, and makes use of the earlier mentioned volume, with
+correct volume mounts for the Helm version you are making use of. The
+available `helm2` and `helm3` binaries can then be used to install the plugin:
    
 ```yaml
 spec:
@@ -313,27 +313,30 @@ The definition of the listed keys is as follows:
 
 In this case, the Helm Operator will start a mirror for the Git repository, and
 a temporary working clone at the current `HEAD` of the defined `ref` of the
-mirror will be created before performing a release with the `path` defined
-chart.
+mirror will be created, before performing a release with the `path` given.
 
 Mirrored Git repositories are polled for changes by fetching from the upstream
 on the configured `--git-poll-interval` (defaults to 5 minutes). When a change
 is detected the Helm Operator will collect all `HelmRelease` resources making
-use of the mirror and inspect if the change updates the chart at the `path`
-given, when this is true it will schedule a new release and an upgrade will
+use of the mirror, and inspect if the change updates the chart at the `path`
+given. When this is true, it will schedule a new release and an upgrade will
 follow.
 
-When a temporary working clone can not be created due to e.g. the mirror not
+When a temporary working clone cannot be created due to e.g. the mirror not
 being available yet or a cloning failure because of missing [credentials](#authentication),
 a status condition of type `ChartFetched` will be recorded on the `HelmRelease` resource with the
 returned error.
+
+!!! note
+    You can pin a chart to a specific version by changing the `.ref` to a tag
+    or commit hash.
 
 ### Authentication
 
 Unauthenticated cloning from Git repositories is possible for public Git
 repositories by making the Helm Operator fetch them over HTTP/S. It is
 however likely that most of the time you will be using a Git repository
-chart source some form of authentication is required before the repository
+chart source, some form of authentication is required before the repository
 can be accessed by the Helm Operator.
 
 !!! tip
@@ -460,9 +463,8 @@ credentials via a
 `/root/` directory of the Helm Operator container.
 
 !!! caution
-     This approach suffers essentially from `the same caveat as
-     mentioned for Git over SSH
-     <#multiple-private-keys-for-git-repositories-on-the-same-host>`_.
+     This approach suffers essentially from [the same caveat as mentioned for
+     Git over SSH](#multiple-private-keys-for-git-repositories-on-the-same-host).
 
 To provide credentials for `github.com`, you would create a `.netrc` file like
 this:
@@ -505,7 +507,7 @@ spec:
 As earlier laid out in this guide the Helm Operator fetches the upstream of
 mirrored Git repositories on the configured `--git-poll-interval` (defaults
 to 5 minutes). In some scenarios (think CI/CD), you may not want to wait for
-this interval to occur.
+this interval to pass.
 
 To help you with this the Helm Operator serves a HTTP API endpoint to
 instruct it to immediately refresh all Git mirrors:

@@ -90,7 +90,7 @@ chart and their default values.
 | `git.ssh.configMapKey`                            | `config`                                             | The name of the key in the kubernetes config map specified above
 | `chartsSyncInterval`                              | `3m`                                                 | Period on which to reconcile the Helm releases with `HelmRelease` resources
 | `statusUpdateInterval`                            | `None`                                               | Period on which to update the Helm release status in `HelmRelease` resources
-| `workers`                                         | `None`                                               | Amount of workers processing releases
+| `workers`                                         | `None`                                               | Number of workers processing releases
 | `logFormat`                                       | `fmt`                                                | Log format (fmt or json)
 | `logReleaseDiffs`                                 | `false`                                              | Helm Operator should log the diff when a chart release diverges (possibly insecure)
 | `allowNamespace`                                  | `None`                                               | If set, this limits the scope to a single namespace. If not specified, all namespaces will be watched

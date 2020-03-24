@@ -206,10 +206,10 @@ loop.
 
 During reconciliation the result of a dry-run upgrade made with the
 `HelmRelease` resource is compared to the current deployed Helm
-release, if they differ an upgrade is performed to ensure the defined
+release, and if they differ an upgrade is performed to ensure the defined
 and in-cluster state match again.
 
-We can experience this with your own eyes by rolling back the
+You can experience this with your own eyes by rolling back the
 modification we just made using `helm`, the Helm Operator created
 the release with a name composed of the namespace and name of the
 `HelmRelease`:
@@ -223,7 +223,7 @@ default-podinfo-7f9759cc66-w7fj7   1/1     Terminating   0          1m1s
 default-podinfo-7f9759cc66-lk45t   1/1     Running       0          2m1s
 ```
 
-Watch the Helm Operator reverting the unauthorized mofication (this
+Watch the Helm Operator reverting the unauthorized modification (this
 can take a while, but no longer than 3 minutes):
 
 ```console

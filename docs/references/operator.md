@@ -22,7 +22,7 @@ take action accordingly.
 | Flag                        | Default                       | Purpose
 | --------------------------  | ----------------------------- | ---
 | `--log-format`              | `fmt`                         | Changes the logging format; `fmt` or `json`.
-| `--workers`                 | `2`                           | Amount of workers processing releases.
+| `--workers`                 | `2`                           | Number of workers processing releases.
 | `--listen`                  | `:3030`                       | Listen address where `/metrics` and API will be served.
 
 ### Reconciliation configuration

@@ -4,7 +4,7 @@ The intention of this guide is to give you more detailed information on various
 elements of the `HelmRelease` Custom Resource. You can follow it in one take,
 use it as a more explanatory reference, or a combination of both.
 
-It assumes you have the Helm Operator already installed in your cluster, if
+It assumes you have the Helm Operator already installed in your cluster. If
 you have not done this yet, [follow the installation instructions from the
 quickstart](../get-started/quickstart.md#install-the-helm-operator)
 
@@ -41,8 +41,8 @@ and defines the Helm chart that should be installed by the Helm Operator. This
 
 from a [Helm repository chart source](chart-sources.md#helm-repositories).
 
-Applying this to the cluster and making the Helm Operator do the release pseudo
-equals to a human running the following `helm` commands:
+Applying this to the cluster and making the Helm Operator do the release is
+equivalent to equals to a human running the following `helm` commands:
 
 ```console
 $ helm repo add podinfo https://stefanprodan.github.io/podinfo
