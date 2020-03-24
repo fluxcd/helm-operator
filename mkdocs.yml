@@ -10,10 +10,14 @@ edit_uri: ""
 
 extra:
   version: master
+  social:
+    - type: 'github'
+      link: 'https://github.com/fluxcd/helm-operator'
 
 theme:
   name: material
   logo: _files/flux-icon@2x.png
+  favicon: _files/flux-icon@2x.png
   language: en
   feature:
     tabs: false
@@ -38,6 +42,8 @@ markdown_extensions:
   - admonition
   - codehilite:
       guess_lang: false
+  - toc:
+      permalink: true
   - pymdownx.superfences
 
 nav:
