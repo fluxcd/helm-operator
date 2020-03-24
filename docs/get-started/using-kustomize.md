@@ -1,6 +1,6 @@
 # Get started using Kustomize
 
-This guides walks you through setting up the Helm Operator using
+This guide walks you through setting up the Helm Operator using
 [Kustomize](https://kustomize.io).
 
 ## Prerequisites
@@ -8,7 +8,7 @@ This guides walks you through setting up the Helm Operator using
 - Kubernetes cluster **>=1.13.0**
 - `kustomize` **>=3.2.0**
 - Some knowledge of Kustomize
-- _(Optional for Helm 2)_
+- _(Optional)_
   Tiller [(secure setup)](https://v2.helm.sh/docs/securing_installation/)
 
 ## Prepare the manifests for installation

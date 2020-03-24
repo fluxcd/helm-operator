@@ -263,7 +263,7 @@ default-podinfo-7f9759cc66-fr4vb   0/1     Terminating   0          3m32s
 Delete the Helm Operator by removing the `fluxcd` namespace:
 
 ```sh
-kubectl delete namespace fluxcd
+kubectl delete namespace flux
 ```
 
 ## Next steps

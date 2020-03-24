@@ -97,5 +97,5 @@ version and domain. You can remove all of the old resources by removing
 the old Custom Resource Definition.
 
 ```sh
-$ kubectl delete crd helmreleases.flux.weave.works
+kubectl delete crd helmreleases.flux.weave.works
 ```

@@ -1,6 +1,6 @@
 # Get started using YAMLs
 
-This guides walks you through setting up the Helm Operator using
+This guide walks you through setting up the Helm Operator using
 [deployment YAMLs](https://github.com/fluxcd/helm-operator/tree/{{ version }}/deploy).
 
 ## Prerequisites
