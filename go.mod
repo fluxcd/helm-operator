@@ -30,7 +30,7 @@ require (
 	k8s.io/apimachinery v0.17.2
 	k8s.io/cli-runtime v0.17.2
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/helm v2.16.3+incompatible
+	k8s.io/helm v2.16.4+incompatible
 	k8s.io/klog v1.0.0
 	k8s.io/kubectl v0.17.2
 	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
@@ -62,5 +62,5 @@ replace k8s.io/client-go => k8s.io/client-go v0.17.2
 //     +-> helm.sh/helm@v2.16.1
 replace (
 	helm.sh/helm/v3 => helm.sh/helm/v3 v3.1.2
-	k8s.io/helm => k8s.io/helm v2.16.3+incompatible
+	k8s.io/helm => k8s.io/helm v2.16.4+incompatible
 )
