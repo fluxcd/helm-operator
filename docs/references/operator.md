@@ -42,6 +42,7 @@ take action accordingly.
 | `--allow-namespace`         |                               | If set, this limits the scope to a single namespace. if not specified, all namespaces will be watched.
 
 ### Helm configuration
+
 | Flag                        | Default                       | Purpose
 | --------------------------  | ----------------------------- | ---
 | `--enabled-helm-versions`   | `v2,v3`                       | The Helm client versions supported by this operator instance.
