@@ -20,13 +20,13 @@ COPY ./helm3 /usr/local/bin/
 
 # These are pretty static
 LABEL maintainer="Flux CD <https://github.com/fluxcd/helm-operator/issues>" \
-      org.opencontainers.image.title="flux-helm-operator" \
+      org.opencontainers.image.title="helm-operator" \
       org.opencontainers.image.description="The Helm operator for Kubernetes" \
       org.opencontainers.image.url="https://github.com/fluxcd/helm-operator" \
       org.opencontainers.image.source="git@github.com:fluxcd/helm-operator" \
       org.opencontainers.image.vendor="Flux CD" \
       org.label-schema.schema-version="1.0" \
-      org.label-schema.name="flux-helm-operator" \
+      org.label-schema.name="helm-operator" \
       org.label-schema.description="The Helm operator for Kubernetes" \
       org.label-schema.url="https://github.com/fluxcd/helm-operator" \
       org.label-schema.vcs-url="git@github.com:fluxcd/helm-operator" \
