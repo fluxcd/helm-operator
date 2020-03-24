@@ -55,7 +55,7 @@ a few popular ones you might want to check out:
 - [Managing Helm releases the GitOps way](https://github.com/fluxcd/helm-operator-get-started)
 - [GitOps for Istio Canary deployments](https://github.com/stefanprodan/gitops-istio)
 
-##Getting Help
+## Getting Help
 
 If you have any questions about the Helm Operator and continuous delivery:
 
