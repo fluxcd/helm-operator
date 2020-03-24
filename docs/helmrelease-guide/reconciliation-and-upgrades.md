@@ -43,6 +43,21 @@ being performed, otherwise no action is taken:
 !!! note
     Mutations to live cluster-state are not detected and thus not
     reverted. This will however be added in the foreseeable future.
+    
+## Upgrade failures
+
+When an upgrade fails the Helm Operator will stop to perform upgrades for the
+release as it does not assume this is a safe procedure, nor does it
+automatically perform [a rollback](rollbacks.md). Instead it will start logging
+warnings about the `failed` status of the release.
+
+Recovering from this is possible, after having inspected the state of the
+release, by getting the Helm release manually in a `deployed` state, for
+example by performing a rollback or upgrade for the release using `helm`:
+
+```console
+helm rollback <release name>
+```
 
 ## The antecedent annotation
 
