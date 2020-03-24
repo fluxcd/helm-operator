@@ -49,6 +49,9 @@ take action accordingly.
 
 #### Tiller configuration
 
+The following option flags are only applicable when support for Helm 2 is
+enabled and a connection to Tiller needs to be made.
+
 | Flag                        | Default                       | Purpose
 | --------------------------  | ----------------------------- | ---
 | `--tiller-ip`               |                               | Tiller IP address. Only required if out-of-cluster.

@@ -11,7 +11,8 @@ guide](helmrelease-guide/reconciliation-and-upgrades.md#upgrade-failures).
 
 The release status recorded in the `status` sub-resource of the `HelmRelease`
 is the status as given by Helm for the release. It is polled from Helm on a
-interval (see [`--status-update-interval`](references/operator.md#reconciliation-configuration).
+interval (see
+[`--status-update-interval`](references/operator.md#reconciliation-configuration)).
 
 The message is the error reported during the latest release failure. When this
 failure was for example due to a validation error, the upgrade has never been
