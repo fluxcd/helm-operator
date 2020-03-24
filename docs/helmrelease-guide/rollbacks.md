@@ -52,7 +52,13 @@ The definition of the listed keys is as follows:
 * `recreate` _(Optional)_: When set to `true`, performs pods restart for the
   resource if applicable. Defaults to `false` when omitted.
 * `timeout` _(Optional)_: Time to wait for any individual Kubernetes operation
-  in seconds. Defaults to `300` when omitted.
+  during rollback in seconds. Defaults to `300` when omitted.
+
+!!! warning
+    When your chart requires a high non-default `timeout` value it is advised
+    to increase the `teriminationGracePeriod` on the Helm Operator pod to not
+    end up with a release in a faulty state due to the operator receiving a
+    `SIGKILL` signal during an upgrade.
 
 ## Enabling retries of rolled back releases
 
