@@ -1,4 +1,4 @@
-# How to release the Helm operator
+# How to release the Helm Operator
 
 The release process needs to do these things:
 
@@ -11,7 +11,7 @@ Much of this is automated, but it needs a human to turn the wheel.
 
 ## Overview
 
-The Helm operator releases use branches and tags with semver versions, like `1.2.3`.
+The Helm Operator releases use branches and tags with semver versions, like `1.2.3`.
 
 Each minor version has its own "release series" branch, from which patch releases will be put together, called e.g., `release/1.2.x`.
 
@@ -93,7 +93,7 @@ change.
 ## Helm chart release process
 
 1. Create a new branch (i.e. `release/chart-1.0.0`)
-2. Update `appVersion` with the new Flux Helm operator version in `chart/helm-operator/Chart.yaml`
+2. Update `appVersion` with the new Helm Operator version in `chart/helm-operator/Chart.yaml`
 3. Bump the chart version in `chart/helm-operator/Chart.yaml`
 4. (Maybe) update `image.tag` with the new version in `chart/helm-operator/values.yaml`
 6. Create a PR

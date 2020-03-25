@@ -32,8 +32,6 @@ IMAGE_TAG:=$(shell ./docker/image-tag)
 VCS_REF:=$(shell git rev-parse HEAD)
 BUILD_DATE:=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-DOCS_PORT:=8000
-
 all: $(GOBIN)/bin/helm-operator build/.helm-operator.done
 
 clean:
@@ -150,13 +148,3 @@ generate-deploy: generate-crds pkg/install/generated_templates.gogen.go
 check-generated: generate-deploy pkg/install/generated_templates.gogen.go
 	git diff --exit-code -- pkg/install/generated_templates.gogen.go
 	./hack/update/verify.sh
-
-build-docs:
-	@cd docs && docker build -t flux-docs .
-
-test-docs: build-docs
-	@docker run -it flux-docs /usr/bin/linkchecker _build/html/index.html
-
-serve-docs: build-docs
-	@echo Stating docs website on http://localhost:${DOCS_PORT}/_build/html/index.html
-	@docker run -i -p ${DOCS_PORT}:8000 -e USER_ID=$$UID flux-docs
