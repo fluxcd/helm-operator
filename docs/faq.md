@@ -82,8 +82,13 @@ release.
 
 ### I am using SSL between Helm and Tiller. How can I configure the operator to use the certificate?
 
-When installing Flux, you can supply the CA and client-side certificate using
-the `helmOperator.tls` options, more details [here](get-started/using-helm.md#with-tiller-helm-2).
+When installing the Helm Operator, you can supply the CA and client-side
+certificate using the `tls` options on the chart. More details about this
+on:
+
+- [Get started using Helm](get-started/using-helm.md#with-tiller-helm-2)
+- [Get started using Kustomize](get-started/using-kustomize.md#prepare-the-manifests-for-installation)
+- [Get started using YAMLs](get-started/using-yamls.md#helm-2)
 
 ### I am using Flux and have deleted a `HelmRelease` file from Git. Why is the Helm release still running on my cluster?
 

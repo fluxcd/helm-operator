@@ -159,7 +159,8 @@ Mount the created secret(s) by adding to `volumes` in the pod spec of the Helm
 operator deployment, and `volumeMounts` of the Helm Operator container. A good
 mount path for the `repositories.yaml` file that does not give conflicts with
 any Helm paths is `/root/.helm/repository/repositories.yaml`. Examples of this
-can be found in the commented-out sections of the [example deployment](https://github.com/fluxcd/helm-operator/blob/master/deploy/helm-operator-deployment.yaml).
+can be found in the commented-out sections of the [example
+deployment](https://github.com/fluxcd/helm-operator/blob/{{ version }}/deploy/deployment.yaml).
 
 Lastly, configure the `--helm-repository-import` argument on the Helm Operator
 container for your enabled Helm versions:
@@ -360,7 +361,7 @@ kubectl create secret generic flux-git-deploy \
 ```
 
 Next, mount it into the Helm Operator container as shown in the
-[example deployment](https://github.com/fluxcd/helm-operator/blob/master/deploy/helm-operator-deployment.yaml).
+[example deployment](https://github.com/fluxcd/helm-operator/blob/{{ version }}/deploy/deployment.yaml).
 
 The default `ssh_config` that ships with the Helm Operator's Docker image
 expects an identity file at `/etc/fluxd/ssh/identity`, which is where it will
