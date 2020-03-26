@@ -86,7 +86,7 @@ spec:
 
 The definition of the listed keys is as follows:
 
-- `name`: The name of the config map.
+- `name`: The name of the secret.
 - `namespace` _(Optional)_: The namespace the secret is in. Defaults to the
   namespace of the `HelmRelease` when omitted.
 - `key` _(Optional)_: The key in the secret to get the values from.
