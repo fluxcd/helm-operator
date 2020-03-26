@@ -11,11 +11,11 @@ function setup() {
   kubectl create namespace "$E2E_NAMESPACE"
 
   # Install the git server, allowing external access
-  install_git_srv git_srv_result
+  install_gitsrv gitsrv_result
   # shellcheck disable=SC2154
-  export GIT_SSH_COMMAND="${git_srv_result[0]}"
+  export GIT_SSH_COMMAND="${gitsrv_result[0]}"
   # Teardown the created port-forward to gitsrv.
-  defer kill "${git_srv_result[1]}"
+  defer kill "${gitsrv_result[1]}"
 
   install_tiller
   install_helm_operator_with_helm

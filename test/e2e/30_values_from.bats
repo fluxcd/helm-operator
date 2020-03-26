@@ -8,7 +8,7 @@ function setup() {
   load lib/poll
 
   kubectl create namespace "$E2E_NAMESPACE"
-  install_git_srv
+  install_gitsrv
   install_tiller
   install_helm_operator_with_helm
   kubectl create namespace "$DEMO_NAMESPACE"

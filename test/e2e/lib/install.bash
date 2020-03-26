@@ -28,6 +28,8 @@ function install_helm_operator_with_helm() {
     create_crds='false'
   fi
 
+  [ -f "${GITSRV_KNOWN_HOSTS}" ] || download_gitsrv_known_hosts
+
   helm2 install --name helm-operator --wait \
     --tiller-namespace "${E2E_NAMESPACE}" \
     --namespace "${E2E_NAMESPACE}" \
@@ -40,7 +42,7 @@ function install_helm_operator_with_helm() {
     --set git.config.enabled=true \
     --set-string git.config.data="${GITCONFIG}" \
     --set git.ssh.secretName=flux-git-deploy \
-    --set-string git.ssh.known_hosts="${KNOWN_HOSTS}" \
+    --set-string git.ssh.known_hosts="$(cat "${GITSRV_KNOWN_HOSTS}")" \
     --set configureRepositories.enable=true \
     --set configureRepositories.repositories[0].name="stable" \
     --set configureRepositories.repositories[0].url="https://kubernetes-charts.storage.googleapis.com" \
@@ -59,7 +61,9 @@ function uninstall_helm_operator_with_helm() {
   kubectl delete crd helmreleases.helm.fluxcd.io > /dev/null 2>&1
 }
 
-function install_git_srv() {
+function install_gitsrv() {
+  [ -f "${GITSRV_KNOWN_HOSTS}" ] || download_gitsrv_known_hosts
+
   local external_access_result_var=${1}
   local kustomization_dir=${2:-base/gitsrv}
   local gen_dir
@@ -68,7 +72,7 @@ function install_git_srv() {
   ssh-keygen -t rsa -N "" -f "$gen_dir/id_rsa"
   kubectl create secret generic flux-git-deploy \
     --namespace="${E2E_NAMESPACE}" \
-    --from-file="${FIXTURES_DIR}/known_hosts" \
+    --from-file="${GITSRV_KNOWN_HOSTS}" \
     --from-file="$gen_dir/id_rsa" \
     --from-file=identity="$gen_dir/id_rsa" \
     --from-file="$gen_dir/id_rsa.pub"
@@ -79,9 +83,9 @@ function install_git_srv() {
   kubectl -n "${E2E_NAMESPACE}" rollout status deployment/gitsrv
 
   if [ -n "$external_access_result_var" ]; then
-    local git_srv_podname
-    git_srv_podname=$(kubectl get pod -n "${E2E_NAMESPACE}" -l name=gitsrv -o jsonpath="{['items'][0].metadata.name}")
-    coproc kubectl port-forward -n "${E2E_NAMESPACE}" "$git_srv_podname" :22
+    local gitsrv_podname
+    gitsrv_podname=$(kubectl get pod -n "${E2E_NAMESPACE}" -l name=gitsrv -o jsonpath="{['items'][0].metadata.name}")
+    coproc kubectl port-forward -n "${E2E_NAMESPACE}" "$gitsrv_podname" :22
     local local_port
     read -r local_port <&"${COPROC[0]}"-
     # shellcheck disable=SC2001
@@ -92,7 +96,12 @@ function install_git_srv() {
   fi
 }
 
-function uninstall_git_srv() {
+function download_gitsrv_known_hosts() {
+  mkdir -p "$(dirname "${GITSRV_KNOWN_HOSTS}")"
+  curl -sL "https://github.com/fluxcd/gitsrv/releases/download/${GITSRV_VERSION}/known_hosts.txt" > "${GITSRV_KNOWN_HOSTS}"
+}
+
+function uninstall_gitsrv() {
   local kustomization_dir=${1:-base/gitsrv}
 
   # Silence secret deletion errors since the secret can be missing (deleted by uninstalling Flux)
