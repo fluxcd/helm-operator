@@ -157,10 +157,10 @@ protection:
 helm upgrade -i helm-operator fluxcd/helm-operator \
     --namespace flux \
     --set configureRepositories.enable=true \
-    --set 'configureRepositories.repositories[0].name='example' \
-    --set 'configureRepositories.repositories[0].url='https://charts.example.com' \
-    --set 'configureRepositories.repositories[0].username='john' \
-    --set 'configureRepositories.repositories[0].password='s3cr3t!'
+    --set 'configureRepositories.repositories[0].name=example' \
+    --set 'configureRepositories.repositories[0].url=https://charts.example.com' \
+    --set 'configureRepositories.repositories[0].username=john' \
+    --set 'configureRepositories.repositories[0].password=s3cr3t!'
 ```
 
 After adding the entry, the Helm chart in the repository can then be referred
