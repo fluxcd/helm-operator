@@ -375,7 +375,7 @@ func shouldSync(logger log.Logger, annotator *annotator.Annotator, client helm.C
 		return false, err
 	}
 
-	var vDiff, cDiff string
+	var vDiff, cDiff, mDiff string
 	switch {
 	case status.HasRolledBack(*hr):
 		if status.ShouldRetryUpgrade(*hr) {
@@ -389,14 +389,13 @@ func shouldSync(logger log.Logger, annotator *annotator.Annotator, client helm.C
 		}
 		for _, r := range rels {
 			if r.Info.Status == helm.StatusFailed {
-				vDiff, cDiff = compareRelease(r, desRel)
+				vDiff, cDiff, mDiff = compareRelease(r, desRel)
 				break
 			}
 		}
 	default:
-		vDiff, cDiff = compareRelease(curRel, desRel)
+		vDiff, cDiff, mDiff = compareRelease(curRel, desRel)
 	}
-
 	if vDiff != "" && logDiffs {
 		logger.Log("info", "values have diverged", "diff", vDiff)
 	}
@@ -405,7 +404,11 @@ func shouldSync(logger log.Logger, annotator *annotator.Annotator, client helm.C
 		logger.Log("info", "chart has diverged", "diff", cDiff)
 	}
 
-	if cDiff != "" || vDiff != "" {
+	if mDiff != "" && logDiffs {
+		logger.Log("info", "manifest has diverged", "diff", mDiff)
+	}
+
+	if cDiff != "" || vDiff != "" || mDiff != ""  {
 		logger.Log("info", "dry-run differed", "action", "upgrade")
 		return true, nil
 	}
@@ -414,10 +417,10 @@ func shouldSync(logger log.Logger, annotator *annotator.Annotator, client helm.C
 	return false, nil
 }
 
-// compareRelease compares the values and charts of the two given
+// compareRelease compares the values, charts and manifests of the two given
 // releases and returns the diff sets.
-func compareRelease(j *helm.Release, k *helm.Release) (string, string) {
-	return cmp.Diff(j.Values, k.Values), cmp.Diff(j.Chart, k.Chart)
+func compareRelease(j *helm.Release, k *helm.Release) (string, string, string) {
+	return cmp.Diff(j.Values, k.Values), cmp.Diff(j.Chart, k.Chart), cmp.Diff(j.Manifest, k.Manifest)
 }
 
 // releaseLogger returns a logger in the context of the given
