@@ -34,11 +34,11 @@ BUILD_DATE:=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
 DOCS_PORT:=8000
 
-all: $(GOBIN)/bin/helm-operator build/.helm-operator.done
+all: $(GOBIN)/bin/helm-operator cache/build/.helm-operator.done
 
 clean:
 	go clean ./cmd/helm-operator
-	rm -rf ./build
+	rm -rf ./cache/build
 	rm -f test/bin/kubectl test/bin/helm2 test/bin/helm3 test/bin/kind
 
 realclean: clean
@@ -47,7 +47,7 @@ realclean: clean
 test:
 	PATH="${PWD}/bin:${PWD}/test/bin:${PATH}" go test ${TEST_FLAGS} $(shell go list $(patsubst %, %/..., $(LOCAL_GO_MODULES)) | sort -u)
 
-e2e: test/bin/helm2 test/bin/helm3 test/bin/kubectl test/e2e/bats build/.helm-operator.done
+e2e: test/bin/helm2 test/bin/helm3 test/bin/kubectl test/e2e/bats cache/build/.helm-operator.done
 	PATH="${PWD}/test/bin:${PATH}" CURRENT_OS_ARCH=$(CURRENT_OS_ARCH) test/e2e/run.bash
 
 E2E_BATS_FILES := test/e2e/*.bats
@@ -62,30 +62,30 @@ lint-e2e: test/bin/shfmt test/bin/shellcheck
 	$(SHFMT_DIFF_CMD) $(E2E_BASH_FILES) || ( echo "Please run '$(SHFMT_WRITE_CMD) $(E2E_BASH_FILES)'"; exit 1 )
 	test/bin/shellcheck $(E2E_BASH_FILES) $(E2E_BATS_FILES)
 
-build/.%.done: docker/Dockerfile.%
-	mkdir -p ./build/docker/$*
-	cp $^ ./build/docker/$*/
+cache/build/.%.done: docker/Dockerfile.%
+	mkdir -p ./cache/build/docker/$*
+	cp $^ ./cache/build/docker/$*/
 	$(SUDO) docker build -t docker.io/fluxcd/$* -t docker.io/fluxcd/$*:$(IMAGE_TAG) \
 		--build-arg VCS_REF="$(VCS_REF)" \
 		--build-arg BUILD_DATE="$(BUILD_DATE)" \
-		-f build/docker/$*/Dockerfile.$* ./build/docker/$*
+		-f cache/build/docker/$*/Dockerfile.$* ./cache/build/docker/$*
 	touch $@
 
-build/.helm-operator.done: build/helm-operator build/kubectl build/helm2 build/helm3 docker/ssh_config docker/known_hosts.sh docker/helm-repositories.yaml
+cache/build/.helm-operator.done: cache/build/helm-operator cache/build/kubectl cache/build/helm2 cache/build/helm3 docker/ssh_config docker/known_hosts.sh docker/helm-repositories.yaml
 
-build/helm-operator: $(HELM_OPERATOR_DEPS)
-build/helm-operator: cmd/helm-operator/*.go
+cache/build/helm-operator: $(HELM_OPERATOR_DEPS)
+cache/build/helm-operator: cmd/helm-operator/*.go
 	CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} go build -o $@ $(LDFLAGS) -ldflags "-X main.version=$(shell ./docker/image-tag)" ./cmd/helm-operator
 
-build/kubectl: cache/linux-$(ARCH)/kubectl-$(KUBECTL_VERSION)
+cache/build/kubectl: cache/linux-$(ARCH)/kubectl-$(KUBECTL_VERSION)
 test/bin/kubectl: cache/$(CURRENT_OS_ARCH)/kubectl-$(KUBECTL_VERSION)
-build/helm2: cache/linux-$(ARCH)/helm-$(HELM2_VERSION)
-build/helm3: cache/linux-$(ARCH)/helm-$(HELM3_VERSION)
+cache/build/helm2: cache/linux-$(ARCH)/helm-$(HELM2_VERSION)
+cache/build/helm3: cache/linux-$(ARCH)/helm-$(HELM3_VERSION)
 test/bin/helm2: cache/$(CURRENT_OS_ARCH)/helm-$(HELM2_VERSION)
 test/bin/helm3: cache/$(CURRENT_OS_ARCH)/helm-$(HELM3_VERSION)
 test/bin/shellcheck: cache/$(CURRENT_OS_ARCH)/shellcheck-$(SHELLCHECK_VERSION)
 test/bin/shfmt: cache/$(CURRENT_OS_ARCH)/shfmt-$(SHFMT_VERSION)
-build/kubectl test/bin/kubectl build/helm2 build/helm3 test/bin/helm2 test/bin/helm3 test/bin/shellcheck test/bin/shfmt:
+cache/build/kubectl test/bin/kubectl cache/build/helm2 cache/build/helm3 test/bin/helm2 test/bin/helm3 test/bin/shellcheck test/bin/shfmt:
 	mkdir -p build
 	cp $< $@
 	if [ `basename $@` = "build" -a $(CURRENT_OS_ARCH) = "linux-$(ARCH)" ]; then strip $@; fi

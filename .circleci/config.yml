@@ -125,12 +125,11 @@ jobs:
           version: 1.13.3
       - run: make all
       - save_build_docker_image:
-          target: build/docker/helm-operator.tar.gz
+          target: cache/build/docker/helm-operator.tar.gz
       - persist_to_workspace:
-          root: build
+          root: cache
           paths:
-            - docker/helm-operator.tar.gz
-            - .helm-operator.done
+            - build/
 
   test_unit:
     executor: builder
@@ -168,9 +167,9 @@ jobs:
       - pkg_install:
           packages: jq
       - attach_workspace:
-          at: build
+          at: cache
       - load_build_docker_image:
-          input: build/docker/helm-operator.tar.gz
+          input: cache/build/docker/helm-operator.tar.gz
       - e2e_tests:
           helm_version: <<parameters.helm_version>>
 
