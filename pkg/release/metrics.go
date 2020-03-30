@@ -23,6 +23,12 @@ var (
 		Help:      "Release duration in seconds.",
 		Buckets:   durationBuckets,
 	}, []string{LabelSuccess, LabelNamespace, LabelReleaseName})
+	lastReleaseStatus = prometheus.NewGaugeFrom(stdprometheus.GaugeOpts{
+		Namespace: "flux",
+		Subsystem: "helm_operator",
+		Name:      "last_release_status",
+		Help:      "1 if last release was successful, 0 otherwise.",
+	}, []string{LabelNamespace, LabelReleaseName})
 )
 
 func ObserveRelease(start time.Time, success bool, namespace, releaseName string) {
@@ -31,4 +37,13 @@ func ObserveRelease(start time.Time, success bool, namespace, releaseName string
 		LabelNamespace, namespace,
 		LabelReleaseName, releaseName,
 	).Observe(time.Since(start).Seconds())
+
+	var success64 float64
+	if success {
+		success64 = 1
+	}
+	lastReleaseStatus.With(
+		LabelNamespace, namespace,
+		LabelReleaseName, releaseName,
+	).Set(success64)
 }
