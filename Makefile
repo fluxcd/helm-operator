@@ -148,3 +148,9 @@ generate-deploy: generate-crds pkg/install/generated_templates.gogen.go
 check-generated: generate-deploy pkg/install/generated_templates.gogen.go
 	git diff --exit-code -- pkg/install/generated_templates.gogen.go
 	./hack/update/verify.sh
+
+docs-deps:
+	pip3 install -r docs/requirements.txt
+
+serve-docs: docs-deps
+	mkdocs serve

@@ -6,8 +6,9 @@
 
 The Helm Operator is a [Kubernetes operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/),
 allowing one to declaratively manage Helm chart releases. Combined with
-[Flux](https://github.com/fluxcd/flux) it can to automate releases in a
-GitOps manner, but the use of Flux is not a strict requirement.
+[Flux](https://github.com/fluxcd/flux) this can be utilized to automate
+releases in a GitOps manner, but the usage of Flux is not a strict
+requirement.
 
 The desired state of a Helm release is described through a Kubernetes
 Custom Resource named `HelmRelease`. Based on the creation, mutation or

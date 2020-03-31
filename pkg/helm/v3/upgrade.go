@@ -1,8 +1,6 @@
 package v3
 
 import (
-	"github.com/pkg/errors"
-
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -23,13 +21,13 @@ func (h *HelmV3) UpgradeFromPath(chartPath string, releaseName string, values []
 	// all chart dependencies are present
 	chartRequested, err := loader.Load(chartPath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to load chart from path '%s' for release '%s'", chartPath, releaseName)
+		return nil, err
 	}
 
 	// Read and set values
 	val, err := chartutil.ReadValues(values)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read values")
+		return nil, err
 	}
 
 	var res *release.Release
@@ -44,7 +42,7 @@ func (h *HelmV3) UpgradeFromPath(chartPath string, releaseName string, values []
 	}
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upgrade chart for release [%s]", releaseName)
+		return nil, err
 	}
 	return releaseToGenericRelease(res), err
 }

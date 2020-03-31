@@ -10,6 +10,6 @@ var (
 		Namespace: "flux",
 		Subsystem: "helm_operator",
 		Name:      "release_queue_length_count",
-		Help:      "Count of releases waiting in the queue to be processed.",
+		Help:      "Count of release jobs waiting in the queue to be processed.",
 	}, []string{})
 )

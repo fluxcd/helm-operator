@@ -1,7 +1,6 @@
 package v3
 
 import (
-	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/storage/driver"
 
@@ -24,7 +23,7 @@ func (h *HelmV3) Get(releaseName string, opts helm.GetOptions) (*helm.Release, e
 	case driver.ErrReleaseNotFound:
 		return nil, nil
 	default:
-		return nil, errors.Wrapf(err, "failed to retrieve release '%s'", releaseName)
+		return nil, err
 	}
 }
 

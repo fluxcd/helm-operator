@@ -10,13 +10,21 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// AntecedentAnnotation is an annotation on a resource indicating that
+// the cause of that resource is a HelmRelease. We use this rather than
+// the `OwnerReference` type built into Kubernetes as this does not
+// allow cross-namespace references by design. The value is expected to
+// be a serialised `resource.ID`.
+const AntecedentAnnotation = "helm.fluxcd.io/antecedent"
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // HelmRelease is a type to represent a Helm release.
 // +k8s:openapi-gen=true
-// +kubebuilder:printcolumn:name="Release",type="string",JSONPath=".status.releaseName",description=""
-// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.releaseStatus",description=""
+// +kubebuilder:printcolumn:name="Release",type="string",JSONPath=".status.releaseName",description="Release is the name of the Helm release, as given by Helm."
+// +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Phase is the current release phase being performed for the HelmRelease."
+// +kubebuilder:printcolumn:name="ReleaseStatus",type="string",JSONPath=".status.releaseStatus",description="ReleaseStatus is the status of the Helm release, as given by Helm."
 // +kubebuilder:printcolumn:name="Message",type="string",JSONPath=".status.conditions[?(@.type==\"Released\")].message",description=""
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC."
 // +kubebuilder:subresource:status
@@ -400,8 +408,110 @@ type HelmReleaseSpec struct {
 	Values HelmValues `json:"values,omitempty"`
 }
 
+// HelmReleaseConditionType represents an HelmRelease condition value.
+// Valid HelmReleaseConditionType values are:
+// "ChartFetched",
+// "Released",
+// "RolledBack"
+// +kubebuilder:validation:Enum="ChartFetched";"Released";"RolledBack"
+// +optional
+type HelmReleaseConditionType string
+
+const (
+	// ChartFetched means the chart to which the HelmRelease refers
+	// has been fetched successfully.
+	HelmReleaseChartFetched HelmReleaseConditionType = "ChartFetched"
+	// Released means the chart release, as specified in this
+	// HelmRelease, has been processed by Helm.
+	HelmReleaseReleased HelmReleaseConditionType = "Released"
+	// RolledBack means the chart to which the HelmRelease refers
+	// has been rolled back.
+	HelmReleaseRolledBack HelmReleaseConditionType = "RolledBack"
+)
+
+type HelmReleaseCondition struct {
+	// Type of the condition, one of ('ChartFetched', 'Released', 'RolledBack').
+	Type HelmReleaseConditionType `json:"type"`
+
+	// Status of the condition, one of ('True', 'False', 'Unknown').
+	Status ConditionStatus `json:"status"`
+
+	// LastUpdateTime is the timestamp corresponding to the last status
+	// update of this condition.
+	// +optional
+	LastUpdateTime *metav1.Time `json:"lastUpdateTime,omitempty"`
+
+	// LastTransitionTime is the timestamp corresponding to the last status
+	// change of this condition.
+	// +optional
+	LastTransitionTime *metav1.Time `json:"lastTransitionTime,omitempty"`
+
+	// Reason is a brief machine readable explanation for the condition's last
+	// transition.
+	// +optional
+	Reason string `json:"reason,omitempty"`
+
+	// Message is a human readable description of the details of the last
+	// transition, complementing reason.
+	// +optional
+	Message string `json:"message,omitempty"`
+}
+
+// HelmReleasePhase represents the phase a HelmRelease is in.
+// Valid HelmReleasePhase values are:
+// "ChartFetched",
+// "ChartFetchFailed",
+// "Installing",
+// "Upgrading",
+// "Succeeded",
+// "Failed",
+// "RollingBack",
+// "RolledBack",
+// "RollbackFailed",
+// +kubebuilder:validation:Enum="ChartFetched";"ChartFetchFailed";"Installing";"Upgrading";"Succeeded";"Failed";"RollingBack";"RolledBack";"RollbackFailed"
+// +optional
+type HelmReleasePhase string
+
+const (
+	// ChartFetched means the chart to which the HelmRelease refers
+	// has been fetched successfully
+	HelmReleasePhaseChartFetched HelmReleasePhase = "ChartFetched"
+	// ChartFetchedFailed means the chart to which the HelmRelease
+	// refers could not be fetched.
+	HelmReleasePhaseChartFetchFailed HelmReleasePhase = "ChartFetchFailed"
+
+	// Installing means the installation for the HelmRelease is running.
+	HelmReleasePhaseInstalling HelmReleasePhase = "Installing"
+	// Upgrading means the upgrade for the HelmRelease is running.
+	HelmReleasePhaseUpgrading HelmReleasePhase = "Upgrading"
+	// Succeeded means the installation or upgrade for the HelmRelease
+	// succeeded.
+	HelmReleasePhaseSucceeded HelmReleasePhase = "Succeeded"
+	// Failed means the installation or upgrade for the HelmRelease
+	// failed.
+	HelmReleasePhaseFailed HelmReleasePhase = "Failed"
+
+	// RollingBack means a rollback for the HelmRelease is running.
+	HelmReleasePhaseRollingBack HelmReleasePhase = "RollingBack"
+	// RolledBack means the HelmRelease has been rolled back.
+	HelmReleasePhaseRolledBack HelmReleasePhase = "RolledBack"
+	// RolledBackFailed means the rollback for the HelmRelease failed.
+	HelmReleasePhaseRollbackFailed HelmReleasePhase = "RollbackFailed"
+)
+
 // HelmReleaseStatus contains status information about an HelmRelease.
 type HelmReleaseStatus struct {
+	// ObservedGeneration is the most recent generation observed by
+	// the operator.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// Phase the release is in, one of ('ChartFetched',
+	// 'ChartFetchFailed', 'Installing', 'Upgrading', 'Succeeded',
+	// 'RollingBack', 'RolledBack', 'RollbackFailed')
+	// +optional
+	Phase HelmReleasePhase `json:"phase,omitempty"`
+
 	// ReleaseName is the name as either supplied or generated.
 	// +optional
 	ReleaseName string `json:"releaseName,omitempty"`
@@ -410,11 +520,6 @@ type HelmReleaseStatus struct {
 	// managed by this resource.
 	// +optional
 	ReleaseStatus string `json:"releaseStatus,omitempty"`
-
-	// ObservedGeneration is the most recent generation observed by
-	// the operator.
-	// +optional
-	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
 	// Revision holds the Git hash or version of the chart currently
 	// deployed.
@@ -434,47 +539,3 @@ type HelmReleaseStatus struct {
 	// +patchStrategy=merge
 	Conditions []HelmReleaseCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 }
-
-type HelmReleaseCondition struct {
-	// Type of the condition, one of ('ChartFetched', 'Released', 'RolledBack').
-	Type HelmReleaseConditionType `json:"type"`
-	// Status of the condition, one of ('True', 'False', 'Unknown').
-	Status ConditionStatus `json:"status"`
-	// LastUpdateTime is the timestamp corresponding to the last status
-	// update of this condition.
-	// +optional
-	LastUpdateTime *metav1.Time `json:"lastUpdateTime,omitempty"`
-	// LastTransitionTime is the timestamp corresponding to the last status
-	// change of this condition.
-	// +optional
-	LastTransitionTime *metav1.Time `json:"lastTransitionTime,omitempty"`
-	// Reason is a brief machine readable explanation for the condition's last
-	// transition.
-	// +optional
-	Reason string `json:"reason,omitempty"`
-	// Message is a human readable description of the details of the last
-	// transition, complementing reason.
-	// +optional
-	Message string `json:"message,omitempty"`
-}
-
-// HelmReleaseConditionType represents an HelmRelease condition value.
-// Valid HelmReleaseConditionType values are:
-// "ChartFetched",
-// "Released",
-// "RolledBack"
-// +kubebuilder:validation:Enum="ChartFetched";"Released";"RolledBack"
-// +optional
-type HelmReleaseConditionType string
-
-const (
-	// ChartFetched means the chart to which the HelmRelease refers
-	// has been fetched successfully
-	HelmReleaseChartFetched HelmReleaseConditionType = "ChartFetched"
-	// Released means the chart release, as specified in this
-	// HelmRelease, has been processed by Helm.
-	HelmReleaseReleased HelmReleaseConditionType = "Released"
-	// RolledBack means the chart to which the HelmRelease refers
-	// has been rolled back
-	HelmReleaseRolledBack HelmReleaseConditionType = "RolledBack"
-)

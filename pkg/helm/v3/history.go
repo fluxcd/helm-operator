@@ -1,8 +1,6 @@
 package v3
 
 import (
-	"github.com/pkg/errors"
-
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/releaseutil"
 
@@ -20,7 +18,7 @@ func (h *HelmV3) History(releaseName string, opts helm.HistoryOptions) ([]*helm.
 
 	hist, err := history.Run(releaseName)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to retrieve history for '%s'", releaseName)
+		return nil, err
 	}
 
 	releaseutil.Reverse(hist, releaseutil.SortByRevision)

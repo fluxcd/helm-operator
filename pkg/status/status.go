@@ -173,13 +173,13 @@ func SetObservedGeneration(client v1client.HelmReleaseInterface, hr *v1.HelmRele
 
 // HasSynced returns if the HelmRelease has been processed by the
 // controller.
-func HasSynced(hr v1.HelmRelease) bool {
+func HasSynced(hr *v1.HelmRelease) bool {
 	return hr.Status.ObservedGeneration >= hr.Generation
 }
 
 // HasRolledBack returns if the current generation of the HelmRelease
 // has been rolled back.
-func HasRolledBack(hr v1.HelmRelease) bool {
+func HasRolledBack(hr *v1.HelmRelease) bool {
 	if !HasSynced(hr) {
 		return false
 	}
@@ -194,7 +194,7 @@ func HasRolledBack(hr v1.HelmRelease) bool {
 
 // ShouldRetryUpgrade returns if the upgrade of a rolled back release should
 // be retried.
-func ShouldRetryUpgrade(hr v1.HelmRelease) bool {
+func ShouldRetryUpgrade(hr *v1.HelmRelease) bool {
 	if !hr.Spec.Rollback.Retry {
 		return false
 	}
