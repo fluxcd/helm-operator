@@ -8,5 +8,6 @@ The following metrics are exposed:
 
 | Metric | Description
 |--------|---
-| `release_duration_seconds` | Release duration in seconds.
-| `release_queue_length_count` | Count of releases waiting in the queue to be processed.
+| `release_duration_seconds` | Release synchronization duration in seconds. |
+| `release_phase_duration_seconds` | Release phase synchronization duration in seconds. |
+| `release_queue_length_count` | Count of release jobs waiting in the queue to be processed. |

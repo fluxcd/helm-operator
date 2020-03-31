@@ -21,14 +21,14 @@ var (
 		Namespace: "flux",
 		Subsystem: "helm_operator",
 		Name:      "release_duration_seconds",
-		Help:      "Release duration in seconds.",
+		Help:      "Release synchronization duration in seconds.",
 		Buckets:   durationBuckets,
 	}, []string{LabelSuccess, LabelNamespace, LabelReleaseName})
 	releaseActionDuration = prometheus.NewHistogramFrom(stdprometheus.HistogramOpts{
 		Namespace:   "flux",
 		Subsystem:   "helm_operator",
 		Name:        "release_phase_duration_seconds",
-		Help:        "Release phase duration in seconds.",
+		Help:        "Release synchronization phase duration in seconds.",
 		ConstLabels: nil,
 		Buckets:     durationBuckets,
 	}, []string{LabelAction, LabelSuccess, LabelNamespace, LabelReleaseName})

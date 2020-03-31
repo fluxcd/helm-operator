@@ -289,6 +289,35 @@ HelmReleaseStatus
 <table>
 <tr>
 <td>
+<code>observedGeneration</code><br>
+<em>
+int64
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ObservedGeneration is the most recent generation observed by
+the operator.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>phase</code><br>
+<em>
+<a href="#helm.fluxcd.io/v1.HelmReleasePhase">
+HelmReleasePhase
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Phase the release is in, one of (&lsquo;ChartFetched&rsquo;,
+&lsquo;ChartFetchFailed&rsquo;, &lsquo;Installing&rsquo;, &lsquo;Upgrading&rsquo;, &lsquo;Succeeded&rsquo;,
+&lsquo;RollingBack&rsquo;, &lsquo;RolledBack&rsquo;, &lsquo;RollbackFailed&rsquo;)</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>releaseName</code><br>
 <em>
 string
@@ -310,19 +339,6 @@ string
 <em>(Optional)</em>
 <p>ReleaseStatus is the status as given by Helm for the release
 managed by this resource.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>observedGeneration</code><br>
-<em>
-int64
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>ObservedGeneration is the most recent generation observed by
-the operator.</p>
 </td>
 </tr>
 <tr>
@@ -781,6 +797,23 @@ Valid HelmReleaseConditionType values are:
 &ldquo;ChartFetched&rdquo;,
 &ldquo;Released&rdquo;,
 &ldquo;RolledBack&rdquo;</p>
+<h3 id="helm.fluxcd.io/v1.HelmReleasePhase">HelmReleasePhase
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#helm.fluxcd.io/v1.HelmReleaseStatus">HelmReleaseStatus</a>)
+</p>
+<p>HelmReleasePhase represents the phase a HelmRelease is in.
+Valid HelmReleasePhase values are:
+&ldquo;ChartFetched&rdquo;,
+&ldquo;ChartFetchFailed&rdquo;,
+&ldquo;Installing&rdquo;,
+&ldquo;Upgrading&rdquo;,
+&ldquo;Succeeded&rdquo;,
+&ldquo;Failed&rdquo;,
+&ldquo;RollingBack&rdquo;,
+&ldquo;RolledBack&rdquo;,
+&ldquo;RollbackFailed&rdquo;,</p>
 <h3 id="helm.fluxcd.io/v1.HelmReleaseSpec">HelmReleaseSpec
 </h3>
 <p>
@@ -1026,6 +1059,35 @@ HelmValues
 <tbody>
 <tr>
 <td>
+<code>observedGeneration</code><br>
+<em>
+int64
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ObservedGeneration is the most recent generation observed by
+the operator.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>phase</code><br>
+<em>
+<a href="#helm.fluxcd.io/v1.HelmReleasePhase">
+HelmReleasePhase
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Phase the release is in, one of (&lsquo;ChartFetched&rsquo;,
+&lsquo;ChartFetchFailed&rsquo;, &lsquo;Installing&rsquo;, &lsquo;Upgrading&rsquo;, &lsquo;Succeeded&rsquo;,
+&lsquo;RollingBack&rsquo;, &lsquo;RolledBack&rsquo;, &lsquo;RollbackFailed&rsquo;)</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>releaseName</code><br>
 <em>
 string
@@ -1047,19 +1109,6 @@ string
 <em>(Optional)</em>
 <p>ReleaseStatus is the status as given by Helm for the release
 managed by this resource.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>observedGeneration</code><br>
-<em>
-int64
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>ObservedGeneration is the most recent generation observed by
-the operator.</p>
 </td>
 </tr>
 <tr>
