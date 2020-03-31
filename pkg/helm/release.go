@@ -1,10 +1,6 @@
 package helm
 
-import (
-	"time"
-
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-)
+import "time"
 
 // Define release statuses
 const (
@@ -36,7 +32,6 @@ type Release struct {
 	Info      *Info
 	Values    map[string]interface{}
 	Manifest  string
-	Resources []unstructured.Unstructured
 	Version   int
 }
 
