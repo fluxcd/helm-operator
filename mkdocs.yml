@@ -9,7 +9,7 @@ repo_url: https://github.com/fluxcd/helm-operator
 edit_uri: ""
 
 extra:
-  version: master
+  version: 1.0.0
   social:
     - type: 'github'
       link: 'https://github.com/fluxcd/helm-operator'
