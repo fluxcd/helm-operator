@@ -64,7 +64,8 @@ chart and their default values.
 | `image.pullSecret`                                | `None`                                               | Image pull secret
 | `resources.requests.cpu`                          | `50m`                                                | CPU resource requests for the deployment
 | `resources.requests.memory`                       | `64Mi`                                               | Memory resource requests for the deployment
-| `resources.limits`                                | `None`                                               | CPU/memory resource limits for the deployment
+| `resources.requests.cpu`                          | `None`                                               | CPU resource limits for the deployment
+| `resources.limits.memory`                         | `1Gi`                                                | Memory resource limits for the deployment
 | `nodeSelector`                                    | `{}`                                                 | Node Selector properties for the deployment
 | `tolerations`                                     | `[]`                                                 | Tolerations properties for the deployment
 | `affinity`                                        | `{}`                                                 | Affinity properties for the deployment
@@ -89,7 +90,7 @@ chart and their default values.
 | `git.ssh.configMapName`                           | `None`                                               | The name of a kubernetes config map containing the ssh config
 | `git.ssh.configMapKey`                            | `config`                                             | The name of the key in the kubernetes config map specified above
 | `chartsSyncInterval`                              | `3m`                                                 | Period on which to reconcile the Helm releases with `HelmRelease` resources
-| `statusUpdateInterval`                            | `None`                                               | Period on which to update the Helm release status in `HelmRelease` resources
+| `statusUpdateInterval`                            | `30s`                                                | Period on which to update the Helm release status in `HelmRelease` resources
 | `workers`                                         | `None`                                               | Number of workers processing releases
 | `logFormat`                                       | `fmt`                                                | Log format (fmt or json)
 | `logReleaseDiffs`                                 | `false`                                              | Helm Operator should log the diff when a chart release diverges (possibly insecure)
