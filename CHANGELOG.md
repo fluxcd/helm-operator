@@ -1,3 +1,77 @@
+## 1.0.0 (2020-04-07)
+
+> **Notice:** upgrading to this version from `<=0.10.x` by just
+> updating your Helm Operator image tag is not possible as the
+> CRD domain and version have changed. An upgrade guide can be
+> found [here](./docs/how-to/upgrade-to-ga.md).
+
+> **Notice:**  due to the multiple added fields, you need to
+> re-apply the `HelmRelease` CRD.
+
+This release marks the first GA release of the Helm Operator,
+and the end of the release candidate stretch releases.
+
+### Bug fixes
+
+ - status: unset `RolledBack` condition on `Released` == `True`
+   [fluxcd/helm-operator#326][#326]
+
+### Enhancements
+
+ - apis: generate CRDs using `controller-gen`
+   [fluxcd/helm-operator#270][#270]
+ - release: configure go logger to log using our go-kit logger
+   [fluxcd/helm-operator#306][#306]
+ - install: rename files and resource names
+   [fluxcd/helm-operator#322][#322]
+ - helm: update Helm 3 to `3.1.2` and Helm 2 to `2.16.3`
+   [fluxcd/helm-operator#333][#333]
+ - release: record release phases on the `HelmRelease` resource
+   [fluxcd/helm-operator#334][#334]
+ - release: introduce `--reuse-values` functionality
+   [fluxcd/helm-operator#359][#359]
+   
+### Maintenance and documentation
+
+ - docs: update `helm delete` documentation for Helm 3
+   [fluxcd/helm-operator#330][#330]
+ - docs: switch to `mkdocs`
+   [fluxcd/helm-operator#332][#332]
+ - docs: new quickstart guide, `HelmRelease` guide, FAQ, etc.
+   [fluxcd/helm-operator#321][#321]
+ - e2e: update `gitsrv` to `1.0.0`
+   [fluxcd/helm-operator#341][#341]
+ - docs: fix the name description in the secret section
+   [fluxcd/helm-operator#342][#342]
+ - docs: fix 'add Helm chart' example
+   [fluxcd/helm-operator#343][#343]
+ - docs: update `MAINTAINERS`
+   [fluxcd/helm-operator#351][#351]
+ - e2e: use binary of targeted Helm version in tests
+   [fluxcd/helm-operator#360][#360]
+   
+### Thanks
+
+Thanks to @stefansedich, @mmorejon, @sa-spag, @stefanprodan, @dholbach,
+@hiddeco, and others for their contributions to this release, feedback,
+and reporting issues.
+
+[#270]: https://github.com/fluxcd/helm-operator/pull/270
+[#306]: https://github.com/fluxcd/helm-operator/pull/306
+[#321]: https://github.com/fluxcd/helm-operator/pull/321
+[#322]: https://github.com/fluxcd/helm-operator/pull/322
+[#326]: https://github.com/fluxcd/helm-operator/pull/326
+[#330]: https://github.com/fluxcd/helm-operator/pull/330
+[#332]: https://github.com/fluxcd/helm-operator/pull/332
+[#333]: https://github.com/fluxcd/helm-operator/pull/333
+[#334]: https://github.com/fluxcd/helm-operator/pull/334
+[#341]: https://github.com/fluxcd/helm-operator/pull/341
+[#342]: https://github.com/fluxcd/helm-operator/pull/342
+[#343]: https://github.com/fluxcd/helm-operator/pull/343
+[#351]: https://github.com/fluxcd/helm-operator/pull/351
+[#359]: https://github.com/fluxcd/helm-operator/pull/359
+[#360]: https://github.com/fluxcd/helm-operator/pull/360
+
 ## 1.0.0-rc9 (2020-02-13)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
