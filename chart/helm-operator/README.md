@@ -59,7 +59,7 @@ chart and their default values.
 | -----------------------------------------------   | ---------------------------------------------------- | ---
 | `image.repository`                                | `docker.io/fluxcd/helm-operator`                     | Image repository
 | `image.tag`                                       | `{{ version }}`                                      | Image tag
-| `replicaCount`                                    | `1`                                                  | Number of Helm Operator pods to deploy, more than one is not desirable.
+| `replicaCount`                                    | `1`                                                  | Number of Helm Operator pods to deploy, more than one is not desirable
 | `image.pullPolicy`                                | `IfNotPresent`                                       | Image pull policy
 | `image.pullSecret`                                | `None`                                               | Image pull secret
 | `resources.requests.cpu`                          | `50m`                                                | CPU resource requests for the deployment
@@ -78,7 +78,7 @@ chart and their default values.
 | `serviceAccount.annotations`                      | `{}`                                                 | Additional Service Account annotations
 | `serviceAccount.name`                             | `flux`                                               | Service account to be used
 | `clusterRole.create`                              | `true`                                               | If `false`, Helm Operator will be restricted to the namespace where is deployed
-| `createCRD`                                       | `false`                                              | Create the HelmRelease CRD
+| `createCRD`                                       | `false`                                              | Install the `HelmRelease` CRD. Setting this value only has effect for Helm 2, as Helm 3 uses `--skip-crds` and will skip installation if the CRD is already present. Managing CRDs outside of Helm is recommended, also see the [Helm best practices](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/)
 | `service.type`                                    | `ClusterIP`                                          | Service type to be used (exposing the Helm Operator API outside of the cluster is not advised)
 | `service.port`                                    | `3030`                                               | Service port to be used
 | `updateChartDeps`                                 | `true`                                               | Update dependencies for charts
@@ -115,8 +115,8 @@ chart and their default values.
 | `configureRepositories.repositories`              | `None`                                               | List of custom Helm repositories to add. If non empty, the corresponding secret with a `repositories.yaml` will be created
 | `initPlugins.enable`                              | `false`                                              | Enable the initialization of Helm plugins using init containers
 | `initPlugins.cacheVolumeName`                     | `plugins-cache`                                      | Name for the plugins cache volume
-| `initPlugins.plugins`                             | `None`                                               | List of Helm plugins to initialize before starting the operator. If non empty, an init container will be added for every entry.
-| `kube.config`                                     | `None`                                               | Override for kubectl default config in the Helm Operator pod(s).
+| `initPlugins.plugins`                             | `None`                                               | List of Helm plugins to initialize before starting the operator. If non empty, an init container will be added for every entry
+| `kube.config`                                     | `None`                                               | Override for kubectl default config in the Helm Operator pod(s)
 | `prometheus.enabled`                              | `false`                                              | If enabled, adds prometheus annotations to Helm Operator pod(s)
 | `prometheus.serviceMonitor.create`                | `false`                                              | Set to true if using the Prometheus Operator
 | `prometheus.serviceMonitor.interval`              | `None`                                               | Interval at which metrics should be scraped
@@ -209,7 +209,7 @@ the Helm Operator:
 
 ```sh
 helm upgrade -i helm-operator fluxcd/helm-operator \
---namespace flux \
+    --namespace flux \
     --set git.ssh.secretName=helm-operator-ssh \
     --set-file git.ssh.known_hosts=/tmp/flux_known_hosts
 ```
