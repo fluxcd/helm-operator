@@ -217,7 +217,7 @@ helm upgrade -i helm-operator fluxcd/helm-operator \
 You can refer to a chart from your private Git with:
 
 ```yaml
-apiVersion: helm.fluxcd.io
+apiVersion: helm.fluxcd.io/v1
 kind: HelmRelease
 metadata:
   name: some-app
