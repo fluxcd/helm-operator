@@ -43,8 +43,8 @@ performed by the operator.
 
 ## Get started with the Helm Operator
 
-Get started [installing the Helm Operator](/chart/helm-operator/README.md)
-or just [browse through the documentation](https://docs.fluxcd.io/projects/helm-operator/en/stable/).
+Get started [installing the Helm Operator](chart/helm-operator/README.md)
+or just [browse through the documentation](https://docs.fluxcd.io/projects/helm-operator/).
 
 ### Integrations
 
@@ -73,7 +73,7 @@ be interested in the following:
 
 - [Our contributions guidelines](CONTRIBUTING.md)
 - [Build documentation](https://docs.fluxcd.io/en/stable/contributing/building.html)
-- [Release documentation](/internal_docs/releasing.md)
+- [Release documentation](internal_docs/releasing.md)
 
 ## <a name="help"></a>Getting Help
 
