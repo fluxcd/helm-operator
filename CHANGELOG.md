@@ -3,7 +3,7 @@
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/how-to/upgrading-to-ga.md).
+> found [here](docs/how-to/upgrade-to-ga.md).
 
 > **Notice:**  due to the multiple added fields, you need to
 > re-apply the `HelmRelease` CRD.
@@ -86,7 +86,7 @@ release, feedback, and reporting issues.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/how-to/upgrading-to-ga.md).
+> found [here](docs/how-to/upgrade-to-ga.md).
 
 > **Notice:**  due to the multiple added fields, you need to
 > re-apply the `HelmRelease` CRD.
@@ -179,7 +179,7 @@ this release, feedback, and reporting issues.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/how-to/upgrading-to-ga.md).
+> found [here](docs/how-to/upgrade-to-ga.md).
 
 ### Bug fixes
 
@@ -221,7 +221,7 @@ to this release, feedback, and reporting issues.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/how-to/upgrading-to-ga.md).
+> found [here](docs/how-to/upgrade-to-ga.md).
 
 This release fixes some (but not all) of the more critical bugs
 reported since Helm v3 was introduced in the last release.
@@ -265,7 +265,7 @@ issues.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/how-to/upgrading-to-ga.md).
+> found [here](docs/how-to/upgrade-to-ga.md).
 
 > **Notice:**  due to the added `helmVersion` field, you need
 > to re-apply the `HelmRelease` CRD.
@@ -347,7 +347,7 @@ v3 support, notably @gsf, @dminca, @rowecharles, @eschereisin,
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/how-to/upgrading-to-ga.md).
+> found [here](docs/how-to/upgrade-to-ga.md).
 
 ### Improvements
 
@@ -379,7 +379,7 @@ and @stefanprodan for contributions to this release.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/how-to/upgrading-to-ga.md).
+> found [here](docs/how-to/upgrade-to-ga.md).
 
 This is the third release candidate.
 
@@ -412,7 +412,7 @@ for contributions to this release.
 > **Notice:** upgrading to this version from `<=0.10.x` by just
 > updating your Helm Operator image tag is not possible as the
 > CRD domain and version have changed. An upgrade guide can be
-> found [here](./docs/how-to/upgrading-to-ga.md).
+> found [here](docs/how-to/upgrade-to-ga.md).
 
 This is the second release candidate.
 
@@ -467,7 +467,7 @@ for contributions to this release.
 
 > **Notice:** upgrading to this version by just updating your Helm
 > Operator image tag is not possible as the CRD domain and version
-> have changed. An upgrade guide can be found [here](./docs/how-to/upgrading-to-ga.md).
+> have changed. An upgrade guide can be found [here](docs/how-to/upgrade-to-ga.md).
 
 This is the first `1.0.0` release candidate, there is no rule about
 the amount of published release candidates before it is officially
@@ -552,7 +552,7 @@ This release was made possible by contributions from @jfrndz, @adrian,
 [#2312]: https://github.com/fluxcd/flux/pull/2312
 [#2316]: https://github.com/fluxcd/flux/pull/2316
 [#2317]: https://github.com/fluxcd/flux/pull/2317
-[helm 0.10.1 crd]: https://github.com/weaveworks/flux/blob/release/helm-0.10.x/deploy-helm/flux-helm-release-crd.yaml
+[helm 0.10.1 crd]: https://github.com/fluxcd/flux/blob/helm-0.10.1/deploy-helm/flux-helm-release-crd.yaml
 
 ## 0.10.0 (2019-07-10)
 
@@ -615,7 +615,7 @@ Many thanks to @adrian, @2opremio, @semyonslepov, @gtseres, @squaremo, @stefanpr
 [#2213]: https://github.com/weaveworks/flux/pull/2213
 [#2220]: https://github.com/weaveworks/flux/pull/2220
 [helm 0.10.0 crd]: https://github.com/weaveworks/flux/blob/release/helm-0.10.x/deploy-helm/flux-helm-release-crd.yaml
-[rollback docs]: https://github.com/weaveworks/flux/blob/release/helm-0.10.x/site/helm-integration.md#rollbacks
+[rollback docs]: docs/helmrelease-guide/rollbacks.md
 [fluxcd DockerHub]: https://hub.docker.com/r/weaveworks/helm-operator/
 
 ## 0.9.2 (2019-06-13)
@@ -857,7 +857,7 @@ A thousand thanks to @davidkarlsen, @hiddeco, @ncabatoff, @stefanprodan,
     giving you control over the amount of time it may take for Helm to
     install or upgrade your chart
     [weaveworks/flux#1566](https://github.com/weaveworks/flux/pull/1566)
-  - The Helm operator [flag docs](./site/helm-operator.md#setup-and-configuration)
+  - The Helm operator [flag docs](docs/references/operator.md#setup-and-configuration)
     have been updated
     [weaveworks/flux#1594](https://github.com/weaveworks/flux/pull/1594)
   - Added tests to ensure Helm dependencies update behaviour is always as
@@ -895,7 +895,7 @@ WARNING: this release of the Helm operator is not backward-compatible:
 
 To use it, you will need to migrate custom resources to the new format
 supported by this version. See the [upgrade
-guide](./site/helm-upgrading-to-beta.md).
+guide](docs/how-to/upgrade-to-beta.md).
 
 This version of the Helm operator supports HelmRelease custom
 resources, which each specify a chart and values to use in a Helm
@@ -909,7 +909,9 @@ operator).
 All of these were added in
 [weaveworks/flux#1382](https://github.com/weaveworks/flux/pull/1382).
 
-See the [Helm operator guide](./site/helm-integration.md) for details.
+See the [Helm operator
+guide](https://docs.fluxcd.io/en/latest/references/helm-operator-integration/)
+for details.
 
  - You can now release charts from arbitrary Helm repos
  - You can now release charts from arbitrary git repos
@@ -1023,7 +1025,7 @@ This release drops the `-alpha` suffix, but remains <1.0 and should
   [weaveworks/flux#1276](https://github.com/weaveworks/flux/pull/1276)
 
 See [getting started with
-Helm](https://github.com/weaveworks/flux/blob/master/site/helm/get-started.md)
+Helm](docs/get-started/quickstart.md)
 and the [Helm chart
 instructions](https://github.com/weaveworks/flux/blob/master/chart/flux/README.md)
 for information on installing the Flux with the Helm operator.
