@@ -3,37 +3,36 @@
 # shellcheck disable=SC1090
 source "${E2E_DIR}/lib/defer.bash"
 # shellcheck disable=SC1090
+source "${E2E_DIR}/lib/helm.bash"
+# shellcheck disable=SC1090
 source "${E2E_DIR}/lib/template.bash"
 
 function install_tiller() {
-  if ! helm2 version > /dev/null 2>&1; then # only if helm isn't already installed
+  local HELM_VERSION=v2
+  if ! helm version > /dev/null 2>&1; then # only if helm isn't already installed
     kubectl --namespace "$E2E_NAMESPACE" create sa tiller
     kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount="$E2E_NAMESPACE":tiller
-    helm2 init --tiller-namespace "$E2E_NAMESPACE" --service-account tiller --upgrade --wait
+    helm init --service-account tiller --upgrade --wait
   fi
 }
 
 function uninstall_tiller() {
+  local HELM_VERSION=v2
   # Note: helm reset --force will delete the Tiller
   # instance but will not delete release history.
-  helm2 reset --tiller-namespace "$E2E_NAMESPACE" --force
+  helm reset --force
   kubectl delete clusterrolebinding tiller-cluster-rule
   kubectl --namespace "$E2E_NAMESPACE" delete sa tiller
 }
 
 function install_helm_operator_with_helm() {
-  local create_crds='true'
-  if kubectl get crd helmreleases.helm.fluxcd.io > /dev/null 2>&1; then
-    echo 'CRD existed, disabling CRD creation'
-    create_crds='false'
-  fi
+  kubectl apply -f "${ROOT_DIR}/deploy/crds.yaml"
 
   [ -f "${GITSRV_KNOWN_HOSTS}" ] || download_gitsrv_known_hosts
 
-  helm2 install --name helm-operator --wait \
-    --tiller-namespace "${E2E_NAMESPACE}" \
+  helm upgrade -i helm-operator "${ROOT_DIR}/chart/helm-operator" \
+    --wait \
     --namespace "${E2E_NAMESPACE}" \
-    --set createCRD="${create_crds}" \
     --set chartsSyncInterval=30s \
     --set image.repository=docker.io/fluxcd/helm-operator \
     --set image.tag=latest \
@@ -49,16 +48,22 @@ function install_helm_operator_with_helm() {
     --set configureRepositories.repositories[1].name="podinfo" \
     --set configureRepositories.repositories[1].url="https://stefanprodan.github.io/podinfo" \
     --set helm.versions="${HELM_VERSION:-v2\,v3}" \
-    --set tillerNamespace="${E2E_NAMESPACE}" \
-    "${ROOT_DIR}/chart/helm-operator"
+    --set tillerNamespace="${E2E_NAMESPACE}"
 }
 
 function uninstall_helm_operator_with_helm() {
-  helm2 delete \
-    --tiller-namespace "$E2E_NAMESPACE" \
-    --purge helm-operator > /dev/null 2>&1
+  command="helm delete helm-operator"
+  case $HELM_VERSION in
+    v2)
+        command="${command} --purge"
+        ;;
+    v3)
+        command="${command} --namespace ${E2E_NAMESPACE}"
+        ;;
+  esac
+  eval ${command} > /dev/null 2>&1
 
-  kubectl delete crd helmreleases.helm.fluxcd.io > /dev/null 2>&1
+  kubectl delete -f "${ROOT_DIR}/deploy/crds.yaml" > /dev/null 2>&1
 }
 
 function install_gitsrv() {

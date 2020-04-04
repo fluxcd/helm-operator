@@ -3,6 +3,7 @@
 function setup() {
   # Load libraries in setup() to access BATS_* variables
   load lib/env
+  load lib/helm
   load lib/install
   load lib/poll
 
@@ -97,7 +98,7 @@ function setup() {
   poll_until_equals 'upgrade failure' 'False' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
   # Assert release version
-  version=$(kubectl exec -n "$E2E_NAMESPACE" deploy/helm-operator -- helm3 status podinfo-git --namespace "$DEMO_NAMESPACE" -o json | jq .version)
+  version=$(helm status podinfo-git --namespace "$DEMO_NAMESPACE" -o json | jq .version)
   [ "$version" -eq 1 ]
 
   # Assert rollback count is zero

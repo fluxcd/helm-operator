@@ -3,7 +3,7 @@
 # shellcheck disable=SC1090
 source "${E2E_DIR}/lib/defer.bash"
 
-function helm_binary() {
+function helm() {
     case ${HELM_VERSION} in
         v2)
             helm2 --tiller-namespace "$E2E_NAMESPACE" "$@"
@@ -24,7 +24,7 @@ function package_and_upload_chart() {
   gen_dir=$(mktemp -d)
   defer rm -rf "'$gen_dir'"
 
-  helm_binary package --destination "$gen_dir" "$chart"
+  helm package --destination "$gen_dir" "$chart"
 
   # Upload
   chart_tarbal=$(find "$gen_dir" -type f -name "*.tgz" | head -n1)
