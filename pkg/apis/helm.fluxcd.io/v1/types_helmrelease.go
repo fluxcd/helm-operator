@@ -109,6 +109,19 @@ func (hr HelmRelease) GetMaxHistory() int {
 	return *hr.Spec.MaxHistory
 }
 
+// GetReuseValues returns if the values of the previous release should
+// be reused based on the value of `ResetValues`. When this value is
+// not explicitly set, it is assumed values should not be reused, as
+// this aligns with the declarative behaviour of the operator.
+func (hr HelmRelease) GetReuseValues() bool {
+	switch hr.Spec.ResetValues {
+	case nil:
+		return false
+	default:
+		return !*hr.Spec.ResetValues
+	}
+}
+
 // GetValuesFromSources maintains backwards compatibility with
 // ValueFileSecrets by merging them into the ValuesFrom array.
 func (hr HelmRelease) GetValuesFromSources() []ValuesFromSource {
@@ -383,9 +396,10 @@ type HelmReleaseSpec struct {
 	Timeout *int64 `json:"timeout,omitempty"`
 	// ResetValues will mark this Helm release to reset the values
 	// to the defaults of the targeted chart before performing
-	// an upgrade.
+	// an upgrade. Not explicitly setting this to `false` equals
+	// to `true` due to the declarative nature of the operator.
 	// +optional
-	ResetValues bool `json:"resetValues,omitempty"`
+	ResetValues *bool `json:"resetValues,omitempty"`
 	// SkipCRDs will mark this Helm release to skip the creation
 	// of CRDs during a Helm 3 installation.
 	// +optional

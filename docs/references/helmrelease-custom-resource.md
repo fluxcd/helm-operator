@@ -201,7 +201,8 @@ bool
 <em>(Optional)</em>
 <p>ResetValues will mark this Helm release to reset the values
 to the defaults of the targeted chart before performing
-an upgrade.</p>
+an upgrade. Not explicitly setting this to <code>false</code> equals
+to <code>true</code> due to the declarative nature of the operator.</p>
 </td>
 </tr>
 <tr>
@@ -964,7 +965,8 @@ bool
 <em>(Optional)</em>
 <p>ResetValues will mark this Helm release to reset the values
 to the defaults of the targeted chart before performing
-an upgrade.</p>
+an upgrade. Not explicitly setting this to <code>false</code> equals
+to <code>true</code> due to the declarative nature of the operator.</p>
 </td>
 </tr>
 <tr>

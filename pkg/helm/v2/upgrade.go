@@ -51,8 +51,8 @@ func (h *HelmV2) UpgradeFromPath(chartPath string, releaseName string, values []
 			helmv2.UpgradeDryRun(opts.DryRun),
 			helmv2.UpgradeForce(opts.Force),
 			helmv2.UpgradeRecreate(opts.Recreate),
-			helmv2.ReuseValues(opts.ReuseValues),
 			helmv2.ResetValues(opts.ResetValues),
+			helmv2.ReuseValues(opts.ReuseValues),
 			helmv2.UpgradeTimeout(int64(opts.Timeout.Seconds())),
 			helmv2.UpgradeWait(opts.Wait || opts.Atomic),
 		)

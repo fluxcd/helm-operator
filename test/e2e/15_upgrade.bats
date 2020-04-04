@@ -75,6 +75,32 @@ function setup() {
   poll_until_equals 'revision match' "$head_hash" "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.revision}'"
 }
 
+@test "When resetValues is explicitly set to false, previous values of a release are reused" {
+    # Install a chart manually with custom values set
+    # We use the direct URL to the tarball to prevent having to deal
+    # with repository indexes
+    helm_binary upgrade -i podinfo-takeover \
+        https://stefanprodan.github.io/podinfo/podinfo-3.2.2.tgz \
+        --namespace "$DEMO_NAMESPACE" \
+        --set replicaCount=2
+
+    # Apply the HelmRelease that takes over the manual installation
+    kubectl apply -f "$FIXTURES_DIR/releases/takeover.yaml" >&3
+    poll_until_equals 'release to be processed' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-takeover -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+    # Assert the replica count still equals to 2
+    replicaCount=$(kubectl get deploy -n "$DEMO_NAMESPACE" podinfo-takeover -o jsonpath='{.spec.replicas}')
+    [ "$replicaCount" -eq 2 ]
+
+    # Remove the resetValues flag from the HelmRelease
+    kubectl patch -f "$FIXTURES_DIR/releases/takeover.yaml" --type='json' -p='[{"op": "remove", "path": "/spec/resetValues"}]' >&3
+
+    kubectl get deploy/podinfo-takeover -n "$DEMO_NAMESPACE" -o jsonpath='{.spec.replicas}' >&3
+
+    # Assert reset to chart default values
+    poll_until_equals 'replica count resets to chart defaults' '1' "kubectl get deploy/podinfo-takeover -n "$DEMO_NAMESPACE" -o jsonpath='{.spec.replicas}'"
+}
+
 @test "When a HelmRelease is nested in a chart, an upgrade does succeed" {
   # Install chartmuseum
   install_chartmuseum chartmuseum_result

@@ -141,6 +141,8 @@ spec:
             resetValues:
               description: ResetValues will mark this Helm release to reset the values
                 to the defaults of the targeted chart before performing an upgrade.
+                Not explicitly setting this to `false` equals to `true` due to the
+                declarative nature of the operator.
               type: boolean
             rollback:
               description: The rollback settings for this Helm release.
