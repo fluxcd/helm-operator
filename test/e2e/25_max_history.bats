@@ -30,7 +30,7 @@ function setup() {
   done
 
   # Check count of revisions is <= 10
-  count=$(kubectl exec -n "$E2E_NAMESPACE" deploy/helm-operator -- helm3 history podinfo-helm-repository --namespace "$DEMO_NAMESPACE" --skip-headers | tail -n +2 | wc -l)
+  count=$(helm history podinfo-helm-repository --namespace "$DEMO_NAMESPACE" --skip-headers | tail -n +2 | wc -l)
   [ "$count" -eq 10 ]
 }
 
@@ -55,7 +55,7 @@ function setup() {
   done
 
   # Check count of revisions is <= 5
-  count=$(kubectl exec -n "$E2E_NAMESPACE" deploy/helm-operator -- helm3 history podinfo-helm-repository --namespace "$DEMO_NAMESPACE" --skip-headers | tail -n +2 | wc -l)
+  count=$(helm history podinfo-helm-repository --namespace "$DEMO_NAMESPACE" --skip-headers | tail -n +2 | wc -l)
   [ "$count" -eq 5 ]
 }
 

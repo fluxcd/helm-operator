@@ -79,7 +79,7 @@ function setup() {
     # Install a chart manually with custom values set
     # We use the direct URL to the tarball to prevent having to deal
     # with repository indexes
-    helm_binary upgrade -i podinfo-takeover \
+    helm upgrade -i podinfo-takeover \
         https://stefanprodan.github.io/podinfo/podinfo-3.2.2.tgz \
         --namespace "$DEMO_NAMESPACE" \
         --set replicaCount=2
