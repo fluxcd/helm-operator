@@ -70,16 +70,17 @@ spec:
   forceUpgrade: true
 ```
 
-## Resetting values during upgrade
+## Reusing values during upgrade
 
-To ignore any previous used values for a release and make Helm use the values
-as they are in the `values.yaml` file of the Helm chart used, you can set
-`.resetValue`. You will likely want to use this when you have removed
-overriding `.values` from your `HelmRelease`:
+Due to the declarative behaviour of the Helm Operator it resets all values by
+default, so that the only configuration being applied is what is defined in the
+`HelmRelease` resource. It is possible to disable this behaviour, and make it
+reuse values from the previous release by explicitly stating that values should
+not be reset:
 
 ```yaml
 spec:
-  resetValues: true
+  resetValues: false
 ```
 
 ## Configuring the timeout

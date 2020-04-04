@@ -241,6 +241,11 @@ func (in *HelmReleaseSpec) DeepCopyInto(out *HelmReleaseSpec) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.ResetValues != nil {
+		in, out := &in.ResetValues, &out.ResetValues
+		*out = new(bool)
+		**out = **in
+	}
 	in.Rollback.DeepCopyInto(&out.Rollback)
 	in.Values.DeepCopyInto(&out.Values)
 	return

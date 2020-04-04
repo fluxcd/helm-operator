@@ -348,7 +348,8 @@ func (r *Release) dryRunCompare(client helm.Client, rel *helm.Release, hr *v1.He
 		DryRun:      true,
 		Namespace:   hr.GetTargetNamespace(),
 		Force:       hr.Spec.ForceUpgrade,
-		ResetValues: hr.Spec.ResetValues,
+		ReuseValues: hr.GetReuseValues(),
+		ResetValues: !hr.GetReuseValues(),
 	})
 	if err != nil {
 		err = fmt.Errorf("dry-run upgrade for comparison failed: %w", err)
@@ -398,7 +399,8 @@ func (r *Release) upgrade(client helm.Client, hr *v1.HelmRelease, chart chart, v
 		Timeout:     hr.GetTimeout(),
 		Install:     false,
 		Force:       hr.Spec.ForceUpgrade,
-		ResetValues: hr.Spec.ResetValues,
+		ReuseValues: hr.GetReuseValues(),
+		ResetValues: !hr.GetReuseValues(),
 		SkipCRDs:    hr.Spec.SkipCRDs,
 		MaxHistory:  hr.GetMaxHistory(),
 		Wait:        hr.Spec.Wait || hr.Spec.Rollback.Enable,
