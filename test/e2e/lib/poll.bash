@@ -14,7 +14,7 @@ function poll_until_true() {
   local check_cmd="$2"
   # timeout after $retries * $wait_period seconds
   local retries=${3:-24}
-  local wait_period=${4:-5}
+  local wait_period=${4:-3}
   echo -n ">>> Waiting for $what " >&3
   count=0
   until eval "$check_cmd"; do

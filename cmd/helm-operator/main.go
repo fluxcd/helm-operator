@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	golog "log"
 	"os"
 	"os/signal"
 	"strings"
@@ -23,12 +24,13 @@ import (
 	clientset "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned"
 	ifinformers "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions"
 	"github.com/fluxcd/helm-operator/pkg/helm"
-	"github.com/fluxcd/helm-operator/pkg/helm/v2"
-	"github.com/fluxcd/helm-operator/pkg/helm/v3"
+	helmv2 "github.com/fluxcd/helm-operator/pkg/helm/v2"
+	helmv3 "github.com/fluxcd/helm-operator/pkg/helm/v3"
 	daemonhttp "github.com/fluxcd/helm-operator/pkg/http/daemon"
 	"github.com/fluxcd/helm-operator/pkg/operator"
 	"github.com/fluxcd/helm-operator/pkg/release"
 	"github.com/fluxcd/helm-operator/pkg/status"
+	"github.com/fluxcd/helm-operator/pkg/utils"
 )
 
 var (
@@ -124,7 +126,7 @@ func init() {
 
 	versionedHelmRepositoryIndexes = fs.StringSlice("helm-repository-import", nil, "Targeted version and the path of the Helm repository index to import, i.e. v3:/tmp/v3/index.yaml,v2:/tmp/v2/index.yaml")
 
-	enabledHelmVersions = fs.StringSlice("enabled-helm-versions", []string{v2.VERSION, v3.VERSION}, "Helm versions supported by this operator instance")
+	enabledHelmVersions = fs.StringSlice("enabled-helm-versions", []string{helmv2.VERSION, helmv3.VERSION}, "Helm versions supported by this operator instance")
 }
 
 func main() {
@@ -158,6 +160,10 @@ func main() {
 		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 		logger = log.With(logger, "caller", log.DefaultCaller)
 	}
+
+	// configure go logger to output using go-kit log
+	logWriter := utils.NewLogWriter(logger)
+	golog.SetOutput(logWriter)
 
 	// error channel
 	errc := make(chan error)
@@ -200,8 +206,8 @@ func main() {
 		versionedLogger := log.With(logger, "component", "helm", "version", v)
 
 		switch v {
-		case v2.VERSION:
-			helmClients.Add(v2.VERSION, v2.New(versionedLogger, kubeClient, v2.TillerOptions{
+		case helmv2.VERSION:
+			helmClients.Add(helmv2.VERSION, helmv2.New(versionedLogger, kubeClient, helmv2.TillerOptions{
 				Host:        *tillerIP,
 				Port:        *tillerPort,
 				Namespace:   *tillerNamespace,
@@ -212,9 +218,9 @@ func main() {
 				TLSCACert:   *tillerTLSCACert,
 				TLSHostname: *tillerTLSHostname,
 			}))
-		case v3.VERSION:
-			client := v3.New(versionedLogger, cfg)
-			helmClients.Add(v3.VERSION, client)
+		case helmv3.VERSION:
+			client := helmv3.New(versionedLogger, cfg)
+			helmClients.Add(helmv3.VERSION, client)
 		default:
 			mainLogger.Log("error", fmt.Sprintf("unsupported Helm version: %s", v))
 			continue
@@ -262,10 +268,11 @@ func main() {
 
 	rel := release.New(
 		log.With(logger, "component", "release"),
+		helmClients,
 		kubeClient.CoreV1(),
 		ifClient.HelmV1(),
 		gitChartSync,
-		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies},
+		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, DefaultHelmVersion: *defaultHelmVersion},
 	)
 
 	// prepare operator and start FluxRelease informer
@@ -273,7 +280,7 @@ func main() {
 	// _before_ starting it or else the cache sync seems to hang at
 	// random
 	opr := operator.New(log.With(logger, "component", "operator"),
-		*logReleaseDiffs, kubeClient, hrInformer, queue, rel, helmClients, *defaultHelmVersion)
+		*logReleaseDiffs, kubeClient, hrInformer, queue, rel)
 	go ifInformerFactory.Start(shutdown)
 
 	// wait for the caches to be synced before starting _any_ workers

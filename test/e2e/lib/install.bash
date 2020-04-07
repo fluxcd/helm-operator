@@ -3,36 +3,37 @@
 # shellcheck disable=SC1090
 source "${E2E_DIR}/lib/defer.bash"
 # shellcheck disable=SC1090
+source "${E2E_DIR}/lib/helm.bash"
+# shellcheck disable=SC1090
 source "${E2E_DIR}/lib/template.bash"
 
 function install_tiller() {
-  if ! helm2 version > /dev/null 2>&1; then # only if helm isn't already installed
+  local HELM_VERSION=v2
+  if ! helm version > /dev/null 2>&1; then # only if helm isn't already installed
     kubectl --namespace "$E2E_NAMESPACE" create sa tiller
     kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount="$E2E_NAMESPACE":tiller
-    helm2 init --tiller-namespace "$E2E_NAMESPACE" --service-account tiller --upgrade --wait
+    helm init --service-account tiller --upgrade --wait
   fi
 }
 
 function uninstall_tiller() {
+  local HELM_VERSION=v2
   # Note: helm reset --force will delete the Tiller
   # instance but will not delete release history.
-  helm2 reset --tiller-namespace "$E2E_NAMESPACE" --force
+  helm reset --force
   kubectl delete clusterrolebinding tiller-cluster-rule
   kubectl --namespace "$E2E_NAMESPACE" delete sa tiller
 }
 
 function install_helm_operator_with_helm() {
-  local create_crds='true'
-  if kubectl get crd helmreleases.helm.fluxcd.io > /dev/null 2>&1; then
-    echo 'CRD existed, disabling CRD creation'
-    create_crds='false'
-  fi
+  kubectl apply -f "${ROOT_DIR}/deploy/crds.yaml"
 
-  helm2 install --name helm-operator --wait \
-    --tiller-namespace "${E2E_NAMESPACE}" \
+  [ -f "${GITSRV_KNOWN_HOSTS}" ] || download_gitsrv_known_hosts
+
+  helm upgrade -i helm-operator "${ROOT_DIR}/chart/helm-operator" \
+    --wait \
     --namespace "${E2E_NAMESPACE}" \
-    --set createCRD="${create_crds}" \
-    --set chartsSyncInterval=3s \
+    --set chartsSyncInterval=30s \
     --set image.repository=docker.io/fluxcd/helm-operator \
     --set image.tag=latest \
     --set git.pollInterval=3s \
@@ -40,26 +41,34 @@ function install_helm_operator_with_helm() {
     --set git.config.enabled=true \
     --set-string git.config.data="${GITCONFIG}" \
     --set git.ssh.secretName=flux-git-deploy \
-    --set-string git.ssh.known_hosts="${KNOWN_HOSTS}" \
+    --set-string git.ssh.known_hosts="$(cat "${GITSRV_KNOWN_HOSTS}")" \
     --set configureRepositories.enable=true \
     --set configureRepositories.repositories[0].name="stable" \
     --set configureRepositories.repositories[0].url="https://kubernetes-charts.storage.googleapis.com" \
     --set configureRepositories.repositories[1].name="podinfo" \
     --set configureRepositories.repositories[1].url="https://stefanprodan.github.io/podinfo" \
     --set helm.versions="${HELM_VERSION:-v2\,v3}" \
-    --set tillerNamespace="${E2E_NAMESPACE}" \
-    "${ROOT_DIR}/chart/helm-operator"
+    --set tillerNamespace="${E2E_NAMESPACE}"
 }
 
 function uninstall_helm_operator_with_helm() {
-  helm2 delete \
-    --tiller-namespace "$E2E_NAMESPACE" \
-    --purge helm-operator > /dev/null 2>&1
+  command="helm delete helm-operator"
+  case $HELM_VERSION in
+    v2)
+        command="${command} --purge"
+        ;;
+    v3)
+        command="${command} --namespace ${E2E_NAMESPACE}"
+        ;;
+  esac
+  eval ${command} > /dev/null 2>&1
 
-  kubectl delete crd helmreleases.helm.fluxcd.io > /dev/null 2>&1
+  kubectl delete -f "${ROOT_DIR}/deploy/crds.yaml" > /dev/null 2>&1
 }
 
-function install_git_srv() {
+function install_gitsrv() {
+  [ -f "${GITSRV_KNOWN_HOSTS}" ] || download_gitsrv_known_hosts
+
   local external_access_result_var=${1}
   local kustomization_dir=${2:-base/gitsrv}
   local gen_dir
@@ -68,7 +77,7 @@ function install_git_srv() {
   ssh-keygen -t rsa -N "" -f "$gen_dir/id_rsa"
   kubectl create secret generic flux-git-deploy \
     --namespace="${E2E_NAMESPACE}" \
-    --from-file="${FIXTURES_DIR}/known_hosts" \
+    --from-file="${GITSRV_KNOWN_HOSTS}" \
     --from-file="$gen_dir/id_rsa" \
     --from-file=identity="$gen_dir/id_rsa" \
     --from-file="$gen_dir/id_rsa.pub"
@@ -79,9 +88,9 @@ function install_git_srv() {
   kubectl -n "${E2E_NAMESPACE}" rollout status deployment/gitsrv
 
   if [ -n "$external_access_result_var" ]; then
-    local git_srv_podname
-    git_srv_podname=$(kubectl get pod -n "${E2E_NAMESPACE}" -l name=gitsrv -o jsonpath="{['items'][0].metadata.name}")
-    coproc kubectl port-forward -n "${E2E_NAMESPACE}" "$git_srv_podname" :22
+    local gitsrv_podname
+    gitsrv_podname=$(kubectl get pod -n "${E2E_NAMESPACE}" -l name=gitsrv -o jsonpath="{['items'][0].metadata.name}")
+    coproc kubectl port-forward -n "${E2E_NAMESPACE}" "$gitsrv_podname" :22
     local local_port
     read -r local_port <&"${COPROC[0]}"-
     # shellcheck disable=SC2001
@@ -92,7 +101,12 @@ function install_git_srv() {
   fi
 }
 
-function uninstall_git_srv() {
+function download_gitsrv_known_hosts() {
+  mkdir -p "$(dirname "${GITSRV_KNOWN_HOSTS}")"
+  curl -sL "https://github.com/fluxcd/gitsrv/releases/download/${GITSRV_VERSION}/known_hosts.txt" > "${GITSRV_KNOWN_HOSTS}"
+}
+
+function uninstall_gitsrv() {
   local kustomization_dir=${1:-base/gitsrv}
 
   # Silence secret deletion errors since the secret can be missing (deleted by uninstalling Flux)

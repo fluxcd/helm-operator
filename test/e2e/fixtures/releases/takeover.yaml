@@ -1,0 +1,15 @@
+---
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: podinfo-takeover
+  namespace: demo
+spec:
+  releaseName: podinfo-takeover
+  timeout: 15
+  resetValues: false
+  chart:
+    repository: https://stefanprodan.github.io/podinfo
+    name: podinfo
+    version: 3.2.2
+  values: {}

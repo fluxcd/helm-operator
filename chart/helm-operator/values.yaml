@@ -26,9 +26,9 @@ logReleaseDiffs: false
 # Period on which to reconcile the Helm releases with `HelmRelease` resources
 chartsSyncInterval: "3m"
 # Period on which to update the Helm release status in `HelmRelease` resources
-statusUpdateInterval:
+statusUpdateInterval: "30s"
 # Amount of workers processing releases
-workers: 2
+workers: 4
 
 # Helm versions supported by this operator instance
 helm:
@@ -195,6 +195,19 @@ extraVolumeMounts: []
 extraVolumes: []
 initContainers: []
 resources:
+  limits:
+    memory: 1Gi
   requests:
     cpu: 50m
     memory: 64Mi
+# Host aliases allow the modification of the hosts file (/etc/hosts) inside Helm Operator container.
+hostAliases: {}
+# - ip: "127.0.0.1"
+#   hostnames:
+#   - "foo.local"
+#   - "bar.local"
+# - ip: "10.1.2.3"
+#   hostnames:
+#   - "foo.remote"
+#   - "bar.remote"
+

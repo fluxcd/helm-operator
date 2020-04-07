@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	kube "k8s.io/client-go/kubernetes"
@@ -174,13 +173,13 @@ func SetObservedGeneration(client v1client.HelmReleaseInterface, hr *v1.HelmRele
 
 // HasSynced returns if the HelmRelease has been processed by the
 // controller.
-func HasSynced(hr v1.HelmRelease) bool {
+func HasSynced(hr *v1.HelmRelease) bool {
 	return hr.Status.ObservedGeneration >= hr.Generation
 }
 
 // HasRolledBack returns if the current generation of the HelmRelease
 // has been rolled back.
-func HasRolledBack(hr v1.HelmRelease) bool {
+func HasRolledBack(hr *v1.HelmRelease) bool {
 	if !HasSynced(hr) {
 		return false
 	}
@@ -190,12 +189,12 @@ func HasRolledBack(hr v1.HelmRelease) bool {
 		return false
 	}
 
-	return rolledBack.Status == corev1.ConditionTrue
+	return rolledBack.Status == v1.ConditionTrue
 }
 
 // ShouldRetryUpgrade returns if the upgrade of a rolled back release should
 // be retried.
-func ShouldRetryUpgrade(hr v1.HelmRelease) bool {
+func ShouldRetryUpgrade(hr *v1.HelmRelease) bool {
 	if !hr.Spec.Rollback.Retry {
 		return false
 	}

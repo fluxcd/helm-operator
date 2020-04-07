@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest a new feature for the Flux Helm operator
+about: Suggest a new feature for the Helm Operator
 title: ''
 labels: blocked needs validation, enhancement
 assignees: ''
@@ -11,7 +11,7 @@ assignees: ''
 A clear and concise description of the feature.
 
 **What would the new user story look like?**
-How would the new interaction with the Flux Helm operator look like? E.g.
+How would the new interaction with the Helm Operator look like? E.g.
 0. What are the prerequisites for this?
 1. User starts up the operator using the --add-frobnication flag
 2. A new `HelmRelease` is applied

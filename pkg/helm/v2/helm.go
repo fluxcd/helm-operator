@@ -57,7 +57,7 @@ func New(logger log.Logger, kubeClient *kubernetes.Clientset, opts TillerOptions
 	for {
 		client, host, err := newHelmClient(kubeClient, opts)
 		if err != nil {
-			logger.Log("error", fmt.Sprintf("error creating Client (v2) client: %s", err.Error()))
+			logger.Log("error", fmt.Errorf("errored creating Helm 2 client: %w", err))
 			time.Sleep(20 * time.Second)
 			continue
 		}

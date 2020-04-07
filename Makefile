@@ -32,8 +32,6 @@ IMAGE_TAG:=$(shell ./docker/image-tag)
 VCS_REF:=$(shell git rev-parse HEAD)
 BUILD_DATE:=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-DOCS_PORT:=8000
-
 all: $(GOBIN)/bin/helm-operator build/.helm-operator.done
 
 clean:
@@ -139,22 +137,20 @@ cache/bats-core-$(BATS_COMMIT).tar.gz:
 generate: generate-codegen generate-deploy
 
 generate-codegen:
-	./hack/update/generated.sh
+	./hack/update/generate-codegen.sh
 
-generate-deploy: pkg/install/generated_templates.gogen.go
+generate-crds:
+	./hack/update/generate-crds.sh
+
+generate-deploy: generate-crds pkg/install/generated_templates.gogen.go
 	cd deploy && go run ../pkg/install/generate.go deploy
-	cp ./deploy/flux-helm-release-crd.yaml ./chart/helm-operator/crds/helmrelease.yaml
 
 check-generated: generate-deploy pkg/install/generated_templates.gogen.go
 	git diff --exit-code -- pkg/install/generated_templates.gogen.go
 	./hack/update/verify.sh
 
-build-docs:
-	@cd docs && docker build -t flux-docs .
+docs-deps:
+	pip3 install -r docs/requirements.txt
 
-test-docs: build-docs
-	@docker run -it flux-docs /usr/bin/linkchecker _build/html/index.html
-
-serve-docs: build-docs
-	@echo Stating docs website on http://localhost:${DOCS_PORT}/_build/html/index.html
-	@docker run -i -p ${DOCS_PORT}:8000 -e USER_ID=$$UID flux-docs
+serve-docs: docs-deps
+	mkdocs serve

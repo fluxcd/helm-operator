@@ -1,17 +1,18 @@
 package v2
 
 import (
+	"fmt"
 	"os"
 	"sync"
 
 	"github.com/pkg/errors"
+
 	"k8s.io/helm/pkg/repo"
 )
 
 var repositoryConfigLock sync.RWMutex
 
 func (h *HelmV2) RepositoryIndex() error {
-
 	repositoryConfigLock.RLock()
 	f, err := loadRepositoryConfig()
 	repositoryConfigLock.RUnlock()
@@ -45,6 +46,9 @@ func (h *HelmV2) RepositoryAdd(name, url, username, password, certFile, keyFile,
 	if err != nil {
 		return err
 	}
+	if f.Has(name) {
+		return fmt.Errorf("chart repository with name '%s' already exists", name)
+	}
 
 	c := &repo.Entry{
 		Name:     name,
@@ -56,10 +60,6 @@ func (h *HelmV2) RepositoryAdd(name, url, username, password, certFile, keyFile,
 		CAFile:   caFile,
 	}
 	f.Add(c)
-
-	if f.Has(name) {
-		return errors.New("chart repository with name %s already exists")
-	}
 
 	r, err := repo.NewChartRepository(c, getterProviders())
 	if err != nil {

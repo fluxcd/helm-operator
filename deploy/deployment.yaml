@@ -1,0 +1,158 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-operator
+  namespace: flux
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: helm-operator
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: helm-operator
+      annotations:
+        prometheus.io/scrape: "true"
+    spec:
+      serviceAccountName: helm-operator
+      volumes:
+      #
+      # You will need these two volumes if you want to establish validated TLS
+      # connections against Tiller.
+      #
+      # - name: tiller-tls-ca
+      #   configMap:
+      #     name: tiller-tls-ca-config
+      #     defaultMode: 0600
+      #
+      # Secret of type `kubernetes.io/tls`:
+      #
+      # - name: tiller-tls-cert
+      #   secret:
+      #     secretName: tiller-tls-cert
+      #     defaultMode: 0400
+      #
+      # The following volume is for using a customised `known_hosts` file,
+      # which you will need to do if you host your own git repository rather
+      # than using GitHub or the like. You will also need to mount it
+      # into the container, below.
+      #
+      # You may also wish to provide an `ssh_config` file,
+      # mentioning more than one `IdentityFile`; for instance, if you are
+      # using more than one GitHub repository. NB: the entry key should be
+      # "config" rather than "ssh_config" if mounted in ~/.ssh/.
+      #
+      # - name: sshdir
+      #   configMap:
+      #     name: flux-ssh-config
+      #     defaultMode: 0400
+      #
+      # You will need this volume if you are using a git repository that
+      # needs an SSH key for access; e.g., a GitHub deploy key. If
+      # you are using just one such repository, the default `ssh_config`
+      # already points at `/etc/fluxd/ssh/identity` as a key. If you
+      # want to use more than one key, you will need to provide your own
+      # `ssh_config` above, with an `IdentityFile` entry matching each
+      # key in the secret mentioned here.
+      #
+      # - name: git-key
+      #   secret:
+      #     secretName: flux-git-deploy
+      #     defaultMode: 0400 # when mounted read-only, we won't be able to chmod
+      #
+      # You will need this volume to import any custom Helm repositories
+      # and their credentials and/or certificate configurations. You will also
+      # need to mount it into the container and set the `--helm-repository-import`
+      # argument, below.
+      #
+      # - name: repositories-yaml
+      #   secret:
+      #     secretName: flux-helm-repositories
+      #     defaultMode: 0400
+      containers:
+      - name: helm-operator
+        # There are no ":latest" images for helm-operator. Find the most recent
+        # release or image version at https://hub.docker.com/r/fluxcd/helm-operator/tags
+        # and replace the tag here.
+        image: docker.io/fluxcd/helm-operator:1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 3030
+        livenessProbe:
+          httpGet:
+            port: 3030
+            path: /healthz
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            port: 3030
+            path: /healthz
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        volumeMounts:
+        #
+        # Include this if you need to mount a customised `known_hosts` or `ssh_config`
+        # file; you will also need the `sshdir` volume above.
+        #
+        # - name: sshdir
+        #   mountPath: /root/.ssh
+        #   readOnly: true
+        #
+        # Include this if you are using a git repository that needs an SSH
+        # private key for access; you will also need the `git-key` volume above.
+        #
+        # - name: git-key
+        #   mountPath: /etc/fluxd/ssh
+        #
+        # Include this if you want to import any Helm repositories and their
+        # credentials and/or certificate configurations; you will also need the
+        # `repositories-yaml` volume above, and the `--helm-repository-import`
+        # argument below.
+        #
+        # - name: repositories-yaml
+        #   mountPath: /root/.helm/repository/repositories.yaml
+        #
+        # Include these if you want to establish validated TLS connections
+        # against Tiller; you will also need the `tiller-tls-cert` and
+        # `tiller-tls-ca` volumes declared above, and the `--tiller-tls-*`
+        # arguments below.
+        #
+        # - name: tiller-tls-cert
+        #   mountPath: /etc/fluxd/helm
+        #   readOnly: true
+        # - name: tiller-tls-ca
+        #   mountPath: /etc/fluxd/helm-ca
+        #   readOnly: true
+        args:
+          # In what namespace Tiller can be found.
+        - --tiller-namespace=kube-system
+        #
+        # Comment out to to establish validated TLS connections against Tiller.
+        #
+        # - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt
+        # - --tiller-tls-enable=true
+        # - --tiller-tls-key-path=/etc/fluxd/helm/tls.key
+        # - --tiller-tls-cert-path=/etc/fluxd/helm/tls.crt
+        # - --tiller-tls-verify=true
+        # - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt
+        #
+        # Include this if you want to import any Helm repositories and their
+        # credential and/or certificate configurations; you will also need the
+        # `repositories-yaml` volume and volume mount, above.
+        #
+        # - --helm-repository-import=v2:/root/.helm/repository/repositories.yaml,v3:/root/.helm/repository/repositories.yaml
+        #
+        # Comment out to enable a single Helm version that can be targeted
+        # by a `HelmRelease`; defaults to `--enabled-helm-versions=v2,v3`.
+        #
+        # - --enabled-helm-versions=v3
