@@ -1,3 +1,14 @@
+## 1.0.0 (2020-04-08)
+
+### Improvements
+
+ - Update Helm Operator to `1.0.0`
+   [fluxcd/helm-operator#354](https://github.com/fluxcd/helm-operator/pull/354)
+ - Tune chart defaults for production use
+   [fluxcd/helm-operator#353](https://github.com/fluxcd/helm-operator/pull/353)
+ - Add hostAliases to chart options
+   [fluxcd/helm-operator#328](https://github.com/fluxcd/helm-operator/pull/328)
+
 ## 0.7.0 (2020-02-14)
 
 ### Improvements
