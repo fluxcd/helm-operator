@@ -1,3 +1,20 @@
+## 1.0.1 (2020-04-15)
+
+This is a patch release.
+
+### Bug fixes
+
+ - release: do not swallow dependency update errors
+   [fluxcd/helm-operator#372][#372]
+
+### Thanks
+
+Thanks to @brew, @qvmedvedev, @stefansedich, @hiddeco,
+@stefanprodan, and others for their contributions to this release,
+feedback, and reporting issues.
+
+[#372]: https://github.com/fluxcd/helm-operator/pull/372
+
 ## 1.0.0 (2020-04-07)
 
 > **Notice:** upgrading to this version from `<=0.10.x` by just
