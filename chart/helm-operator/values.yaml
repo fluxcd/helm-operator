@@ -5,7 +5,7 @@ fullnameOverride: ""
 
 image:
   repository: docker.io/fluxcd/helm-operator
-  tag: 1.0.0-rc9
+  tag: 1.0.1
   pullPolicy: IfNotPresent
   pullSecret:
 
@@ -195,8 +195,8 @@ extraVolumeMounts: []
 extraVolumes: []
 initContainers: []
 resources:
-  limits:
-    memory: 1Gi
+#  limits:
+#    memory: 1Gi
   requests:
     cpu: 50m
     memory: 64Mi
