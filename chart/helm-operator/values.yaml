@@ -195,8 +195,8 @@ extraVolumeMounts: []
 extraVolumes: []
 initContainers: []
 resources:
-  limits:
-    memory: 1Gi
+#  limits:
+#    memory: 1Gi
   requests:
     cpu: 50m
     memory: 64Mi
