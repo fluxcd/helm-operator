@@ -146,7 +146,9 @@ func (r *Release) prepareChart(client helm.Client, hr *v1.HelmRelease) (chart, f
 			return 0 < len(i)
 		}()
 		if r.config.UpdateDeps && !hr.Spec.GitChartSource.SkipDepUpdate {
-			client.DependencyUpdate(chartPath)
+			if err := client.DependencyUpdate(chartPath); err != nil {
+				return chart{}, nil, err
+			}
 		}
 		return chart{chartPath, revision, changed}, export.Clean, nil
 	case hr.Spec.RepoChartSource != nil && hr.Spec.RepoURL != "" && hr.Spec.Name != "" && hr.Spec.Version != "":
