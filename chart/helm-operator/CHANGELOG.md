@@ -1,3 +1,14 @@
+## 1.0.1 (2020-04-16)
+
+### Improvements
+
+ - Update Helm Operator to `1.0.1`
+   [fluxcd/helm-operator#375](https://github.com/fluxcd/helm-operator/pull/375)
+ - Revert default memory limit
+   [fluxcd/helm-operator#373](https://github.com/fluxcd/helm-operator/pull/373)
+ - Use `Recreate` strategy
+   [fluxcd/helm-operator#374](https://github.com/fluxcd/helm-operator/pull/374)
+   
 ## 1.0.0 (2020-04-08)
 
 ### Improvements
