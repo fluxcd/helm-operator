@@ -16,10 +16,9 @@ The idea here is that new issues are confirmed, which might require asking
 for more information, testing with a fresh environment. Once confirmed, the
 `blocked needs validation` label is removed, and the issue can be worked on.
 
-To set up Flux to test things, there's documentation about setting up a
-[standalone install](https://docs.fluxcd.io/en/latest/tutorials/get-started/)
-and a [Helm install](https://docs.fluxcd.io/en/latest/tutorials/get-started-helm/),
-which might be helpful.
+To set up Helm Operator to test things, there's documentation about setting up a
+[Helm install](https://docs.fluxcd.io/projects/helm-operator/en/stable/get-started/using-helm/) and a [Kustomize
+install](https://docs.fluxcd.io/projects/helm-operator/en/stable/get-started/using-kustomize/), which might be helpful.
 
 Please talk to us on Slack, if you should get stuck anywhere. We appreciate
 any help and look forward to talking to you soon!
@@ -30,7 +29,7 @@ By contributing to this project you agree to the Developer Certificate of
 Origin (DCO). This document was created by the Linux Kernel community and is a
 simple statement that you, as a contributor, have the legal right to make the
 contribution. No action from you is required, but it's a good idea to see the
-[DCO](DCO) file for details before you start contributing code to Flux.
+[DCO](DCO) file for details before you start contributing code to Helm Operator.
 
 ## Communications
 
@@ -73,11 +72,11 @@ This is a rough outline of how to prepare a contribution:
 
 ### How to build and run the project
 
-Refer to the [building doc](https://docs.fluxcd.io/en/latest/contributing/building/) to
-find out how to build from source.
+Refer to the [Building](https://docs.fluxcd.io/projects/helm-operator/en/stable/contributing/building/) guide to find out how to build from
+source.
 
-Refer to the [Get Started Developing](https://docs.fluxcd.io/en/latest/contributing/get-started-developing/)
-guide for a walkthrough on developing Flux locally.
+Refer to the [Get started developing](https://docs.fluxcd.io/projects/helm-operator/en/stable/contributing/get-started-developing/) guide
+for a walkthrough on developing Helm Operator locally.
 
 ### How to run the test suite
 
