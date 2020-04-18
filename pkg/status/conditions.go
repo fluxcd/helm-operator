@@ -71,6 +71,22 @@ func SetStatusPhase(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, ph
 	})
 }
 
+func SetStatusPhaseWithRevision(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, phase v1.HelmReleasePhase, revision string) error {
+	condition, ok := ConditionForPhase(hr, phase)
+	if !ok {
+		return nil
+	}
+	return SetCondition(client, hr, condition, func(cHr *v1.HelmRelease) {
+		switch {
+		case phase == v1.HelmReleasePhaseInstalling || phase == v1.HelmReleasePhaseUpgrading:
+			cHr.Status.LastAttemptedRevision = revision
+		case phase == v1.HelmReleasePhaseSucceeded:
+			cHr.Status.Revision = revision
+		}
+		cHr.Status.Phase = phase
+	})
+}
+
 // ConditionForPhrase returns a condition for the given phase.
 func ConditionForPhase(hr *v1.HelmRelease, phase v1.HelmReleasePhase) (v1.HelmReleaseCondition, bool) {
 	nowTime := metav1.NewTime(Clock.Now())

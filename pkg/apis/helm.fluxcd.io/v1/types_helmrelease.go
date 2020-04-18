@@ -540,6 +540,11 @@ type HelmReleaseStatus struct {
 	// +optional
 	Revision string `json:"revision,omitempty"`
 
+	// LastAttemptedRevision is the revision of the latest chart
+	// sync, and may be of a failed release.
+	// +optional
+	LastAttemptedRevision string `json:"lastAttemptedRevision,omitempty"`
+
 	// RollbackCount records the amount of rollback attempts made,
 	// it is incremented after a rollback failure and reset after a
 	// successful upgrade or revision change.

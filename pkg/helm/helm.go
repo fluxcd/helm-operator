@@ -5,6 +5,7 @@ import "sync"
 // Client is the generic interface for Helm (v2 and v3) clients.
 type Client interface {
 	Get(releaseName string, opts GetOptions) (*Release, error)
+	Status(releaseName string, opts StatusOptions) (Status, error)
 	UpgradeFromPath(chartPath string, releaseName string, values []byte, opts UpgradeOptions) (*Release, error)
 	History(releaseName string, opts HistoryOptions) ([]*Release, error)
 	Rollback(releaseName string, opts RollbackOptions) (*Release, error)

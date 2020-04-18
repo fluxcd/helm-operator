@@ -19,3 +19,15 @@ func (h *HelmV2) Get(releaseName string, opts helm.GetOptions) (*helm.Release, e
 	}
 	return releaseToGenericRelease(res.Release), nil
 }
+
+func (h *HelmV2) Status(releaseName string, opts helm.StatusOptions) (helm.Status, error) {
+	res, err := h.client.ReleaseStatus(releaseName, helmv2.StatusReleaseVersion(int32(opts.Version)))
+	if err != nil {
+		err = statusMessageErr(err)
+		if strings.Contains(err.Error(), "not found") {
+			return "", nil
+		}
+		return "", err
+	}
+	return lookUpGenericStatus(res.Info.Status.Code), nil
+}
