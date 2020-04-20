@@ -22,8 +22,8 @@ endif
 CURRENT_OS_ARCH=$(shell echo `go env GOOS`-`go env GOARCH`)
 GOBIN?=$(shell echo `go env GOPATH`/bin)
 
-MAIN_GO_MODULE:=$(shell go list -m -f '{{ .Path }}')
-LOCAL_GO_MODULES:=$(shell go list -m -f '{{ .Path }}' all | grep $(MAIN_GO_MODULE))
+MAIN_GO_MODULE:=$(shell go list -mod=readonly -m -f '{{ .Path }}')
+LOCAL_GO_MODULES:=$(shell go list -mod=readonly -m -f '{{ .Path }}' all | grep $(MAIN_GO_MODULE))
 godeps=$(shell go list -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
 
 HELM_OPERATOR_DEPS:=$(call godeps,./cmd/helm-operator/...)
@@ -143,7 +143,7 @@ generate-crds:
 	./hack/update/generate-crds.sh
 
 generate-deploy: generate-crds pkg/install/generated_templates.gogen.go
-	cd deploy && go run ../pkg/install/generate.go deploy
+	cd deploy && go run -mod=readonly ../pkg/install/generate.go deploy
 
 check-generated: generate-deploy pkg/install/generated_templates.gogen.go
 	git diff --exit-code -- pkg/install/generated_templates.gogen.go
