@@ -1,9 +1,6 @@
 package helm
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
-
 	"github.com/ghodss/yaml"
 )
 
@@ -22,8 +19,5 @@ func (v Values) YAML() ([]byte, error) {
 // encoded values.
 func (v Values) Checksum() string {
 	b, _ := v.YAML()
-
-	hasher := sha256.New()
-	hasher.Write(b)
-	return hex.EncodeToString(hasher.Sum(nil))
+	return Checksum(b)
 }

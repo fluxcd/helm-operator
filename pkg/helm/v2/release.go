@@ -4,7 +4,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/any"
 	"github.com/ncabatoff/go-seq/seq"
 
 	"k8s.io/helm/pkg/chartutil"
@@ -46,25 +45,13 @@ func chartToGenericChart(c *chart.Chart) *helm.Chart {
 	}
 }
 
-// filesToGenericFiles transforms an `any.Any` slice into a
-// stable sorted slice with generic `helm.File`s
-func filesToGenericFiles(f []*any.Any) []*helm.File {
-	gf := make([]*helm.File, len(f))
-	for i, ff := range f {
-		gf[i] = &helm.File{Name: ff.TypeUrl, Data: ff.Value}
-	}
-	sort.SliceStable(gf, func(i, j int) bool {
-		return seq.Compare(gf[i], gf[j]) > 0
-	})
-	return gf
-}
-
 // filesToGenericFiles transforms a `chart.Template` slice into
 // a stable sorted slice with generic `helm.File`s
 func templatesToGenericFiles(t []*chart.Template) []*helm.File {
 	gf := make([]*helm.File, len(t))
 	for i, tf := range t {
-		gf[i] = &helm.File{Name: tf.Name, Data: tf.Data}
+		checksum := helm.Checksum(tf.Data)
+		gf[i] = &helm.File{Name: tf.Name, Checksum: checksum}
 	}
 	sort.SliceStable(gf, func(i, j int) bool {
 		return seq.Compare(gf[i], gf[j]) > 0

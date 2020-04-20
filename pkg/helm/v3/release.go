@@ -43,7 +43,8 @@ func chartToGenericChart(c *chart.Chart) *helm.Chart {
 func filesToGenericFiles(f []*chart.File) []*helm.File {
 	gf := make([]*helm.File, len(f))
 	for i, ff := range f {
-		gf[i] = &helm.File{Name: ff.Name, Data: ff.Data}
+		checksum := helm.Checksum(ff.Data)
+		gf[i] = &helm.File{Name: ff.Name, Checksum: checksum}
 	}
 	sort.SliceStable(gf, func(i, j int) bool {
 		return seq.Compare(gf[i], gf[j]) > 0

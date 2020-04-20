@@ -51,12 +51,12 @@ type Chart struct {
 	Templates  []*File
 }
 
-// File represents a file as a name/value pair.
+// File represents a file as a name/checksum pair.
 // The name is a relative path within the scope
 // of the chart's base directory.
 type File struct {
-	Name string
-	Data []byte
+	Name     string
+	Checksum string
 }
 
 // Status holds the status of a release
