@@ -31,7 +31,6 @@ cd "${REPO_ROOT}"
 
 # turn off module mode before running the generators
 # https://github.com/kubernetes/code-generator/issues/69
-# we also need to populate vendor
 hack/go_container.sh go mod tidy
 hack/go_container.sh go mod vendor
 export GO111MODULE="off"
