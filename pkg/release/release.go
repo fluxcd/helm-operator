@@ -11,7 +11,7 @@ import (
 
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 
-	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	v1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/chartsync"
 	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/helm"
@@ -272,14 +272,30 @@ next:
 		}
 		logger.Log("info", "no changes", "phase", action)
 	case InstallAction:
+		if status.IsFailed(hr) {
+			if !status.HasSynced(hr) {
+				// We are in a failed state and the release not been synced, so
+				// we want to reset the install failed counter so installation will continue
+				status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseInstalling, chart.revision)
+				break
+			}
+			if !status.ShouldRetryInstall(hr, hr.Status.FailedCount) {
+				break
+			}
+		}
+
 		logger.Log("info", "running installation", "phase", action)
 		newRel, err = r.install(client, hr, chart, values)
 		if err != nil {
 			logger.Log("error", err, "phase", action)
 			errs = append(errs, err)
 
-			action = UninstallAction
-			goto next
+			if status.ShouldRetryInstall(hr, hr.Status.FailedCount+1) {
+				action = UninstallAction
+				goto next
+			}
+
+			break
 		}
 		logger.Log("info", "installation succeeded", "revision", chart.revision, "phase", action)
 
@@ -322,11 +338,18 @@ next:
 		action = AnnotateAction
 		goto next
 	case AnnotateAction:
-		if err := annotate(hr, newRel) ; err != nil {
+		if err := annotate(hr, newRel); err != nil {
 			logger.Log("warning", err, "phase", action)
 		}
 	case UninstallAction:
-		if err := uninstall(client, hr); err != nil {
+		curRel, err = client.Get(hr.GetReleaseName(), helm.GetOptions{Namespace: hr.GetTargetNamespace(), Version: 0})
+		if err != nil {
+			err = fmt.Errorf("unable to determine if uninstall should be performed: %w", err)
+			logger.Log("error", err, "phase", action)
+			errs = append(errs, err)
+			break
+		}
+		if err := r.uninstall(client, hr, curRel); err != nil {
 			logger.Log("warning", err, "phase", action)
 		}
 		if hr.Spec.GitChartSource != nil {
@@ -456,18 +479,24 @@ func annotate(hr *v1.HelmRelease, rel *helm.Release) (err error) {
 	return
 }
 
-func uninstall(client helm.Client, hr *v1.HelmRelease) (err error) {
+func (r *Release) uninstall(client helm.Client, hr *v1.HelmRelease, rel *helm.Release) (err error) {
 	defer func(start time.Time) {
 		ObserveReleaseAction(start, UninstallAction, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
 	}(time.Now())
-	err = client.Uninstall(hr.GetReleaseName(), helm.UninstallOptions{
-		Namespace:   hr.GetTargetNamespace(),
-		KeepHistory: false,
-		Timeout:     hr.GetTimeout(),
-	})
-	if err != nil {
-		err = fmt.Errorf("uninstall failed: %w", err)
+	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseUninstalling)
+	if rel != nil {
+		err = client.Uninstall(hr.GetReleaseName(), helm.UninstallOptions{
+			Namespace:   hr.GetTargetNamespace(),
+			KeepHistory: false,
+			Timeout:     hr.GetTimeout(),
+		})
+		if err != nil {
+			status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseUninstallFailed)
+			err = fmt.Errorf("uninstall failed: %w", err)
+			return
+		}
 	}
+	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseUninstalled)
 	return
 }
 

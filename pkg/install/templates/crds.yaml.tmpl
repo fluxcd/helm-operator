@@ -131,6 +131,19 @@ spec:
               enum:
               - v2
               - v3
+            install:
+              description: The install settings for this Helm release.
+              type: object
+              properties:
+                maxRetries:
+                  description: MaxRetries is the maximum amount of install retries
+                    the operator should make before bailing, it defaults to 5.
+                  type: integer
+                  format: int64
+                retry:
+                  description: Retry will mark this Helm release for install retries
+                    after a installation failure.
+                  type: boolean
             maxHistory:
               description: MaxHistory is the maximum amount of revisions to keep for
                 the Helm release. If not supplied, it defaults to 10.
@@ -325,12 +338,19 @@ spec:
                     - Unknown
                   type:
                     description: Type of the condition, one of ('ChartFetched', 'Released',
-                      'RolledBack').
+                      'RolledBack', 'Uninstalled').
                     type: string
                     enum:
                     - ChartFetched
                     - Released
                     - RolledBack
+                    - Uninstalled
+            failedCount:
+              description: FailedCount records the number of failed installs or upgrades,
+                it is incremented after an install or upgrade failure and reset after
+                a successful release or revision change.
+              type: integer
+              format: int64
             lastAttemptedRevision:
               description: LastAttemptedRevision is the revision of the latest chart
                 sync, and may be of a failed release.
@@ -343,7 +363,7 @@ spec:
             phase:
               description: Phase the release is in, one of ('ChartFetched', 'ChartFetchFailed',
                 'Installing', 'Upgrading', 'Succeeded', 'RollingBack', 'RolledBack',
-                'RollbackFailed')
+                'RollbackFailed', 'Uninstalling', 'Uninstalled', 'UninstallFailed')
               type: string
               enum:
               - ChartFetched
@@ -355,6 +375,9 @@ spec:
               - RollingBack
               - RolledBack
               - RollbackFailed
+              - Uninstalling
+              - Uninstalled
+              - UninstallFailed
             releaseName:
               description: ReleaseName is the name as either supplied or generated.
               type: string

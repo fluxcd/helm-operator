@@ -47,6 +47,9 @@ func SetConditions(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, con
 			case condition.Type == v1.HelmReleaseReleased && condition.Status == v1.ConditionTrue:
 				cHr.Status.Conditions = filterOutCondition(cHr.Status.Conditions, v1.HelmReleaseRolledBack)
 				cHr.Status.RollbackCount = 0
+				cHr.Status.FailedCount = 0
+			case condition.Type == v1.HelmReleaseReleased && condition.Status == v1.ConditionFalse:
+				cHr.Status.FailedCount = cHr.Status.FailedCount + 1
 			case condition.Type == v1.HelmReleaseRolledBack && condition.Status == v1.ConditionTrue:
 				cHr.Status.RollbackCount = cHr.Status.RollbackCount + 1
 			}
@@ -81,6 +84,8 @@ func SetStatusPhaseWithRevision(client v1client.HelmReleaseInterface, hr *v1.Hel
 			cHr.Status.LastAttemptedRevision = revision
 		case phase == v1.HelmReleasePhaseSucceeded:
 			cHr.Status.Revision = revision
+		case phase == v1.HelmReleasePhaseInstalling:
+			cHr.Status.FailedCount = 0
 		}
 	})
 }
@@ -118,6 +123,18 @@ func ConditionsForPhase(hr *v1.HelmRelease, phase v1.HelmReleasePhase) ([]v1.Hel
 		condition.Type = v1.HelmReleaseRolledBack
 		condition.Status = v1.ConditionFalse
 		condition.Message = fmt.Sprintf(`Rollback failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseUninstalling:
+		condition.Type = v1.HelmReleaseUninstalled
+		condition.Status = v1.ConditionUnknown
+		condition.Message = fmt.Sprintf(`Uninstalling Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseUninstalled:
+		condition.Type = v1.HelmReleaseUninstalled
+		condition.Status = v1.ConditionTrue
+		condition.Message = fmt.Sprintf(`Uninstalled Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseUninstallFailed:
+		condition.Type = v1.HelmReleaseUninstalled
+		condition.Status = v1.ConditionFalse
+		condition.Message = fmt.Sprintf(`Uninstall failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
 	case v1.HelmReleasePhaseChartFetched:
 		condition.Type = v1.HelmReleaseChartFetched
 		condition.Status = v1.ConditionTrue

@@ -199,3 +199,17 @@ func ShouldRetryUpgrade(hr *v1.HelmRelease) bool {
 	}
 	return hr.Spec.Rollback.GetMaxRetries() == 0 || hr.Status.RollbackCount <= hr.Spec.Rollback.GetMaxRetries()
 }
+
+// IsFailed returns if the HelmRelease is currently in the failed phase.
+func IsFailed(hr *v1.HelmRelease) bool {
+	return hr.Status.Phase == v1.HelmReleasePhaseFailed
+}
+
+// ShouldRetryInstall returns if the install of a failed release should
+// be retried.
+func ShouldRetryInstall(hr *v1.HelmRelease, failed int64) bool {
+	if !hr.Spec.Install.GetRetryEnabled() {
+		return false
+	}
+	return hr.Spec.Install.GetMaxRetries() == 0 || failed <= hr.Spec.Install.GetMaxRetries()
+}
