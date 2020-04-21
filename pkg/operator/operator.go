@@ -83,6 +83,7 @@ func New(
 	hrInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(new interface{}) {
 			if _, ok := checkCustomResourceType(controller.logger, new); ok {
+				releaseCount.Add(1)
 				controller.enqueueJob(new)
 			}
 		},
@@ -91,6 +92,7 @@ func New(
 		},
 		DeleteFunc: func(old interface{}) {
 			if hr, ok := checkCustomResourceType(controller.logger, old); ok {
+				releaseCount.Add(-1)
 				controller.release.Uninstall(hr.DeepCopy())
 			}
 		},

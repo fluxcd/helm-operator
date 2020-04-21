@@ -8,6 +8,7 @@ in Prometheus format.
 
 | Metric | Description
 |--------|---
+| `release_count` | Count of releases managed by the operator. |
 | `release_duration_seconds` | Release synchronization duration in seconds. This duration includes one or many `release_phase_durations`. |
 | `release_phase_duration_seconds` | Release phase synchronization duration in seconds. |
 | `release_phase_info` | The (negative) integer equaling the current phase of a release. Negative values are failed phases, `0` equals to unknown. See [release phases](#release-phases).
