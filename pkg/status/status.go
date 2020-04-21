@@ -70,12 +70,12 @@ bail:
 			if !ok {
 				continue
 			}
-			rel, _ := c.Get(hr.GetReleaseName(), helm.GetOptions{Namespace: hr.GetTargetNamespace()})
+			status, _ := c.Status(hr.GetReleaseName(), helm.StatusOptions{Namespace: hr.GetTargetNamespace()})
 			// If we are unable to get the status, we do not care why
-			if rel == nil {
+			if status == "" {
 				continue
 			}
-			if err := SetReleaseStatus(nsHrClient, hr, releaseName, rel.Info.Status.String()); err != nil {
+			if err := SetReleaseStatus(nsHrClient, hr, releaseName, status.String()); err != nil {
 				logger.Log("namespace", hr.Namespace, "resource", hr.Name, "err", err)
 				continue
 			}
@@ -119,7 +119,6 @@ func SetReleaseStatus(client v1client.HelmReleaseInterface, hr *v1.HelmRelease,
 // SetReleaseRevision updates the revision in the status of the HelmRelease
 // to the given revision, and sets the current revision as the previous one.
 func SetReleaseRevision(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, revision string) error {
-
 	firstTry := true
 	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
 		if !firstTry {

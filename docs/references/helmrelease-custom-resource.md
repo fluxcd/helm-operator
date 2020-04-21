@@ -357,6 +357,19 @@ deployed.</p>
 </tr>
 <tr>
 <td>
+<code>lastAttemptedRevision</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LastAttemptedRevision is the revision of the latest chart
+sync, and may be of a failed release.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>rollbackCount</code><br>
 <em>
 int64
@@ -1124,6 +1137,19 @@ string
 <em>(Optional)</em>
 <p>Revision holds the Git hash or version of the chart currently
 deployed.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>lastAttemptedRevision</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LastAttemptedRevision is the revision of the latest chart
+sync, and may be of a failed release.</p>
 </td>
 </tr>
 <tr>

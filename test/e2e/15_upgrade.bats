@@ -47,6 +47,7 @@ function setup() {
 
   # Assert change is rolled out
   poll_until_equals 'revision match' "$head_hash" "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.revision}'"
+  poll_until_equals 'revision attempted match' "$head_hash" "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.lastAttemptedRevision}'"
 }
 
 @test "When a values.yaml change in Git is made, a release is upgraded" {

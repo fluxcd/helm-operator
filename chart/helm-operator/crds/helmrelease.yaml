@@ -328,6 +328,10 @@ spec:
                     - ChartFetched
                     - Released
                     - RolledBack
+            lastAttemptedRevision:
+              description: LastAttemptedRevision is the revision of the latest chart
+                sync, and may be of a failed release.
+              type: string
             observedGeneration:
               description: ObservedGeneration is the most recent generation observed
                 by the operator.

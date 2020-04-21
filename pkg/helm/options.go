@@ -2,11 +2,20 @@ package helm
 
 import "time"
 
-// GetOptions holds the options available for Helm uninstall
+// GetOptions holds the options available for Helm get
 // operations, the version implementation _must_ implement all
 // fields supported by that version but can (silently) ignore
 // unsupported set values.
 type GetOptions struct {
+	Namespace string
+	Version   int
+}
+
+// StatusOptions holds the options available for Helm status
+// operations, the version implementation _must_ implement all
+// fields supported by that version but can (silently) ignore
+// unsupported set values.
+type StatusOptions struct {
 	Namespace string
 	Version   int
 }

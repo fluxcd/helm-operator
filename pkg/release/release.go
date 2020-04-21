@@ -98,7 +98,7 @@ func (r *Release) Sync(hr *v1.HelmRelease) (err error) {
 	}
 	var action action
 	var curRel *helm.Release
-	action, curRel, err = r.determineSyncAction(client, hr)
+	action, curRel, err = r.determineSyncAction(client, hr, chart)
 	if err != nil {
 		status.SetStatusPhase(r.hrClient.HelmReleases(hr.GetTargetNamespace()), hr, v1.HelmReleasePhaseFailed)
 		err = fmt.Errorf("failed to determine sync action for release: %w", err)
@@ -142,7 +142,7 @@ func (r *Release) prepareChart(client helm.Client, hr *v1.HelmRelease) (chart, f
 		}
 		chartPath = filepath.Join(export.Dir(), hr.Spec.GitChartSource.Path)
 		changed = func() bool {
-			i, _ := export.ChangedFiles(context.Background(), hr.Status.Revision, []string{hr.Spec.GitChartSource.Path})
+			i, _ := export.ChangedFiles(context.Background(), hr.Status.LastAttemptedRevision, []string{hr.Spec.GitChartSource.Path})
 			return 0 < len(i)
 		}()
 		if r.config.UpdateDeps && !hr.Spec.GitChartSource.SkipDepUpdate {
@@ -183,7 +183,7 @@ const (
 // this revision of the resource); before running the dry-run release to
 // determine if any undefined mutations have occurred. It returns a
 // booleans indicating if the release should be synced, or an error.
-func (r *Release) determineSyncAction(client helm.Client, hr *v1.HelmRelease) (action, *helm.Release, error) {
+func (r *Release) determineSyncAction(client helm.Client, hr *v1.HelmRelease, chart chart) (action, *helm.Release, error) {
 	curRel, err := client.Get(hr.GetReleaseName(), helm.GetOptions{Namespace: hr.GetTargetNamespace()})
 	if err != nil {
 		return SkipAction, nil, fmt.Errorf("failed to retrieve Helm release: %w", err)
@@ -219,7 +219,7 @@ func (r *Release) determineSyncAction(client helm.Client, hr *v1.HelmRelease) (a
 
 	// The release has been rolled back, inspect state.
 	if status.HasRolledBack(hr) {
-		if status.ShouldRetryUpgrade(hr) {
+		if chart.changed || status.ShouldRetryUpgrade(hr) {
 			return UpgradeAction, curRel, nil
 		}
 		hist, err := client.History(hr.GetReleaseName(), helm.HistoryOptions{Namespace: hr.GetTargetNamespace(), Max: hr.GetMaxHistory()})
@@ -232,6 +232,8 @@ func (r *Release) determineSyncAction(client helm.Client, hr *v1.HelmRelease) (a
 				break
 			}
 		}
+	} else if chart.changed {
+		return UpgradeAction, curRel, nil
 	}
 	return DryRunCompareAction, curRel, nil
 }
@@ -307,7 +309,7 @@ next:
 		goto next
 	case RollbackAction:
 		logger.Log("info", "running rollback", "phase", action)
-		if newRel, err = r.rollback(client, hr); err != nil {
+		if newRel, err = r.rollback(client, hr, chart.revision); err != nil {
 			errs = append(errs, err)
 			logger.Log("error", err, "phase", action)
 			break
@@ -342,9 +344,6 @@ func (r *Release) dryRunCompare(client helm.Client, rel *helm.Release, hr *v1.He
 	chart chart, values []byte) (dryRel *helm.Release, diff string, err error) {
 	defer func(start time.Time) {
 		ObserveReleaseAction(start, DryRunCompareAction, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
-		if err != nil {
-			println(err.Error())
-		}
 	}(time.Now())
 	dryRel, err = client.UpgradeFromPath(chart.chartPath, hr.GetReleaseName(), values, helm.UpgradeOptions{
 		DryRun:      true,
@@ -368,7 +367,7 @@ func (r *Release) install(client helm.Client, hr *v1.HelmRelease, chart chart, v
 	defer func(start time.Time) {
 		ObserveReleaseAction(start, InstallAction, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
 	}(time.Now())
-	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseInstalling)
+	status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseInstalling, chart.revision)
 	rel, err = client.UpgradeFromPath(chart.chartPath, hr.GetReleaseName(), values, helm.UpgradeOptions{
 		Namespace:  hr.GetTargetNamespace(),
 		Timeout:    hr.GetTimeout(),
@@ -383,8 +382,7 @@ func (r *Release) install(client helm.Client, hr *v1.HelmRelease, chart chart, v
 		err = fmt.Errorf("installation failed: %w", err)
 		return
 	}
-	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded)
-	status.SetReleaseRevision(r.hrClient.HelmReleases(hr.Namespace), hr, chart.revision)
+	status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded, chart.revision)
 	return
 }
 
@@ -395,7 +393,7 @@ func (r *Release) upgrade(client helm.Client, hr *v1.HelmRelease, chart chart, v
 	defer func(start time.Time) {
 		ObserveReleaseAction(start, UpgradeAction, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
 	}(time.Now())
-	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseUpgrading)
+	status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseUpgrading, chart.revision)
 	rel, err = client.UpgradeFromPath(chart.chartPath, hr.GetReleaseName(), values, helm.UpgradeOptions{
 		Namespace:   hr.GetTargetNamespace(),
 		Timeout:     hr.GetTimeout(),
@@ -412,18 +410,18 @@ func (r *Release) upgrade(client helm.Client, hr *v1.HelmRelease, chart chart, v
 		err = fmt.Errorf("upgrade failed: %w", err)
 		return
 	}
-	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded)
-	status.SetReleaseRevision(r.hrClient.HelmReleases(hr.Namespace), hr, chart.revision)
+	status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded, chart.revision)
 	return
 }
 
 // rollback performs a rollback for the given HelmRelease,
 // while recording the phases on  the HelmRelease. It returns
 // the release result or an error.
-func (r *Release) rollback(client helm.Client, hr *v1.HelmRelease) (rel *helm.Release, err error) {
+func (r *Release) rollback(client helm.Client, hr *v1.HelmRelease, revision string) (rel *helm.Release, err error) {
 	defer func(start time.Time) {
 		ObserveReleaseAction(start, RollbackAction, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
 	}(time.Now())
+
 	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseRollingBack)
 	rel, err = client.Rollback(hr.GetReleaseName(), helm.RollbackOptions{
 		Namespace:    hr.GetTargetNamespace(),
