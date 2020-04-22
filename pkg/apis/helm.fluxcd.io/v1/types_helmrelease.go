@@ -498,8 +498,8 @@ const (
 	HelmReleasePhaseInstalling HelmReleasePhase = "Installing"
 	// Upgrading means the upgrade for the HelmRelease is running.
 	HelmReleasePhaseUpgrading HelmReleasePhase = "Upgrading"
-	// Succeeded means the installation or upgrade for the HelmRelease
-	// succeeded.
+	// Succeeded means the dry-run, installation, or upgrade for the
+	// HelmRelease succeeded.
 	HelmReleasePhaseSucceeded HelmReleasePhase = "Succeeded"
 	// Failed means the installation or upgrade for the HelmRelease
 	// failed.
