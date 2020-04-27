@@ -1,6 +1,6 @@
 # How to Contribute
 
-The Helm Operator is [Apache 2.0 licensed](LICENSE) and accepts contributions
+The Helm Operator is [Apache 2.0 licensed](https://github.com/fluxcd/helm-operator/blob/master/LICENSE) and accepts contributions
 via GitHub pull requests. This document outlines some of the conventions on development
 workflow, commit message formatting, contact points and other resources to make
 it easier to get your contribution accepted.
@@ -29,7 +29,7 @@ By contributing to this project you agree to the Developer Certificate of
 Origin (DCO). This document was created by the Linux Kernel community and is a
 simple statement that you, as a contributor, have the legal right to make the
 contribution. No action from you is required, but it's a good idea to see the
-[DCO](DCO) file for details before you start contributing code to Helm Operator.
+[DCO](https://github.com/fluxcd/helm-operator/blob/master/DCO) file for details before you start contributing code to Helm Operator.
 
 ## Communications
 
@@ -39,14 +39,20 @@ The project uses Slack: To join the conversation, simply join the
 
 The Flux developers use a mailing list to discuss development as well.
 Simply subscribe to [flux-dev on cncf.io](https://lists.cncf.io/g/cncf-flux-dev)
-to join the conversation (this will also add an invitation to your
-Google calendar for our [Flux
-meeting](https://docs.google.com/document/d/1l_M0om0qUEN_NNiGgpqJ2tvsF2iioHkaARDeh6b70B0/edit#)).
+to join the conversation.
+
+### Meetings
+
+Agenda and minutes of previous Flux Dev meetings can be reviewed in this
+[Google doc](https://docs.google.com/document/d/1l_M0om0qUEN_NNiGgpqJ2tvsF2iioHkaARDeh6b70B0/edit#).
+
+Meeting recordings can be viewed in this [Youtube
+playlist](https://www.youtube.com/playlist?list=PLbx4FZ4kOKntmgJqaT-iJ8tn4xat150yL).
 
 ## Getting Started
 
 - Fork the repository on GitHub
-- Read the [README](README.md#get-started-with-the-helm-operator) for getting started as
+- Read the [README](https://github.com/fluxcd/helm-operator/blob/master/README.md#get-started-with-the-helm-operator) for getting started as
   a user and learn how/where to ask for help
 - If you want to contribute as a developer, continue reading this document for further instructions
 - If you are a new contributor, the following two issue labels might be
@@ -72,10 +78,10 @@ This is a rough outline of how to prepare a contribution:
 
 ### How to build and run the project
 
-Refer to the [Building](https://docs.fluxcd.io/projects/helm-operator/en/stable/contributing/building/) guide to find out how to build from
+Refer to the [Building](https://docs.fluxcd.io/en/stable/contributing/building/) guide to find out how to build from
 source.
 
-Refer to the [Get started developing](https://docs.fluxcd.io/projects/helm-operator/en/stable/contributing/get-started-developing/) guide
+Refer to the [Get started developing](https://docs.fluxcd.io/en/stable/contributing/get-started-developing/) guide
 for a walkthrough on developing Helm Operator locally.
 
 ### How to run the test suite

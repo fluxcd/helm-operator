@@ -31,7 +31,7 @@ performed by the operator.
     or a (local) URL
 * Automated purging on release install failures
 * Automated (optional) rollback on upgrade failures
-* Automated image upgrades [using Flux](https://docs.fluxcd.io/en/stable/references/helm-operator-integration.html)
+* Automated image upgrades [using Flux](https://docs.fluxcd.io/en/stable/references/helm-operator-integration)
 * Automated (configurable) chart dependency updates for Helm charts
   from Git sources on install or upgrade
 * Detection and recovery from Helm storage mutations
@@ -72,7 +72,7 @@ To familiarise yourself with the project and how things work, you might
 be interested in the following:
 
 - [Our contributions guidelines](CONTRIBUTING.md)
-- [Build documentation](https://docs.fluxcd.io/en/stable/contributing/building.html)
+- [Build documentation](https://docs.fluxcd.io/en/stable/contributing/building)
 - [Release documentation](internal_docs/releasing.md)
 
 ## <a name="help"></a>Getting Help

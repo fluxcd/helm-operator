@@ -11,16 +11,14 @@ edit_uri: ""
 extra:
   version: 1.0.1
   social:
-    - type: 'github'
-      link: 'https://github.com/fluxcd/helm-operator'
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/fluxcd/helm-operator
 
 theme:
   name: material
   logo: _files/flux-icon@2x.png
   favicon: _files/flux-icon@2x.png
   language: en
-  feature:
-    tabs: false
   palette:
     primary: blue
     accent: indigo
@@ -44,7 +42,7 @@ markdown_extensions:
       guess_lang: false
   - toc:
       permalink: true
-  - pymdownx.superfences
+  - pymdownx.tabbed
 
 nav:
   - Overview: index.md
