@@ -37,6 +37,9 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ template "helm-operator.serviceAccountName" . }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
       {{- if .Values.image.pullSecret }}
       imagePullSecrets:
         - name: {{ .Values.image.pullSecret }}

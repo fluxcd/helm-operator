@@ -194,6 +194,7 @@ affinity: {}
 extraVolumeMounts: []
 extraVolumes: []
 initContainers: []
+priorityClassName: ""
 resources:
 #  limits:
 #    memory: 1Gi
