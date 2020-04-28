@@ -1,7 +1,7 @@
 site_name: Flux Helm Operator
 # site_description:
 site_author: The Helm Operator contributors
-site_url: https://docs.fluxcd.io/projects/helm-operator/
+#site_url: https://docs.fluxcd.io/projects/helm-operator/
 
 # Repository
 repo_name: fluxcd/helm-operator
