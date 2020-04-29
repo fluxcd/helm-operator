@@ -635,8 +635,8 @@ string
 </td>
 <td>
 <p>Git URL is the URL of the Git repository, e.g.
-git@github.com:org/repo, <a href="http://github.com/org/repo">http://github.com/org/repo</a>,
-or ssh://git@example.com:2222/org/repo.git.</p>
+<code>git@github.com:org/repo</code>, <code>http://github.com/org/repo</code>,
+or <code>ssh://git@example.com:2222/org/repo.git</code>.</p>
 </td>
 </tr>
 <tr>
@@ -1381,8 +1381,8 @@ string
 </td>
 <td>
 <p>RepoURL is the URL of the Helm repository, e.g.
-<a href="https://kubernetes-charts.storage.googleapis.com">https://kubernetes-charts.storage.googleapis.com</a> or
-<a href="https://charts.example.com">https://charts.example.com</a>.</p>
+<code>https://kubernetes-charts.storage.googleapis.com</code> or
+<code>https://charts.example.com</code>.</p>
 </td>
 </tr>
 <tr>

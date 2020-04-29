@@ -7,6 +7,7 @@ require (
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
+	github.com/fatih/color v1.9.0 // indirect
 	github.com/fluxcd/flux v1.17.2-0.20200121140732-3903cf8e71c3
 	github.com/fluxcd/helm-operator/pkg/install v0.0.0-00010101000000-000000000000
 	github.com/garyburd/redigo v1.6.0 // indirect
@@ -17,6 +18,8 @@ require (
 	github.com/google/go-cmp v0.4.0
 	github.com/gorilla/mux v1.7.3
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
+	github.com/kr/text v0.2.0 // indirect
+	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/ncabatoff/go-seq v0.0.0-20180805175032-b08ef85ed833
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.2.1
@@ -24,6 +27,8 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
 	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
+	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
+	golang.org/x/sys v0.0.0-20200327173247-9dae0f8f5775 // indirect
 	google.golang.org/grpc v1.27.0
 	helm.sh/helm/v3 v3.1.2
 	k8s.io/api v0.17.2
