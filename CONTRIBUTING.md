@@ -78,10 +78,10 @@ This is a rough outline of how to prepare a contribution:
 
 ### How to build and run the project
 
-Refer to the [Building](https://docs.fluxcd.io/en/stable/contributing/building/) guide to find out how to build from
+Refer to the [Building](https://docs.fluxcd.io/projects/helm-operator/en/latest/contributing/building/) guide to find out how to build from
 source.
 
-Refer to the [Get started developing](https://docs.fluxcd.io/en/stable/contributing/get-started-developing/) guide
+Refer to the [Get started developing](https://docs.fluxcd.io/projects/helm-operator/en/latest/contributing/building/) guide
 for a walkthrough on developing Helm Operator locally.
 
 ### How to run the test suite
