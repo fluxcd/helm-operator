@@ -59,9 +59,17 @@ replace k8s.io/client-go => k8s.io/client-go v0.17.2
 // Force upgrade because of a transitive downgrade.
 // github.com/fluxcd/flux
 // +-> github.com/fluxcd/helm-operator@v1.0.0-rc6
-//     +-> helm.sh/helm/v3@v3.0.2
+//     +-> helm.sh/helm/v3@v3.1.2
 //     +-> helm.sh/helm@v2.16.1
 replace (
 	helm.sh/helm/v3 => helm.sh/helm/v3 v3.1.2
 	k8s.io/helm => k8s.io/helm v2.16.3+incompatible
 )
+
+// Force upgrade because of transitive downgrade.
+// runc >=1.0.0-RC10 patches CVE-2019-19921.
+// runc >=1.0.0-RC7 patches CVE-2019-5736.
+// github.com/fluxcd/helm-operator
+// +-> helm.sh/helm/v3@v3.1.2
+//     +-> github.com/opencontainers/runc@v0.1.1
+replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc10
