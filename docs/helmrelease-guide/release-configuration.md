@@ -102,16 +102,16 @@ spec:
 ## Wait for resources to be ready
 
 !!! note
-    When you have many `HelmRelease` resources with the `.wait` flag
-    set, it is likely that you want to increase the amount of `--workers` to
+    When you have many `HelmRelease` resources with the waiting enabled,
+    it is likely that you want to increase the amount of `--workers` to
     ensure other releases are still processed, given the waiting process blocks
     the worker from processing other `HelmRelease` resources.
 
-Normally Helm will mark a release as successfully deployed as soon as the
+By default, Helm will mark a release as successfully deployed as soon as the
 changes have been applied to the cluster. To instruct Helm to wait until
 all resources are in ready state before marking the release as successful
-you can set `.wait`. When set, it will wait for as long as
-[`.timeout`](#configuring-the-timeout):
+you can set `.wait`, or enable [tests](tests.md#enabling-tests) or [rollbacks](rollbacks.md#enabling-rollbacks) which has the same effect.
+When set, it will wait for as long as [`.timeout`](#configuring-the-timeout):
 
 ```yaml
 spec:

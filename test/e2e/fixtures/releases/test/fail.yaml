@@ -7,16 +7,17 @@ metadata:
 spec:
   releaseName: podinfo-helm-repository
   timeout: 30
+  test:
+    enable: true
+    timeout: 30
   rollback:
     enable: true
     wait: true
   chart:
     repository: https://stefanprodan.github.io/podinfo
     name: podinfo
-    version: 3.2.0
+    version: 4.0.1
   values:
     replicaCount: 2
-
     faults:
-      # Setting this to 'true' will make the wait fail
-      unready: false
+      testFail: true

@@ -175,6 +175,7 @@ const (
 	UninstallAction     action = "uninstall"
 	DryRunCompareAction action = "dry-run-compare"
 	AnnotateAction      action = "annotate"
+	TestAction          action = "test"
 )
 
 // shouldSync determines if the given HelmRelease should be synced
@@ -281,43 +282,46 @@ next:
 			action = UninstallAction
 			goto next
 		}
+
 		logger.Log("info", "installation succeeded", "revision", chart.revision, "phase", action)
 
-		action = AnnotateAction
+		action = TestAction
 		goto next
 	case UpgradeAction:
 		logger.Log("info", "running upgrade", "action", action)
 		newRel, err = r.upgrade(client, hr, chart, values)
+
 		if err != nil {
 			logger.Log("error", err, "action", action)
 			errs = append(errs, err)
-			if hr.Spec.Rollback.Enable {
-				latestRel, err := client.Get(hr.GetReleaseName(), helm.GetOptions{Namespace: hr.GetTargetNamespace(), Version: 0})
-				if err != nil {
-					err = fmt.Errorf("unable to determine if rollback should be performed: %w", err)
-					logger.Log("error", err, "phase", action)
-					errs = append(errs, err)
-					break
-				}
-				if curRel.Version < latestRel.Version {
-					action = RollbackAction
-					goto next
-				}
-			}
-			break
+
+			action = RollbackAction
+			goto next
 		}
+
 		logger.Log("info", "upgrade succeeded", "revision", chart.revision, "phase", action)
 
-		action = AnnotateAction
+		action = TestAction
 		goto next
-	case RollbackAction:
-		logger.Log("info", "running rollback", "phase", action)
-		if newRel, err = r.rollback(client, hr, chart.revision); err != nil {
-			errs = append(errs, err)
-			logger.Log("error", err, "phase", action)
-			break
+	case TestAction:
+		if hr.Spec.Test.Enable {
+			logger.Log("info", "running test", "action", TestAction)
+			if err = r.test(client, hr); err != nil {
+				logger.Log("error", err, "action", TestAction)
+				errs = append(errs, err)
+
+				if curRel == nil {
+					action = UninstallAction
+				} else {
+					action = RollbackAction
+				}
+				goto next
+			}
+
+			logger.Log("info", "test succeeded", "revision", chart.revision, "action", action)
 		}
-		logger.Log("info", "rollback succeeded", "phase", action)
+
+		status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded, chart.revision)
 
 		action = AnnotateAction
 		goto next
@@ -325,7 +329,30 @@ next:
 		if err := annotate(hr, newRel); err != nil {
 			logger.Log("warning", err, "phase", action)
 		}
+	case RollbackAction:
+		if hr.Spec.Rollback.Enable {
+			latestRel, err := client.Get(hr.GetReleaseName(), helm.GetOptions{Namespace: hr.GetTargetNamespace(), Version: 0})
+			if err != nil {
+				err = fmt.Errorf("unable to determine if rollback should be performed: %w", err)
+				logger.Log("error", err, "phase", action)
+				errs = append(errs, err)
+				break
+			}
+			if curRel.Version < latestRel.Version {
+				logger.Log("info", "running rollback", "phase", action)
+				if newRel, err = r.rollback(client, hr, chart.revision); err != nil {
+					errs = append(errs, err)
+					logger.Log("error", err, "phase", action)
+					break
+				}
+				logger.Log("info", "rollback succeeded", "phase", action)
+
+				action = AnnotateAction
+				goto next
+			}
+		}
 	case UninstallAction:
+		logger.Log("info", "running uninstall", "phase", action)
 		if err := uninstall(client, hr); err != nil {
 			logger.Log("warning", err, "phase", action)
 		}
@@ -378,14 +405,14 @@ func (r *Release) install(client helm.Client, hr *v1.HelmRelease, chart chart, v
 		Force:      hr.Spec.ForceUpgrade,
 		SkipCRDs:   hr.Spec.SkipCRDs,
 		MaxHistory: hr.GetMaxHistory(),
-		Wait:       hr.Spec.Wait,
+		Wait:       hr.GetWait(),
 	})
 	if err != nil {
-		status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseFailed)
+		status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseDeployFailed)
 		err = fmt.Errorf("installation failed: %w", err)
 		return
 	}
-	status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded, chart.revision)
+	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseDeployed)
 	return
 }
 
@@ -406,14 +433,14 @@ func (r *Release) upgrade(client helm.Client, hr *v1.HelmRelease, chart chart, v
 		ResetValues: !hr.GetReuseValues(),
 		SkipCRDs:    hr.Spec.SkipCRDs,
 		MaxHistory:  hr.GetMaxHistory(),
-		Wait:        hr.Spec.Wait || hr.Spec.Rollback.Enable,
+		Wait:        hr.GetWait(),
 	})
 	if err != nil {
-		status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseFailed)
+		status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseDeployFailed)
 		err = fmt.Errorf("upgrade failed: %w", err)
 		return
 	}
-	status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded, chart.revision)
+	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseDeployed)
 	return
 }
 
@@ -440,6 +467,28 @@ func (r *Release) rollback(client helm.Client, hr *v1.HelmRelease, revision stri
 		return
 	}
 	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseRolledBack)
+	return
+}
+
+// test performs a test for the given HelmRelease,
+// while recording the phases on  the HelmRelease. It returns
+// the release result or an error.
+func (r *Release) test(client helm.Client, hr *v1.HelmRelease) (err error) {
+	defer func(start time.Time) {
+		ObserveReleaseAction(start, TestAction, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
+	}(time.Now())
+	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTesting)
+	err = client.Test(hr.GetReleaseName(), helm.TestOptions{
+		Namespace: hr.GetTargetNamespace(),
+		Timeout:   hr.Spec.Test.GetTimeout(),
+		Cleanup:   hr.Spec.Test.GetCleanup(),
+	})
+	if err != nil {
+		status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTestFailed)
+		err = fmt.Errorf("test failed: %w", err)
+		return
+	}
+	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTested)
 	return
 }
 

@@ -31,6 +31,7 @@ performed by the operator.
     or a (local) URL
 * Automated purging on release install failures
 * Automated (optional) rollback on upgrade failures
+* Automated (optional) helm test gating of installs and upgrades.
 * Automated image upgrades [using Flux](https://docs.fluxcd.io/en/stable/references/helm-operator-integration)
 * Automated (configurable) chart dependency updates for Helm charts
   from Git sources on install or upgrade

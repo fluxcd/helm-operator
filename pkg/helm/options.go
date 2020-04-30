@@ -56,6 +56,16 @@ type RollbackOptions struct {
 	Force        bool
 }
 
+// TestOptions holds the options available for Helm test
+// operations, the version implementation _must_ implement all
+// fields supported by that version but can (silently) ignore
+// unsupported set values.
+type TestOptions struct {
+	Namespace string
+	Cleanup   bool
+	Timeout   time.Duration
+}
+
 // UninstallOptions holds the options available for Helm uninstall
 // operations, the version implementation _must_ implement all
 // fields supported by that version but can (silently) ignore
