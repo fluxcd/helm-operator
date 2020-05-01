@@ -15,8 +15,8 @@ COPY ./ssh_config /etc/ssh/ssh_config
 
 COPY ./kubectl /usr/local/bin/
 # The Helm clients are included as a convenience for troubleshooting
-COPY ./helm2 /usr/local/bin/
-COPY ./helm3 /usr/local/bin/
+#COPY ./helm2 /usr/local/bin/
+#COPY ./helm3 /usr/local/bin/
 
 # These are pretty static
 LABEL maintainer="Flux CD <https://github.com/fluxcd/helm-operator/issues>" \
