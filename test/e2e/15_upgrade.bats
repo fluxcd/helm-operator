@@ -37,7 +37,7 @@ function setup() {
   cd "$clone_dir"
 
   # Make a chart template mutation in Git without bumping the version number
-  sed -i 's%these commands:%these commands;%' charts/podinfo/templates/NOTES.txt
+  sed -i '' 's%these commands:%these commands;%' charts/podinfo/templates/NOTES.txt
   git add charts/podinfo/templates/NOTES.txt
   git -c 'user.email=foo@bar.com' -c 'user.name=Foo' commit -m "Modify NOTES.txt"
 
@@ -64,7 +64,7 @@ function setup() {
   cd "$clone_dir"
 
   # Make a values.yaml mutation in Git
-  sed -i 's%replicaCount: 1%replicaCount: 2%' charts/podinfo/values.yaml
+  sed -i '' 's%replicaCount: 1%replicaCount: 2%' charts/podinfo/values.yaml
   git add charts/podinfo/values.yaml
   git -c 'user.email=foo@bar.com' -c 'user.name=Foo' commit -m "Change replicaCount to 2"
 
