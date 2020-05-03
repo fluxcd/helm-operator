@@ -211,3 +211,4 @@ hostAliases: {}
 #   - "foo.remote"
 #   - "bar.remote"
 
+priorityClassName: ""

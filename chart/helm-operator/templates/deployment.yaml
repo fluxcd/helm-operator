@@ -14,7 +14,7 @@ spec:
       app: {{ template "helm-operator.name" . }}
       release: {{ .Release.Name }}
   strategy:
-    type:  Recreate  
+    type:  Recreate
   template:
     metadata:
       annotations:
@@ -36,6 +36,9 @@ spec:
       {{- end }}
       {{- end }}
     spec:
+      {{- if .Values.priorityClassName }}
+      priorityClassName: "{{ .Values.priorityClassName }}"
+      {{- end }}
       serviceAccountName: {{ template "helm-operator.serviceAccountName" . }}
       {{- if .Values.image.pullSecret }}
       imagePullSecrets:

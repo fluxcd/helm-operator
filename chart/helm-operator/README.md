@@ -69,6 +69,7 @@ chart and their default values.
 | `nodeSelector`                                    | `{}`                                                 | Node Selector properties for the deployment
 | `tolerations`                                     | `[]`                                                 | Tolerations properties for the deployment
 | `affinity`                                        | `{}`                                                 | Affinity properties for the deployment
+| `priorityClassName`                               | `""`                                                 | Set priority class for Helm Operator
 | `extraEnvs`                                       | `[]`                                                 | Extra environment variables for the Helm Operator pod(s)
 | `podAnnotations`                                  | `{}`                                                 | Additional pod annotations
 | `podLabels`                                       | `{}`                                                 | Additional pod labels
@@ -165,7 +166,7 @@ helm upgrade -i helm-operator fluxcd/helm-operator \
 ```
 
 After adding the entry, the Helm chart in the repository can then be referred
-to by the URL of the repository as usual: 
+to by the URL of the repository as usual:
 
 ```yaml
 apiVersion: helm.fluxcd.io/v1
