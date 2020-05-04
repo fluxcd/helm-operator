@@ -7,7 +7,7 @@ import (
 	"k8s.io/client-go/util/retry"
 	"k8s.io/utils/clock"
 
-	v1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 )
 
@@ -67,7 +67,6 @@ func SetStatusPhase(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, ph
 	}
 	return SetCondition(client, hr, condition, func(cHr *v1.HelmRelease) {
 		cHr.Status.Phase = phase
-		SetReleasePhaseGauge(phase, hr.Namespace, hr.Name)
 	})
 }
 
