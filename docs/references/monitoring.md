@@ -11,27 +11,28 @@ in Prometheus format.
 | `release_count` | Count of releases managed by the operator. |
 | `release_duration_seconds` | Release synchronization duration in seconds. This duration includes one or many `release_phase_durations`. |
 | `release_phase_duration_seconds` | Release phase synchronization duration in seconds. |
-| `release_phase_info` | The (negative) integer equaling the current phase of a release. Negative values are failed phases, `0` equals to unknown. See [release phases](#release-phases).
+| `release_condition_info` | Release condition status gauge, see [release conditions](#release-conditions).
 | `release_queue_length_count` | Count of release jobs waiting in the queue to be processed. |
 
+### Release conditions
 
-### Release phases
+#### Labels
 
-The following is a table of the values the `release_phase_info` metric exposes,
-and the phase they represent:
+| Label              | Label Value |
+|--------------------|---
+| `target_namespace` | `targetNamespace` of `HelmRelease`
+| `release_name`     | `releaseName` of `HelmRelease`
+| `condition`        | [condition type](helmrelease-custom-resource.md#helm.fluxcd.io/v1.HelmReleaseConditionType)
 
-| Value | Phase |
+#### Values
+
+Values represent the [condition status](helmrelease-custom-resource.md#helm.fluxcd.io/v1.ConditionStatus).
+
+| Value | Condition Status |
 |-------|---
-| `-4`  | `ChartFetchFailed`
-| `-3`  | `Failed`
-| `-2`  | `RollbackFailed`
-| `-1 ` | `RolledBack`
+| `-1`  | `False`
 | `0`   | `Unknown`
-| `1`   | `RollingBack`
-| `2`   | `Installing`
-| `3`   | `Upgrading`
-| `4`   | `ChartFetched`
-| `5`   | `Succeeded`
+| `1`   | `True`
 
 ## Prometheus alert rules examples
 
@@ -51,12 +52,12 @@ for: 30m
 
 ```yaml
 alert: HelmReleaseRolledBack
-expr: flux_helm_operator_release_phase_info == -1
+expr: flux_helm_operator_release_condition_info{condition="RolledBack"} == 1
 ```
 
 ### `HelmRelease` subject to an error
 
 ```yaml
 alert: HelmReleaseError
-expr: flux_helm_operator_release_phase_info < -1
+expr: flux_helm_operator_release_phase_info{condition="Released"} == -1
 ```

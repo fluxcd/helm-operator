@@ -53,6 +53,7 @@ func SetCondition(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, cond
 			set(cHr)
 		}
 
+		ObserveReleaseConditions(*hr, *cHr)
 		_, err = client.UpdateStatus(cHr)
 		firstTry = false
 		return
