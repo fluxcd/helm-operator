@@ -144,8 +144,8 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name:
 
-# If create is `false`  the Helm Operator will be restricted to the namespace
-# where it is deployed, and no clusterRole or clusterRoleBinding will be created
+# If create is `false` the Helm Operator will be restricted to the namespace
+# where it is deployed, and no ClusterRole or ClusterRoleBinding will be created.
 # Additionally, the kubeconfig default context will be set to that namespace.
 clusterRole:
   create: true
