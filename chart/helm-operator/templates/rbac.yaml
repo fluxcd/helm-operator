@@ -1,5 +1,4 @@
-{{- if .Values.rbac.create -}}
-{{if .Values.clusterRole.create -}}
+{{- if and .Values.rbac.create (eq .Values.clusterRole.create true) -}}
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
@@ -20,8 +19,6 @@ rules:
       - '*'
     verbs:
       - '*'
-{{- end -}}
-{{- if or .Values.clusterRole.create .Values.clusterRole.name }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -40,5 +37,4 @@ subjects:
   - name: {{ template "helm-operator.serviceAccountName" . }}
     namespace: {{ .Release.Namespace | quote }}
     kind: ServiceAccount
-{{- end -}}
 {{- end -}}
