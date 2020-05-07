@@ -21,7 +21,7 @@ $ kubectl describe -n <namespace> helmrelease/<name>
 Events:
   Type     Reason             Age   From           Message
   ----     ------             ----  ----           -------
-  Normal   ReleaseSynced      55s   helm-operator  managed release 'default-podinfo-0' in namespace 'default' sychronized
+  Normal   ReleaseSynced      55s   helm-operator  managed release 'default-podinfo-0' in namespace 'default' synchronized
   Warning  FailedReleaseSync  18s   helm-operator  synchronization of release 'default-podinfo-0' in namespace 'default' failed: upgrade failed:  "" is invalid: patch: [...]
 ```
 
