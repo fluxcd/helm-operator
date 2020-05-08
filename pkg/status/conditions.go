@@ -24,7 +24,7 @@ func GetCondition(status v1.HelmReleaseStatus, conditionType v1.HelmReleaseCondi
 	return nil
 }
 
-func SetCondition(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, condition v1.HelmReleaseCondition, set func(*v1.HelmRelease)) error {
+func SetConditions(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, conditions []v1.HelmReleaseCondition, setters ...func(*v1.HelmRelease)) error {
 	firstTry := true
 	err := retry.RetryOnConflict(retry.DefaultBackoff, func() (err error) {
 		if !firstTry {
@@ -35,22 +35,24 @@ func SetCondition(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, cond
 			}
 		}
 
-		currCondition := GetCondition(hr.Status, condition.Type)
-		if currCondition != nil && currCondition.Status == condition.Status {
-			condition.LastTransitionTime = currCondition.LastTransitionTime
-		}
-
 		cHr := hr.DeepCopy()
-		cHr.Status.Conditions = append(filterOutCondition(cHr.Status.Conditions, condition.Type), condition)
-		switch {
-		case condition.Type == v1.HelmReleaseReleased && condition.Status == v1.ConditionTrue:
-			cHr.Status.Conditions = filterOutCondition(cHr.Status.Conditions, v1.HelmReleaseRolledBack)
-			cHr.Status.RollbackCount = 0
-		case condition.Type == v1.HelmReleaseRolledBack && condition.Status == v1.ConditionTrue:
-			cHr.Status.RollbackCount = cHr.Status.RollbackCount + 1
+		for _, condition := range conditions {
+			currCondition := GetCondition(hr.Status, condition.Type)
+			if currCondition != nil && currCondition.Status == condition.Status {
+				condition.LastTransitionTime = currCondition.LastTransitionTime
+			}
+
+			cHr.Status.Conditions = append(filterOutCondition(cHr.Status.Conditions, condition.Type), condition)
+			switch {
+			case condition.Type == v1.HelmReleaseReleased && condition.Status == v1.ConditionTrue:
+				cHr.Status.Conditions = filterOutCondition(cHr.Status.Conditions, v1.HelmReleaseRolledBack)
+				cHr.Status.RollbackCount = 0
+			case condition.Type == v1.HelmReleaseRolledBack && condition.Status == v1.ConditionTrue:
+				cHr.Status.RollbackCount = cHr.Status.RollbackCount + 1
+			}
 		}
-		if set != nil {
-			set(cHr)
+		for _, setter := range setters {
+			setter(cHr)
 		}
 
 		ObserveReleaseConditions(*hr, *cHr)
@@ -61,40 +63,32 @@ func SetCondition(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, cond
 	return err
 }
 
-func SetStatusPhase(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, phase v1.HelmReleasePhase) error {
-	condition, ok := ConditionForPhase(hr, phase)
+func SetStatusPhase(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, phase v1.HelmReleasePhase, setters ...func(*v1.HelmRelease)) error {
+	conditions, ok := ConditionsForPhase(hr, phase)
 	if !ok {
 		return nil
 	}
-	return SetCondition(client, hr, condition, func(cHr *v1.HelmRelease) {
+	setters = append(setters, func(cHr *v1.HelmRelease) {
 		cHr.Status.Phase = phase
 	})
+	return SetConditions(client, hr, conditions, setters...)
 }
 
 func SetStatusPhaseWithRevision(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, phase v1.HelmReleasePhase, revision string) error {
-	condition, ok := ConditionForPhase(hr, phase)
-	if !ok {
-		return nil
-	}
-	return SetCondition(client, hr, condition, func(cHr *v1.HelmRelease) {
+	return SetStatusPhase(client, hr, phase, func(cHr *v1.HelmRelease) {
 		switch {
 		case phase == v1.HelmReleasePhaseInstalling || phase == v1.HelmReleasePhaseUpgrading:
 			cHr.Status.LastAttemptedRevision = revision
 		case phase == v1.HelmReleasePhaseSucceeded:
 			cHr.Status.Revision = revision
 		}
-		cHr.Status.Phase = phase
 	})
 }
 
-// ConditionForPhrase returns a condition for the given phase.
-func ConditionForPhase(hr *v1.HelmRelease, phase v1.HelmReleasePhase) (v1.HelmReleaseCondition, bool) {
-	nowTime := metav1.NewTime(Clock.Now())
-	condition := &v1.HelmReleaseCondition{
-		Reason:             string(phase),
-		LastUpdateTime:     &nowTime,
-		LastTransitionTime: &nowTime,
-	}
+// ConditionsForPhrase returns conditions for the given phase.
+func ConditionsForPhase(hr *v1.HelmRelease, phase v1.HelmReleasePhase) ([]v1.HelmReleaseCondition, bool) {
+	condition := &v1.HelmReleaseCondition{}
+	conditions := []*v1.HelmReleaseCondition{condition}
 	switch phase {
 	case v1.HelmReleasePhaseInstalling:
 		condition.Type = v1.HelmReleaseReleased
@@ -129,13 +123,23 @@ func ConditionForPhase(hr *v1.HelmRelease, phase v1.HelmReleasePhase) (v1.HelmRe
 		condition.Status = v1.ConditionTrue
 		condition.Message = fmt.Sprintf(`Chart fetch was successful for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
 	case v1.HelmReleasePhaseChartFetchFailed:
+		message := fmt.Sprintf(`Chart fetch failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
 		condition.Type = v1.HelmReleaseChartFetched
 		condition.Status = v1.ConditionFalse
-		condition.Message = fmt.Sprintf(`Chart fetch failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+		condition.Message = message
 	default:
-		return v1.HelmReleaseCondition{}, false
+		return []v1.HelmReleaseCondition{}, false
 	}
-	return *condition, true
+	nowTime := metav1.NewTime(Clock.Now())
+	updatedConditions := []v1.HelmReleaseCondition{}
+	for _, c := range conditions {
+		c.Reason = string(phase)
+		c.LastUpdateTime = &nowTime
+		c.LastTransitionTime = &nowTime
+		updatedConditions = append(updatedConditions, *c)
+	}
+
+	return updatedConditions, true
 }
 
 // filterOutCondition returns a new slice of condition without the
