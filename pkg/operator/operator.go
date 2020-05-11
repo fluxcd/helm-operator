@@ -215,7 +215,7 @@ func (c *Controller) syncHandler(key string) error {
 			fmt.Sprintf("synchronization of release '%s' in namespace '%s' failed: %s", hr.GetReleaseName(), hr.GetTargetNamespace(), err.Error()))
 	} else {
 		c.recorder.Event(hr, corev1.EventTypeNormal, ReleaseSynced,
-			fmt.Sprintf("managed release '%s' in namespace '%s' sychronized", hr.GetReleaseName(), hr.GetTargetNamespace()))
+			fmt.Sprintf("managed release '%s' in namespace '%s' synchronized", hr.GetReleaseName(), hr.GetTargetNamespace()))
 	}
 	return nil
 }
