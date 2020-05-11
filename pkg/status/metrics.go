@@ -7,39 +7,40 @@ import (
 )
 
 const (
-	LabelNamespace   = "namespace"
-	LabelReleaseName = "release_name"
+	LabelTargetNamespace = "target_namespace"
+	LabelReleaseName     = "release_name"
+	LabelCondition       = "condition"
 )
-
-var phaseToGaugeValue = map[v1.HelmReleasePhase]float64{
-	// Unknown is mapped to 0
-	v1.HelmReleasePhaseChartFetchFailed: -4,
-	v1.HelmReleasePhaseFailed:           -3,
-	v1.HelmReleasePhaseRollbackFailed:   -2,
-	v1.HelmReleasePhaseRolledBack:       -1,
-	v1.HelmReleasePhaseRollingBack:      1,
-	v1.HelmReleasePhaseInstalling:       2,
-	v1.HelmReleasePhaseUpgrading:        3,
-	v1.HelmReleasePhaseChartFetched:     4,
-	v1.HelmReleasePhaseSucceeded:        5,
-}
 
 var (
-	releasePhase = prometheus.NewGaugeFrom(stdprometheus.GaugeOpts{
+	conditionStatusToGaugeValue = map[v1.ConditionStatus]float64{
+		v1.ConditionFalse:   -1,
+		v1.ConditionUnknown: 0,
+		v1.ConditionTrue:    1,
+	}
+	releaseCondition = prometheus.NewGaugeFrom(stdprometheus.GaugeOpts{
 		Namespace: "flux",
 		Subsystem: "helm_operator",
-		Name:      "release_phase_info",
-		Help:      "Current HelmRelease phase.",
-	}, []string{LabelNamespace, LabelReleaseName})
+		Name:      "release_condition_info",
+		Help:      "Current HelmRelease condition status. Values are -1 (false), 0 (unknown or absent), 1 (true)",
+	}, []string{LabelTargetNamespace, LabelReleaseName, LabelCondition})
 )
 
-func SetReleasePhaseGauge(phase v1.HelmReleasePhase, namespace, releaseName string) {
-	value, ok := phaseToGaugeValue[phase]
-	if !ok {
-		value = 0
+func ObserveReleaseConditions(old v1.HelmRelease, new v1.HelmRelease) {
+	conditions := make(map[v1.HelmReleaseConditionType]v1.ConditionStatus)
+	for _, condition := range old.Status.Conditions {
+		// Initialize conditions from old status to unknown, so that if
+		// they are removed in new status, they do not contain stale data.
+		conditions[condition.Type] = v1.ConditionUnknown
 	}
-	releasePhase.With(
-		LabelNamespace, namespace,
-		LabelReleaseName, releaseName,
-	).Set(value)
+	for _, condition := range new.Status.Conditions {
+		conditions[condition.Type] = condition.Status
+	}
+	for conditionType, conditionStatus := range conditions {
+		releaseCondition.With(
+			LabelTargetNamespace, new.Namespace,
+			LabelReleaseName, new.Name,
+			LabelCondition, string(conditionType),
+		).Set(conditionStatusToGaugeValue[conditionStatus])
+	}
 }
