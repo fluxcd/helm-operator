@@ -9,12 +9,38 @@ in Prometheus format.
 | Metric | Description
 |--------|---
 | `release_count` | Count of releases managed by the operator. |
-| `release_duration_seconds` | Release synchronization duration in seconds. This duration includes one or many `release_phase_durations`. |
-| `release_phase_duration_seconds` | Release phase synchronization duration in seconds. |
+| `release_action_duration_seconds` | Duration of release sync actions in seconds. See [release actions](#release-actions). |
 | `release_condition_info` | Release condition status gauge, see [release conditions](#release-conditions).
 | `release_queue_length_count` | Count of release jobs waiting in the queue to be processed. |
 
+### Release actions
+
+`release_action_duration_seconds` supports the following labels and label values.
+
+#### Labels
+
+| Label              | Label Value |
+|--------------------|---
+| `target_namespace` | `targetNamespace` of `HelmRelease`
+| `release_name`     | `releaseName` of `HelmRelease`
+| `success`          | Whether the action was successful (`true` or `false`)
+| `action`           | The release action, see below.
+
+#### Actions
+
+| Action            | Description
+|-------------------|---
+| `sync`            | One entire release sync attempt, as configured to occur once every [--charts-sync-interval](operator.md#reconciliation-configuration)
+| `install`         | Installation attempt
+| `upgrade`         | Upgrade attempt
+| `rollback`        | Rollback attempt
+| `uninstall`       | Uninstallation attempt
+| `dry-run-compare` | Dry run compare attempt to [determine whether to upgrade](../helmrelease-guide/reconciliation-and-upgrades.md#what-triggers-an-upgrade)
+| `annotate`        | [Annotation](../helmrelease-guide/reconciliation-and-upgrades.md#the-antecedent-annotation) attempt
+
 ### Release conditions
+
+`release_condition_info` supports the following labels and label values.
 
 #### Labels
 
