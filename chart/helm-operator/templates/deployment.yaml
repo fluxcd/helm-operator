@@ -40,6 +40,10 @@ spec:
       priorityClassName: "{{ .Values.priorityClassName }}"
       {{- end }}
       serviceAccountName: {{ template "helm-operator.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext }}
+      securityContext:
+{{ toYaml .Values.podSecurityContext | indent 8 }}
+      {{- end }}
       {{- if .Values.image.pullSecret }}
       imagePullSecrets:
         - name: {{ .Values.image.pullSecret }}
