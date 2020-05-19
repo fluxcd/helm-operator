@@ -174,7 +174,7 @@ type GitChartSource struct {
 	// repository (over HTTPS). The credentials will be added to an
 	// HTTPS GitURL before the mirror is started.
 	// +optional
-	SecretRef *LocalObjectReference `json:"secretRef,omitempty"`
+	SecretRef *ObjectReference `json:"secretRef,omitempty"`
 	// SkipDepUpdate will tell the operator to skip running
 	// 'helm dep update' before installing or upgrading the chart, the
 	// chart dependencies _must_ be present for this to succeed.

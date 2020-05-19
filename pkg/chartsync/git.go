@@ -295,7 +295,11 @@ func (c *GitChartSync) maybeMirror(mirrorName string, source *v1.GitChartSource,
 	gitURL := source.GitURL
 	var err error
 
-	if gitURL, err = c.addAuthForHTTPS(gitURL, source.SecretRef, namespace); err != nil {
+	if source.SecretRef != nil && source.SecretRef.Namespace == "" {
+		source.SecretRef.Namespace = namespace
+	}
+
+	if gitURL, err = c.addAuthForHTTPS(gitURL, source.SecretRef); err != nil {
 		c.logger.Log("error", GitAuthError{err}.Error())
 		return false
 	}
@@ -342,7 +346,7 @@ func mirrorName(hr *v1.HelmRelease) string {
 // given secretRef to the given gitURL and return the result, but only
 // if the scheme of the URL is HTTPS. In case of a failure it returns
 // an error.
-func (c *GitChartSync) addAuthForHTTPS(gitURL string, secretRef *v1.LocalObjectReference, namespace string) (string, error) {
+func (c *GitChartSync) addAuthForHTTPS(gitURL string, secretRef *v1.ObjectReference) (string, error) {
 	if secretRef == nil {
 		return gitURL, nil
 	}
@@ -356,7 +360,7 @@ func (c *GitChartSync) addAuthForHTTPS(gitURL string, secretRef *v1.LocalObjectR
 		return gitURL, nil
 	}
 
-	username, password, err := c.getAuthFromSecret(secretRef, namespace)
+	username, password, err := c.getAuthFromSecret(secretRef)
 	if err != nil {
 		return "", err
 	}
@@ -370,9 +374,10 @@ func (c *GitChartSync) addAuthForHTTPS(gitURL string, secretRef *v1.LocalObjectR
 // using the core v1 secrets client, and return the username and password.
 // If this errors, or the secret does not contain the expected keys, an
 // error is returned.
-func (c *GitChartSync) getAuthFromSecret(secretRef *v1.LocalObjectReference, ns string) (string, string, error) {
+func (c *GitChartSync) getAuthFromSecret(secretRef *v1.ObjectReference) (string, string, error) {
 
 	secretName := secretRef.Name
+	ns := secretRef.Namespace
 	secret, err := c.coreV1Client.Secrets(ns).Get(secretName, metav1.GetOptions{})
 	if err != nil {
 		return "", "", err

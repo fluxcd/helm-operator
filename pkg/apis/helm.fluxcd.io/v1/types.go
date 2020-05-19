@@ -18,6 +18,11 @@ type LocalObjectReference struct {
 	Name string `json:"name"`
 }
 
+type ObjectReference struct {
+	LocalObjectReference `json:",inline"`
+	Namespace            string `json:"namespace,omitempty"`
+}
+
 type ConfigMapKeySelector struct {
 	LocalObjectReference `json:",inline"`
 	// +optional

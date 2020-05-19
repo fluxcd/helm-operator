@@ -666,8 +666,8 @@ string
 <td>
 <code>secretRef</code><br>
 <em>
-<a href="#helm.fluxcd.io/v1.LocalObjectReference">
-LocalObjectReference
+<a href="#helm.fluxcd.io/v1.ObjectReference">
+ObjectReference
 </a>
 </em>
 </td>
@@ -1233,8 +1233,8 @@ Valid HelmVersion values are:
 <p>
 (<em>Appears on:</em>
 <a href="#helm.fluxcd.io/v1.ConfigMapKeySelector">ConfigMapKeySelector</a>, 
-<a href="#helm.fluxcd.io/v1.GitChartSource">GitChartSource</a>, 
 <a href="#helm.fluxcd.io/v1.HelmReleaseSpec">HelmReleaseSpec</a>, 
+<a href="#helm.fluxcd.io/v1.ObjectReference">ObjectReference</a>, 
 <a href="#helm.fluxcd.io/v1.RepoChartSource">RepoChartSource</a>, 
 <a href="#helm.fluxcd.io/v1.SecretKeySelector">SecretKeySelector</a>)
 </p>
@@ -1251,6 +1251,51 @@ Valid HelmVersion values are:
 <tr>
 <td>
 <code>name</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="helm.fluxcd.io/v1.ObjectReference">ObjectReference
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#helm.fluxcd.io/v1.GitChartSource">GitChartSource</a>)
+</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>LocalObjectReference</code><br>
+<em>
+<a href="#helm.fluxcd.io/v1.LocalObjectReference">
+LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>
+(Members of <code>LocalObjectReference</code> are embedded into this type.)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>namespace</code><br>
 <em>
 string
 </em>
