@@ -109,6 +109,8 @@ spec:
                   properties:
                     name:
                       type: string
+                    namespace:
+                      type: string
                 skipDepUpdate:
                   description: SkipDepUpdate will tell the operator to skip running
                     'helm dep update' before installing or upgrading the chart, the
