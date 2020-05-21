@@ -26,7 +26,9 @@ kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/{{ versi
 
 Install the Helm operator using the chart:
 
-```sh tab="Default (Helm 2 and 3)"
+Chart defaults (Helm 2 and 3):
+
+```sh
 # Default with support for Helm 2 and 3 enabled
 # NB: the presence of Tiller is a requirement when
 # Helm 2 is enabled.
@@ -34,14 +36,18 @@ helm upgrade -i helm-operator fluxcd/helm-operator \
     --namespace flux
 ```
 
-```sh tab="Helm 3"
+Helm 3:
+
+```sh
 # Only Helm 3 support enabled using helm.versions
 helm upgrade -i helm-operator fluxcd/helm-operator \
     --namespace flux \
     --set helm.versions=v3
 ```
 
-```sh tab="Helm 2"
+Helm 2:
+
+```sh
 # Only Helm 2 support enabled using helm.versions
 # NB: the presence of Tiller is a requirement when
 # Helm 2 is enabled.
