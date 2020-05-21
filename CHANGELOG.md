@@ -1,3 +1,73 @@
+## 1.1.0 (2020-05-21)
+
+This is the first minor release, it focuses on metrics improvements,
+state logic improvements, and the fixing of spurious disk usage bug
+due to anonymous index files not getting cleaned up in Helm 3.
+
+### Bug fixes
+
+ - release: reset recorded failure cond on dry-run
+   [fluxcd/helm-operator#385][#385]
+ - release: imply release failure upon chart fetch
+   failure
+   [fluxcd/helm-operator#399][#399]
+ - helm/v3: garbage collect anonymous index files
+   [fluxcd/helm-operator#422][#422]
+
+### Enhancement
+
+ - release: keep track of last attempted revision
+   [fluxcd/helm-operator#382][#382]
+ - metrics: add `release_count` to expose number of Helm Operator
+   managed releases
+   [fluxcd/helm-operator#387][#387]
+ - metrics: add `release_condition_info` condition gauge
+   [fluxcd/helm-operator#403][#403]
+ - metrics: introduce `release_action_duration_seconds` as a
+   replacement for `release_phase_duration_seconds`
+   [fluxcd/helm-operator#407][#407]
+ - metrics: add `600` and `1800` duration buckets
+   [fluxcd/helm-operator#407][#407]
+ - operator: fix typo in synchronization log
+   [fluxcd/helm-operator#411][#411]
+ - chartsync/git: allow selecting cross-namespace secrets for
+   HTTPS credentials
+   [fluxcd/helm-operator#421][#421]
+   
+### Maintenance and documentation
+
+ - docs: improvements to contributing documentation
+   [fluxcd/helm-operator#297][#297]
+ - docs: fix link-checking and a number of links
+   [fluxcd/helm-operator#347][#347]
+ - docs: improve monitoring documentation
+   [fluxcd/helm-operator#384][#384]
+ - build: update Go to `1.14.x`
+   [fluxcd/helm-operator#386][#386]
+ - e2e: fix tests on MacOS
+   [fluxcd/helm-operator#400][#400]
+   
+### Thanks
+
+Thanks to @stefansedich, @sa-spag, @dholbach, @seaneagan,@stefanprodan,
+@vladlosev, @fllaca, @hiddeco, @Sayrus, @squaremo, and others for their
+contributions to this release, feedback, and reporting issues.
+
+[#297]: https://github.com/fluxcd/helm-operator/pull/297
+[#347]: https://github.com/fluxcd/helm-operator/pull/347
+[#382]: https://github.com/fluxcd/helm-operator/pull/382
+[#384]: https://github.com/fluxcd/helm-operator/pull/384
+[#385]: https://github.com/fluxcd/helm-operator/pull/385
+[#387]: https://github.com/fluxcd/helm-operator/pull/387
+[#386]: https://github.com/fluxcd/helm-operator/pull/386
+[#399]: https://github.com/fluxcd/helm-operator/pull/399
+[#400]: https://github.com/fluxcd/helm-operator/pull/400
+[#403]: https://github.com/fluxcd/helm-operator/pull/403
+[#407]: https://github.com/fluxcd/helm-operator/pull/407
+[#411]: https://github.com/fluxcd/helm-operator/pull/411
+[#421]: https://github.com/fluxcd/helm-operator/pull/421
+[#422]: https://github.com/fluxcd/helm-operator/pull/422
+
 ## 1.0.1 (2020-04-15)
 
 This is a patch release.
