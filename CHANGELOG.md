@@ -7,7 +7,7 @@ due to anonymous index files not getting cleaned up in Helm 3.
 ### Bug fixes
 
  - release: reset recorded failure cond on dry-run
-   [fluxcd/helm-operator#385][#385]
+   fluxcd/helm-operator{[#385][], [#425][]}
  - release: imply release failure upon chart fetch
    failure
    [fluxcd/helm-operator#399][#399]
@@ -67,6 +67,7 @@ contributions to this release, feedback, and reporting issues.
 [#411]: https://github.com/fluxcd/helm-operator/pull/411
 [#421]: https://github.com/fluxcd/helm-operator/pull/421
 [#422]: https://github.com/fluxcd/helm-operator/pull/422
+[#425]: https://github.com/fluxcd/helm-operator/pull/425
 
 ## 1.0.1 (2020-04-15)
 

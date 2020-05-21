@@ -267,7 +267,9 @@ next:
 			action = UpgradeAction
 			goto next
 		}
-		status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded)
+		if !status.HasRolledBack(hr) {
+			status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded)
+		}
 		logger.Log("info", "no changes", "phase", action)
 	case InstallAction:
 		logger.Log("info", "running installation", "phase", action)
