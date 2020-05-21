@@ -185,6 +185,20 @@ extraEnvs: []
 #   - name: FOO
 #     value: bar
 
+livenessProbe:
+  initialDelaySeconds: 1
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+readinessProbe:
+  initialDelaySeconds: 1
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
 podAnnotations: {}
 podLabels: {}
 nodeSelector: {}
