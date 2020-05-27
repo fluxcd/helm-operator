@@ -38,8 +38,8 @@ func ObserveReleaseConditions(old v1.HelmRelease, new v1.HelmRelease) {
 	}
 	for conditionType, conditionStatus := range conditions {
 		releaseCondition.With(
-			LabelTargetNamespace, new.Namespace,
-			LabelReleaseName, new.Name,
+			LabelTargetNamespace, new.GetTargetNamespace(),
+			LabelReleaseName, new.GetReleaseName(),
 			LabelCondition, string(conditionType),
 		).Set(conditionStatusToGaugeValue[conditionStatus])
 	}
