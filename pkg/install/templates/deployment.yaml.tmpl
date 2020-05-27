@@ -135,6 +135,8 @@ spec:
         #
         # - name: repositories-yaml
         #   mountPath: /root/.helm/repository/repositories.yaml
+        #   subPath: repositories.yaml
+        #   readOnly: true
         #
         # Include these if you want to establish validated TLS connections
         # against Tiller; you will also need the `tiller-tls-cert` and
