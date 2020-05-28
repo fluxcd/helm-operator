@@ -85,5 +85,5 @@ expr: flux_helm_operator_release_condition_info{condition="RolledBack"} == 1
 
 ```yaml
 alert: HelmReleaseError
-expr: flux_helm_operator_release_phase_info{condition="Released"} == -1
+expr: flux_helm_operator_release_condition_info{condition="Released"} == -1
 ```
