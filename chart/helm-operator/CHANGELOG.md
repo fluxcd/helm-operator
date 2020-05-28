@@ -1,3 +1,24 @@
+## 1.1.0 (2020-05-28)
+
+### Improvements
+
+ - Update Helm Operator to `1.1.0`
+   [fluxcd/helm-operator#424](https://github.com/fluxcd/helm-operator/pull/424)
+ - Make probes configurable on the deployment manifest
+   [fluxcd/helm-operator#397](https://github.com/fluxcd/helm-operator/pull/397)
+ - Update version of example Redis chart in `NOTES.txt` to `10.5.7`
+   [fluxcd/helm-operator#430](https://github.com/fluxcd/helm-operator/pull/430)
+
+## 1.0.2 (2020-05-06)
+
+### Improvements
+
+ - Add `priorityClassName` setting
+   [fluxcd/helm-operator#401](https://github.com/fluxcd/helm-operator/pull/401)
+ - Surpress creation of ClusterRole(Binding)s when `clusterRole.create`
+   is set to `false`.
+   [fluxcd/helm-operator#402](https://github.com/fluxcd/helm-operator/pull/402)
+
 ## 1.0.1 (2020-04-16)
 
 ### Improvements
