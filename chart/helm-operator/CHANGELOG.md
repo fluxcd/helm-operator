@@ -1,3 +1,13 @@
+## 1.0.2 (2020-05-06)
+
+### Improvements
+
+ - Add `priorityClassName` setting
+   [fluxcd/helm-operator#401](https://github.com/fluxcd/helm-operator/pull/401)
+ - Surpress creation of ClusterRole(Binding)s when `clusterRole.create`
+   is set to `false`.
+   [fluxcd/helm-operator#402](https://github.com/fluxcd/helm-operator/pull/402)
+
 ## 1.0.1 (2020-04-16)
 
 ### Improvements
