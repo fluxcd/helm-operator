@@ -70,7 +70,7 @@ chart and their default values.
 | `image.pullSecret`                                | `None`                                               | Image pull secret
 | `resources.requests.cpu`                          | `50m`                                                | CPU resource requests for the deployment
 | `resources.requests.memory`                       | `64Mi`                                               | Memory resource requests for the deployment
-| `resources.requests.cpu`                          | `None`                                               | CPU resource limits for the deployment
+| `resources.limits.cpu`                            | `None`                                               | CPU resource limits for the deployment
 | `resources.limits.memory`                         | `None`                                               | Memory resource limits for the deployment
 | `nodeSelector`                                    | `{}`                                                 | Node Selector properties for the deployment
 | `tolerations`                                     | `[]`                                                 | Tolerations properties for the deployment
