@@ -2,6 +2,8 @@ package operator
 
 import (
 	"fmt"
+	"os"
+	"path"
 	"sync"
 	"time"
 
@@ -18,6 +20,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
+	"github.com/fluxcd/helm-operator/internal/lockedfile"
 	helmfluxv1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	ifscheme "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/scheme"
 	hrv1 "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/helm.fluxcd.io/v1"
@@ -198,6 +201,14 @@ func (c *Controller) syncHandler(key string) error {
 		return nil
 	}
 
+	// acquire lock
+	unlock, err := c.lock(fmt.Sprintf("%s-%s", namespace, name))
+	if err != nil {
+		c.logger.Log("info", fmt.Sprintf("could not obtain lock: %s", err))
+		return nil
+	}
+	defer unlock()
+
 	// Custom Resource hr contains all information we need to know about the Chart release
 	hr, err := c.hrLister.HelmReleases(namespace).Get(name)
 	if err != nil {
@@ -218,6 +229,12 @@ func (c *Controller) syncHandler(key string) error {
 			fmt.Sprintf("managed release '%s' in namespace '%s' synchronized", hr.GetReleaseName(), hr.GetTargetNamespace()))
 	}
 	return nil
+}
+
+func (c *Controller) lock(name string) (unlock func(), err error) {
+	lockFile := path.Join(os.TempDir(), name+".lock")
+	mutex := lockedfile.MutexAt(lockFile)
+	return mutex.Lock()
 }
 
 // enqueueJob takes a HelmRelease resource and converts it into a namespace/name
