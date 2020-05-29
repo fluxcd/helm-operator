@@ -3,6 +3,8 @@ package release
 import (
 	"context"
 	"fmt"
+	"os"
+	"path"
 	"path/filepath"
 	"time"
 
@@ -11,6 +13,7 @@ import (
 
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 
+	"github.com/fluxcd/helm-operator/internal/lockedfile"
 	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/chartsync"
 	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
@@ -60,18 +63,25 @@ func New(logger log.Logger, helmClients *helm.Clients, coreV1Client corev1client
 
 // Sync synchronizes the given HelmRelease with Helm.
 func (r *Release) Sync(hr *v1.HelmRelease) (err error) {
-	defer func(start time.Time) {
-		ObserveRelease(start, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
-	}(time.Now())
-	defer status.SetObservedGeneration(r.hrClient.HelmReleases(hr.Namespace), hr, hr.Generation)
-
 	client, ok := r.helmClients.Load(hr.GetHelmVersion(r.config.DefaultHelmVersion))
 	if !ok {
 		status.SetStatusPhase(r.hrClient.HelmReleases(hr.GetTargetNamespace()), hr, v1.HelmReleasePhaseFailed)
 		return fmt.Errorf("no client found for Helm '%s'", r.config.DefaultHelmVersion)
 	}
-
 	logger := releaseLogger(r.logger, client, hr)
+
+	// acquire lock
+	unlock, err := r.lock(fmt.Sprintf("%s-%s", hr.GetNamespace(), hr.GetName()))
+	if err != nil {
+		logger.Log("info", fmt.Sprintf("could not obtain lock: %s", err))
+		return nil
+	}
+	defer unlock()
+	defer func(start time.Time) {
+		ObserveRelease(start, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
+	}(time.Now())
+	defer status.SetObservedGeneration(r.hrClient.HelmReleases(hr.Namespace), hr, hr.Generation)
+
 	logger.Log("info", "starting sync run")
 
 	chart, cleanup, err := r.prepareChart(client, hr)
@@ -106,6 +116,12 @@ func (r *Release) Sync(hr *v1.HelmRelease) (err error) {
 		return
 	}
 	return r.run(logger, client, action, hr, curRel, chart, values)
+}
+
+func (r *Release) lock(name string) (unlock func(), err error) {
+	lockFile := path.Join(os.TempDir(), name+".lock")
+	mutex := lockedfile.MutexAt(lockFile)
+	return mutex.Lock()
 }
 
 // Uninstalls removes the Helm release for the given HelmRelease,
@@ -322,7 +338,7 @@ next:
 		action = AnnotateAction
 		goto next
 	case AnnotateAction:
-		if err := annotate(hr, newRel) ; err != nil {
+		if err := annotate(hr, newRel); err != nil {
 			logger.Log("warning", err, "phase", action)
 		}
 	case UninstallAction:
