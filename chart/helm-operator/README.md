@@ -65,7 +65,6 @@ chart and their default values.
 | -----------------------------------------------   | ---------------------------------------------------- | ---
 | `image.repository`                                | `docker.io/fluxcd/helm-operator`                     | Image repository
 | `image.tag`                                       | `{{ version }}`                                      | Image tag
-| `replicaCount`                                    | `1`                                                  | Number of Helm Operator pods to deploy, more than one is not desirable
 | `image.pullPolicy`                                | `IfNotPresent`                                       | Image pull policy
 | `image.pullSecret`                                | `None`                                               | Image pull secret
 | `resources.requests.cpu`                          | `50m`                                                | CPU resource requests for the deployment
