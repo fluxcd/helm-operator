@@ -19,6 +19,9 @@ spec:
     metadata:
       annotations:
         checksum/repositories: {{ include (print $.Template.BasePath "/helm-repositories.yaml") . | sha256sum | quote }}
+      {{- if .Values.git.ssh.known_hosts }}
+        checksum/ssh: {{ include (print $.Template.BasePath "/ssh.yaml") . | sha256sum | quote }}
+      {{- end }}
       {{- if .Values.prometheus.enabled }}
         prometheus.io/scrape: "true"
       {{- end }}
@@ -307,4 +310,3 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
       {{- end }}
-
