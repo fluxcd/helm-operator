@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/google/go-cmp/cmp"
+	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -71,6 +72,8 @@ func New(
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeclientset.CoreV1().Events("")})
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
+	lc := newLabelCollector(logger)
+	stdprometheus.MustRegister(lc)
 
 	controller := &Controller{
 		logger:           logger,
@@ -85,7 +88,8 @@ func New(
 	controller.logger.Log("info", "setting up event handlers")
 	hrInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(new interface{}) {
-			if _, ok := checkCustomResourceType(controller.logger, new); ok {
+			if hr, ok := checkCustomResourceType(controller.logger, new); ok {
+				lc.Add(hr)
 				releaseCount.Add(1)
 				controller.enqueueJob(new)
 			}
@@ -95,6 +99,7 @@ func New(
 		},
 		DeleteFunc: func(old interface{}) {
 			if hr, ok := checkCustomResourceType(controller.logger, old); ok {
+				lc.Remove(hr)
 				releaseCount.Add(-1)
 				controller.release.Uninstall(hr.DeepCopy())
 			}
