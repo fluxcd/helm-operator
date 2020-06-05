@@ -256,6 +256,38 @@ type ExternalSourceSelector struct {
 	Optional *bool `json:"optional,omitempty"`
 }
 
+type Install struct {
+	// Retry will mark this Helm release for install retries after a
+	// installation failure.
+	// +optional
+	Retry *bool `json:"retry,omitempty"`
+	// MaxRetries is the maximum amount of install retries the operator
+	// should make before bailing, it defaults to 5.
+	// +optional
+	MaxRetries *int64 `json:"maxRetries,omitempty"`
+}
+
+// GetMaxRetries returns the configured max install retries for the Helm
+// release, or the default of 5.
+func (i Install) GetRetryEnabled() bool {
+	if i.Retry == nil {
+		return true
+	}
+	return *i.Retry
+}
+
+// GetMaxRetries returns the configured max install retries for the Helm
+// release, or the default of 5.
+func (i Install) GetMaxRetries() int64 {
+	if i.Retry == nil {
+		return 0
+	}
+	if i.MaxRetries == nil {
+		return 5
+	}
+	return *i.MaxRetries
+}
+
 type Rollback struct {
 	// Enable will mark this Helm release for rollbacks.
 	// +optional
@@ -414,6 +446,9 @@ type HelmReleaseSpec struct {
 	// forces the resource updates through delete/recreate if needed.
 	// +optional
 	ForceUpgrade bool `json:"forceUpgrade,omitempty"`
+	// The install settings for this Helm release.
+	// +optional
+	Install Install `json:"install,omitempty"`
 	// The rollback settings for this Helm release.
 	// +optional
 	Rollback Rollback `json:"rollback,omitempty"`
@@ -427,7 +462,8 @@ type HelmReleaseSpec struct {
 // "ChartFetched",
 // "Released",
 // "RolledBack"
-// +kubebuilder:validation:Enum="ChartFetched";"Released";"RolledBack"
+// "Uninstalled"
+// +kubebuilder:validation:Enum="ChartFetched";"Released";"RolledBack";"Uninstalled"
 // +optional
 type HelmReleaseConditionType string
 
@@ -441,10 +477,13 @@ const (
 	// RolledBack means the chart to which the HelmRelease refers
 	// has been rolled back.
 	HelmReleaseRolledBack HelmReleaseConditionType = "RolledBack"
+	// Uninstalled means the chart to which the HelmRelease refers
+	// has been uninstalled.
+	HelmReleaseUninstalled HelmReleaseConditionType = "Uninstalled"
 )
 
 type HelmReleaseCondition struct {
-	// Type of the condition, one of ('ChartFetched', 'Released', 'RolledBack').
+	// Type of the condition, one of ('ChartFetched', 'Released', 'RolledBack', 'Uninstalled').
 	Type HelmReleaseConditionType `json:"type"`
 
 	// Status of the condition, one of ('True', 'False', 'Unknown').
@@ -482,7 +521,10 @@ type HelmReleaseCondition struct {
 // "RollingBack",
 // "RolledBack",
 // "RollbackFailed",
-// +kubebuilder:validation:Enum="ChartFetched";"ChartFetchFailed";"Installing";"Upgrading";"Succeeded";"Failed";"RollingBack";"RolledBack";"RollbackFailed"
+// "Uninstalling",
+// "Uninstalled",
+// "UninstallFailed",
+// +kubebuilder:validation:Enum="ChartFetched";"ChartFetchFailed";"Installing";"Upgrading";"Succeeded";"Failed";"RollingBack";"RolledBack";"RollbackFailed";"Uninstalling";"Uninstalled";"UninstallFailed"
 // +optional
 type HelmReleasePhase string
 
@@ -511,6 +553,13 @@ const (
 	HelmReleasePhaseRolledBack HelmReleasePhase = "RolledBack"
 	// RolledBackFailed means the rollback for the HelmRelease failed.
 	HelmReleasePhaseRollbackFailed HelmReleasePhase = "RollbackFailed"
+
+	// Uninstalling means an uninstall for the HelmRelease is running.
+	HelmReleasePhaseUninstalling = "Uninstalling"
+	// Uninstalled means the HelmRelease has been uninstalled.
+	HelmReleasePhaseUninstalled = "Uninstalled"
+	// UninstallFailed means the uninstall for the HelmRelease failed.
+	HelmReleasePhaseUninstallFailed = "UninstallFailed"
 )
 
 // HelmReleaseStatus contains status information about an HelmRelease.
@@ -522,7 +571,7 @@ type HelmReleaseStatus struct {
 
 	// Phase the release is in, one of ('ChartFetched',
 	// 'ChartFetchFailed', 'Installing', 'Upgrading', 'Succeeded',
-	// 'RollingBack', 'RolledBack', 'RollbackFailed')
+	// 'RollingBack', 'RolledBack', 'RollbackFailed', 'Uninstalling', 'Uninstalled', 'UninstallFailed')
 	// +optional
 	Phase HelmReleasePhase `json:"phase,omitempty"`
 
@@ -544,6 +593,12 @@ type HelmReleaseStatus struct {
 	// sync, and may be of a failed release.
 	// +optional
 	LastAttemptedRevision string `json:"lastAttemptedRevision,omitempty"`
+
+	// FailedCount records the number of failed installs or upgrades,
+	// it is incremented after an install or upgrade failure and reset after a
+	// successful release or revision change.
+	// +optional
+	FailedCount int64 `json:"failedCount,omitempty"`
 
 	// RollbackCount records the amount of rollback attempts made,
 	// it is incremented after a rollback failure and reset after a

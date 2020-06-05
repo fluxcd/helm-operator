@@ -248,6 +248,20 @@ forces the resource updates through delete/recreate if needed.</p>
 </tr>
 <tr>
 <td>
+<code>install</code><br>
+<em>
+<a href="#helm.fluxcd.io/v1.Install">
+Install
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The install settings for this Helm release.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>rollback</code><br>
 <em>
 <a href="#helm.fluxcd.io/v1.Rollback">
@@ -314,7 +328,7 @@ HelmReleasePhase
 <em>(Optional)</em>
 <p>Phase the release is in, one of (&lsquo;ChartFetched&rsquo;,
 &lsquo;ChartFetchFailed&rsquo;, &lsquo;Installing&rsquo;, &lsquo;Upgrading&rsquo;, &lsquo;Succeeded&rsquo;,
-&lsquo;RollingBack&rsquo;, &lsquo;RolledBack&rsquo;, &lsquo;RollbackFailed&rsquo;)</p>
+&lsquo;RollingBack&rsquo;, &lsquo;RolledBack&rsquo;, &lsquo;RollbackFailed&rsquo;, &lsquo;Uninstalling&rsquo;, &lsquo;Uninstalled&rsquo;, &lsquo;UninstallFailed&rsquo;)</p>
 </td>
 </tr>
 <tr>
@@ -366,6 +380,20 @@ string
 <em>(Optional)</em>
 <p>LastAttemptedRevision is the revision of the latest chart
 sync, and may be of a failed release.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>failedCount</code><br>
+<em>
+int64
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>FailedCount records the number of failed installs or upgrades,
+it is incremented after an install or upgrade failure and reset after a
+successful release or revision change.</p>
 </td>
 </tr>
 <tr>
@@ -722,7 +750,7 @@ HelmReleaseConditionType
 </em>
 </td>
 <td>
-<p>Type of the condition, one of (&lsquo;ChartFetched&rsquo;, &lsquo;Released&rsquo;, &lsquo;RolledBack&rsquo;).</p>
+<p>Type of the condition, one of (&lsquo;ChartFetched&rsquo;, &lsquo;Released&rsquo;, &lsquo;RolledBack&rsquo;, &lsquo;Uninstalled&rsquo;).</p>
 </td>
 </tr>
 <tr>
@@ -810,7 +838,8 @@ transition, complementing reason.</p>
 Valid HelmReleaseConditionType values are:
 &ldquo;ChartFetched&rdquo;,
 &ldquo;Released&rdquo;,
-&ldquo;RolledBack&rdquo;</p>
+&ldquo;RolledBack&rdquo;
+&ldquo;Uninstalled&rdquo;</p>
 <h3 id="helm.fluxcd.io/v1.HelmReleasePhase">HelmReleasePhase
 (<code>string</code> alias)</h3>
 <p>
@@ -827,7 +856,10 @@ Valid HelmReleasePhase values are:
 &ldquo;Failed&rdquo;,
 &ldquo;RollingBack&rdquo;,
 &ldquo;RolledBack&rdquo;,
-&ldquo;RollbackFailed&rdquo;,</p>
+&ldquo;RollbackFailed&rdquo;,
+&ldquo;Uninstalling&rdquo;,
+&ldquo;Uninstalled&rdquo;,
+&ldquo;UninstallFailed&rdquo;,</p>
 <h3 id="helm.fluxcd.io/v1.HelmReleaseSpec">HelmReleaseSpec
 </h3>
 <p>
@@ -1025,6 +1057,20 @@ forces the resource updates through delete/recreate if needed.</p>
 </tr>
 <tr>
 <td>
+<code>install</code><br>
+<em>
+<a href="#helm.fluxcd.io/v1.Install">
+Install
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The install settings for this Helm release.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>rollback</code><br>
 <em>
 <a href="#helm.fluxcd.io/v1.Rollback">
@@ -1098,7 +1144,7 @@ HelmReleasePhase
 <em>(Optional)</em>
 <p>Phase the release is in, one of (&lsquo;ChartFetched&rsquo;,
 &lsquo;ChartFetchFailed&rsquo;, &lsquo;Installing&rsquo;, &lsquo;Upgrading&rsquo;, &lsquo;Succeeded&rsquo;,
-&lsquo;RollingBack&rsquo;, &lsquo;RolledBack&rsquo;, &lsquo;RollbackFailed&rsquo;)</p>
+&lsquo;RollingBack&rsquo;, &lsquo;RolledBack&rsquo;, &lsquo;RollbackFailed&rsquo;, &lsquo;Uninstalling&rsquo;, &lsquo;Uninstalled&rsquo;, &lsquo;UninstallFailed&rsquo;)</p>
 </td>
 </tr>
 <tr>
@@ -1150,6 +1196,20 @@ string
 <em>(Optional)</em>
 <p>LastAttemptedRevision is the revision of the latest chart
 sync, and may be of a failed release.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>failedCount</code><br>
+<em>
+int64
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>FailedCount records the number of failed installs or upgrades,
+it is incremented after an install or upgrade failure and reset after a
+successful release or revision change.</p>
 </td>
 </tr>
 <tr>
@@ -1228,6 +1288,52 @@ the lowest <em>enabled Helm version</em> will be targeted.
 Valid HelmVersion values are:
 &ldquo;v2&rdquo;,
 &ldquo;v3&rdquo;</p>
+<h3 id="helm.fluxcd.io/v1.Install">Install
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#helm.fluxcd.io/v1.HelmReleaseSpec">HelmReleaseSpec</a>)
+</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>retry</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Retry will mark this Helm release for install retries after a
+installation failure.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>maxRetries</code><br>
+<em>
+int64
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MaxRetries is the maximum amount of install retries the operator
+should make before bailing, it defaults to 5.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="helm.fluxcd.io/v1.LocalObjectReference">LocalObjectReference
 </h3>
 <p>
