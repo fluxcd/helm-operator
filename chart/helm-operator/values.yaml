@@ -120,6 +120,8 @@ git:
     #
     # add the public key to the other repository as a deploy key and enjoy
     configMapName: ""
+    # The name of the key in the kubernetes config map specified above
+    configMapKey: "config"
   # Global Git configuration See https://git-scm.com/docs/git-config for more details.
   config:
     enabled: false

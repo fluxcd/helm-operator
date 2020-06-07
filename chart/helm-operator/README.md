@@ -74,6 +74,8 @@ chart and their default values.
 | `nodeSelector`                                    | `{}`                                                 | Node Selector properties for the deployment
 | `tolerations`                                     | `[]`                                                 | Tolerations properties for the deployment
 | `affinity`                                        | `{}`                                                 | Affinity properties for the deployment
+| `extraVolumeMounts`                               | `[]`                                                 | Extra volume mounts to be added to the Helm Operator pod(s)
+| `extraVolumes`                                    | `[]`                                                 | Extra volume to be added to the Helm Operator pod(s)
 | `priorityClassName`                               | `""`                                                 | Set priority class for Helm Operator
 | `extraEnvs`                                       | `[]`                                                 | Extra environment variables for the Helm Operator pod(s)
 | `podAnnotations`                                  | `{}`                                                 | Additional pod annotations
@@ -84,20 +86,24 @@ chart and their default values.
 | `serviceAccount.annotations`                      | `{}`                                                 | Additional Service Account annotations
 | `serviceAccount.name`                             | `flux`                                               | Service account to be used
 | `clusterRole.create`                              | `true`                                               | If `false`, Helm Operator will be restricted to the namespace where is deployed
+| `clusterRole.name`                                | `None`                                               | The name of a cluster role to bind to
 | `createCRD`                                       | `false`                                              | Install the `HelmRelease` CRD. Setting this value only has effect for Helm 2, as Helm 3 uses `--skip-crds` and will skip installation if the CRD is already present. Managing CRDs outside of Helm is recommended, also see the [Helm best practices](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/)
 | `service.type`                                    | `ClusterIP`                                          | Service type to be used (exposing the Helm Operator API outside of the cluster is not advised)
 | `service.port`                                    | `3030`                                               | Service port to be used
 | `updateChartDeps`                                 | `true`                                               | Update dependencies for charts
-| `git.pollInterval`                                | `git.pollInterval`                                   | Period on which to poll git chart sources for changes
-| `git.timeout`                                     | `git.timeout`                                        | Duration after which git operations time out
+| `git.pollInterval`                                | `5m`                                                 | Period on which to poll git chart sources for changes
+| `git.timeout`                                     | `20s`                                                | Duration after which git operations time out
 | `git.defaultRef`                                  | `master`                                             | Ref to clone chart from if ref is unspecified in a HelmRelease
 | `git.ssh.secretName`                              | `None`                                               | The name of the kubernetes secret with the SSH private key, supercedes `git.secretName`
 | `git.ssh.known_hosts`                             | `None`                                               | The contents of an SSH `known_hosts` file, if you need to supply host key(s)
 | `git.ssh.configMapName`                           | `None`                                               | The name of a kubernetes config map containing the ssh config
 | `git.ssh.configMapKey`                            | `config`                                             | The name of the key in the kubernetes config map specified above
+| `git.config.enabled`                              | `false`                                              | If `true`, mount the .gitconfig into the Helm Operator pod created from the `git.config.data`
+| `git.config.secretName`                           | `None`                                               | The name of the kubernetes secret to store .gitconfig data created from the `git.config.data`
+| `git.config.data`                                 | `None`                                               | The .gitconfig to be mounted into the home directory of the Helm Operator pod
 | `chartsSyncInterval`                              | `3m`                                                 | Period on which to reconcile the Helm releases with `HelmRelease` resources
 | `statusUpdateInterval`                            | `30s`                                                | Period on which to update the Helm release status in `HelmRelease` resources
-| `workers`                                         | `None`                                               | Number of workers processing releases
+| `workers`                                         | `4`                                                  | Number of workers processing releases
 | `logFormat`                                       | `fmt`                                                | Log format (fmt or json)
 | `logReleaseDiffs`                                 | `false`                                              | Helm Operator should log the diff when a chart release diverges (possibly insecure)
 | `allowNamespace`                                  | `None`                                               | If set, this limits the scope to a single namespace. If not specified, all namespaces will be watched
@@ -126,8 +132,19 @@ chart and their default values.
 | `prometheus.enabled`                              | `false`                                              | If enabled, adds prometheus annotations to Helm Operator pod(s)
 | `prometheus.serviceMonitor.create`                | `false`                                              | Set to true if using the Prometheus Operator
 | `prometheus.serviceMonitor.interval`              | `None`                                               | Interval at which metrics should be scraped
+| `prometheus.serviceMonitor.scrapeTimeout`         | `None`                                               | The timeout to configure the service monitor scrape task e.g `5s`
 | `prometheus.serviceMonitor.namespace`             | `None`                                               | The namespace where the ServiceMonitor is deployed
 | `prometheus.serviceMonitor.additionalLabels`      | `{}`                                                 | Additional labels to add to the ServiceMonitor
+| `livenessProbe.initialDelaySeconds`               | `1`                                                  | The initial delay in seconds before the first liveness probe is initiated
+| `livenessProbe.periodSeconds`                     | `10`                                                 | The number of seconds between the liveness probe is checked
+| `livenessProbe.timeoutSeconds`                    | `5`                                                  | The number of seconds after which the liveness probe times out
+| `livenessProbe.successThreshold`                  | `1`                                                  | The minimum number of consecutive successful probe results for the liveness probe to be considered successful
+| `livenessProbe.failureThreshold`                  | `3`                                                  | The number of times the liveness probe can failed before restarting the container
+| `readinessProbe.initialDelaySeconds`              | `1`                                                  | The initial delay in seconds before the first readiness probe is initiated
+| `readinessProbe.periodSeconds`                    | `10`                                                 | The number of seconds between the readiness probe is checked
+| `readinessProbe.timeoutSeconds`                   | `5`                                                  | The number of seconds after which the readiness probe times out
+| `readinessProbe.successThreshold`                 | `1`                                                  | The minimum number of consecutive successful probe results for the readiness probe to be considered successful
+| `readinessProbe.failureThreshold`                 | `3`                                                  | The number of times the readiness probe can failed before the container is marked as unready
 | `initContainers`                                  | `[]`                                                 | Init containers and their specs
 | `hostAliases`                                     | `{}`                                                 | Host aliases allow the modification of the hosts file (`/etc/hosts`) inside Helm Operator container. See <https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/>
 
