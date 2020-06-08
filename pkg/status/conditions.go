@@ -91,13 +91,27 @@ func ConditionsForPhase(hr *v1.HelmRelease, phase v1.HelmReleasePhase) ([]v1.Hel
 	conditions := []*v1.HelmReleaseCondition{condition}
 	switch phase {
 	case v1.HelmReleasePhaseInstalling:
-		condition.Type = v1.HelmReleaseReleased
+		condition.Type = v1.HelmReleaseDeployed
 		condition.Status = v1.ConditionUnknown
 		condition.Message = fmt.Sprintf(`Running installation for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
 	case v1.HelmReleasePhaseUpgrading:
-		condition.Type = v1.HelmReleaseReleased
+		condition.Type = v1.HelmReleaseDeployed
 		condition.Status = v1.ConditionUnknown
 		condition.Message = fmt.Sprintf(`Running upgrade for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseDeployed:
+		condition.Type = v1.HelmReleaseDeployed
+		condition.Status = v1.ConditionTrue
+		condition.Message = fmt.Sprintf(`Installation or upgrade succeeded for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseDeployFailed:
+		message := fmt.Sprintf(`Installation or upgrade failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+		condition.Type = v1.HelmReleaseDeployed
+		condition.Status = v1.ConditionFalse
+		condition.Message = message
+		conditions = append(conditions, &v1.HelmReleaseCondition{
+			Type:    v1.HelmReleaseReleased,
+			Status:  v1.ConditionFalse,
+			Message: message,
+		})
 	case v1.HelmReleasePhaseSucceeded:
 		condition.Type = v1.HelmReleaseReleased
 		condition.Status = v1.ConditionTrue
@@ -106,6 +120,24 @@ func ConditionsForPhase(hr *v1.HelmRelease, phase v1.HelmReleasePhase) ([]v1.Hel
 		condition.Type = v1.HelmReleaseReleased
 		condition.Status = v1.ConditionFalse
 		condition.Message = fmt.Sprintf(`Release failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseTesting:
+		condition.Type = v1.HelmReleaseTested
+		condition.Status = v1.ConditionUnknown
+		condition.Message = fmt.Sprintf(`Testing Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseTested:
+		condition.Type = v1.HelmReleaseTested
+		condition.Status = v1.ConditionTrue
+		condition.Message = fmt.Sprintf(`Tested Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+	case v1.HelmReleasePhaseTestFailed:
+		message := fmt.Sprintf(`Test failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+		condition.Type = v1.HelmReleaseTested
+		condition.Status = v1.ConditionFalse
+		condition.Message = message
+		conditions = append(conditions, &v1.HelmReleaseCondition{
+			Type:    v1.HelmReleaseReleased,
+			Status:  v1.ConditionFalse,
+			Message: message,
+		})
 	case v1.HelmReleasePhaseRollingBack:
 		condition.Type = v1.HelmReleaseRolledBack
 		condition.Status = v1.ConditionUnknown

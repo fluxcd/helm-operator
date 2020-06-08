@@ -262,6 +262,20 @@ Rollback
 </tr>
 <tr>
 <td>
+<code>test</code><br>
+<em>
+<a href="#helm.fluxcd.io/v1.Test">
+Test
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The test settings for this Helm release.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>values</code><br>
 <em>
 <a href="#helm.fluxcd.io/v1.HelmValues">
@@ -313,7 +327,8 @@ HelmReleasePhase
 <td>
 <em>(Optional)</em>
 <p>Phase the release is in, one of (&lsquo;ChartFetched&rsquo;,
-&lsquo;ChartFetchFailed&rsquo;, &lsquo;Installing&rsquo;, &lsquo;Upgrading&rsquo;, &lsquo;Succeeded&rsquo;,
+&lsquo;ChartFetchFailed&rsquo;, &lsquo;Installing&rsquo;, &lsquo;Upgrading&rsquo;, &lsquo;Deployed&rsquo;,
+&lsquo;DeployFailed&rsquo;, &lsquo;Testing&rsquo;, &lsquo;TestFailed&rsquo;, &lsquo;Tested&rsquo;, &lsquo;Succeeded&rsquo;,
 &lsquo;RollingBack&rsquo;, &lsquo;RolledBack&rsquo;, &lsquo;RollbackFailed&rsquo;)</p>
 </td>
 </tr>
@@ -722,7 +737,7 @@ HelmReleaseConditionType
 </em>
 </td>
 <td>
-<p>Type of the condition, one of (&lsquo;ChartFetched&rsquo;, &lsquo;Released&rsquo;, &lsquo;RolledBack&rsquo;).</p>
+<p>Type of the condition, one of (&lsquo;ChartFetched&rsquo;, &lsquo;Deployed&rsquo;, &lsquo;Released&rsquo;, &lsquo;RolledBack&rsquo;, &lsquo;Tested&rsquo;).</p>
 </td>
 </tr>
 <tr>
@@ -809,8 +824,10 @@ transition, complementing reason.</p>
 <p>HelmReleaseConditionType represents an HelmRelease condition value.
 Valid HelmReleaseConditionType values are:
 &ldquo;ChartFetched&rdquo;,
+&ldquo;Deployed&rdquo;,
 &ldquo;Released&rdquo;,
-&ldquo;RolledBack&rdquo;</p>
+&ldquo;RolledBack&rdquo;
+&ldquo;Tested&rdquo;,</p>
 <h3 id="helm.fluxcd.io/v1.HelmReleasePhase">HelmReleasePhase
 (<code>string</code> alias)</h3>
 <p>
@@ -823,6 +840,11 @@ Valid HelmReleasePhase values are:
 &ldquo;ChartFetchFailed&rdquo;,
 &ldquo;Installing&rdquo;,
 &ldquo;Upgrading&rdquo;,
+&ldquo;Deployed&rdquo;,
+&ldquo;DeployFailed&rdquo;,
+&ldquo;Testing&rdquo;,
+&ldquo;TestFailed&rdquo;,
+&ldquo;Tested&rdquo;,
 &ldquo;Succeeded&rdquo;,
 &ldquo;Failed&rdquo;,
 &ldquo;RollingBack&rdquo;,
@@ -1039,6 +1061,20 @@ Rollback
 </tr>
 <tr>
 <td>
+<code>test</code><br>
+<em>
+<a href="#helm.fluxcd.io/v1.Test">
+Test
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The test settings for this Helm release.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>values</code><br>
 <em>
 <a href="#helm.fluxcd.io/v1.HelmValues">
@@ -1097,7 +1133,8 @@ HelmReleasePhase
 <td>
 <em>(Optional)</em>
 <p>Phase the release is in, one of (&lsquo;ChartFetched&rsquo;,
-&lsquo;ChartFetchFailed&rsquo;, &lsquo;Installing&rsquo;, &lsquo;Upgrading&rsquo;, &lsquo;Succeeded&rsquo;,
+&lsquo;ChartFetchFailed&rsquo;, &lsquo;Installing&rsquo;, &lsquo;Upgrading&rsquo;, &lsquo;Deployed&rsquo;,
+&lsquo;DeployFailed&rsquo;, &lsquo;Testing&rsquo;, &lsquo;TestFailed&rsquo;, &lsquo;Tested&rsquo;, &lsquo;Succeeded&rsquo;,
 &lsquo;RollingBack&rsquo;, &lsquo;RolledBack&rsquo;, &lsquo;RollbackFailed&rsquo;)</p>
 </td>
 </tr>
@@ -1649,6 +1686,64 @@ string
 </td>
 <td>
 <em>(Optional)</em>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="helm.fluxcd.io/v1.Test">Test
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#helm.fluxcd.io/v1.HelmReleaseSpec">HelmReleaseSpec</a>)
+</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enable</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enable will mark this Helm release for tests.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>timeout</code><br>
+<em>
+int64
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Timeout is the time to wait for any individual Kubernetes
+operation (like Jobs for hooks) during test.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>cleanup</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Cleanup, when targeting Helm 2, determines whether to delete
+test pods between each test run initiated by the Helm Operator.</p>
 </td>
 </tr>
 </tbody>

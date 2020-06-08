@@ -194,6 +194,23 @@ spec:
                 Helm release. The default namespace equals to the namespace of the
                 HelmRelease resource.
               type: string
+            test:
+              description: The test settings for this Helm release.
+              type: object
+              properties:
+                cleanup:
+                  description: Cleanup, when targeting Helm 2, determines whether
+                    to delete test pods between each test run initiated by the Helm
+                    Operator.
+                  type: boolean
+                enable:
+                  description: Enable will mark this Helm release for tests.
+                  type: boolean
+                timeout:
+                  description: Timeout is the time to wait for any individual Kubernetes
+                    operation (like Jobs for hooks) during test.
+                  type: integer
+                  format: int64
             timeout:
               description: Timeout is the time to wait for any individual Kubernetes
                 operation (like Jobs for hooks) during installation and upgrade operations.
@@ -324,13 +341,15 @@ spec:
                     - "False"
                     - Unknown
                   type:
-                    description: Type of the condition, one of ('ChartFetched', 'Released',
-                      'RolledBack').
+                    description: Type of the condition, one of ('ChartFetched', 'Deployed',
+                      'Released', 'RolledBack', 'Tested').
                     type: string
                     enum:
                     - ChartFetched
+                    - Deployed
                     - Released
                     - RolledBack
+                    - Tested
             lastAttemptedRevision:
               description: LastAttemptedRevision is the revision of the latest chart
                 sync, and may be of a failed release.
@@ -342,7 +361,8 @@ spec:
               format: int64
             phase:
               description: Phase the release is in, one of ('ChartFetched', 'ChartFetchFailed',
-                'Installing', 'Upgrading', 'Succeeded', 'RollingBack', 'RolledBack',
+                'Installing', 'Upgrading', 'Deployed', 'DeployFailed', 'Testing',
+                'TestFailed', 'Tested', 'Succeeded', 'RollingBack', 'RolledBack',
                 'RollbackFailed')
               type: string
               enum:
@@ -350,6 +370,11 @@ spec:
               - ChartFetchFailed
               - Installing
               - Upgrading
+              - Deployed
+              - DeployFailed
+              - Testing
+              - TestFailed
+              - Tested
               - Succeeded
               - Failed
               - RollingBack

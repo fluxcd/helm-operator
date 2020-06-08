@@ -9,6 +9,7 @@ type Client interface {
 	UpgradeFromPath(chartPath string, releaseName string, values []byte, opts UpgradeOptions) (*Release, error)
 	History(releaseName string, opts HistoryOptions) ([]*Release, error)
 	Rollback(releaseName string, opts RollbackOptions) (*Release, error)
+	Test(releaseName string, opts TestOptions) error
 	DependencyUpdate(chartPath string) error
 	RepositoryIndex() error
 	RepositoryAdd(name, url, username, password, certFile, keyFile, caFile string) error

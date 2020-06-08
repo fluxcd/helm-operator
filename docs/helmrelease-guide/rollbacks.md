@@ -13,10 +13,11 @@ rollbacks.
 ## Enabling rollbacks
 
 When rollbacks for a `HelmRelease` are enabled, the Helm Operator will detect
-a faulty upgrade and instruct Helm to perform a rollback, it will not attempt
-a new upgrade unless it detects a change in values and/or the chart, or [retries
-have been enabled](#enabling-retries-of-rolled-back-releases). Changes are
-detected by comparing the failed release to a fresh dry-run release.
+a faulty upgrade, including post-upgrade helm test [if enabled](tests.md#enabling-tests)
+failures, and instruct Helm to perform a rollback, it will not attempt a new
+upgrade unless it detects a change in values and/or the chart, or
+[retries have been enabled](#enabling-retries-of-rolled-back-releases). Changes
+are detected by comparing the failed release to a fresh dry-run release.
 
 Rollbacks can be enabled by setting `.rollback.enable`:
 
@@ -25,6 +26,12 @@ spec:
   rollback:
     enable: true
 ```
+
+## Wait interaction
+
+When rollbacks are enabled, [resource waiting](release-configuration.md#wait-for-resources-to-be-ready)
+defaults to `true` since this is necessary to validate whether the release should
+be rolled back or not.
 
 ## Tweaking the rollback configuration
 

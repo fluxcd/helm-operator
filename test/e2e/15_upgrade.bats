@@ -56,6 +56,10 @@ function setup() {
   # Assert change is rolled out
   poll_until_equals 'revision match' "$head_hash" "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.revision}'"
   poll_until_equals 'revision attempted match' "$head_hash" "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.lastAttemptedRevision}'"
+
+  # Assert `Deployed` condition is `True`
+  run kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.type=="Deployed")].status}'
+  [ "$output" = 'True' ]
 }
 
 @test "When a values.yaml change in Git is made, a release is upgraded" {
@@ -135,6 +139,27 @@ function setup() {
   # Wait for patch to be processed and assert successful release
   poll_until_equals 'patch to be processed for child release' "$((childReleaseGen+1))" "kubectl -n $DEMO_NAMESPACE get helmrelease/nested-helmrelease-child -o jsonpath='{.status.observedGeneration}'"
   poll_until_equals 'release status ok' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/nested-helmrelease-child -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+}
+
+@test "When an upgrade fails, Deployed and Released conditions are False" {
+  # Apply the HelmRelease
+  kubectl apply -f "$FIXTURES_DIR/releases/helm-repository-no-rollback.yaml" >&3
+
+  # Wait for it to be deployed
+  poll_until_equals 'release deploy' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  # Apply a patch which causes wait to fail
+  kubectl patch -f "$FIXTURES_DIR/releases/helm-repository-no-rollback.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/values/faults/unready", "value":"true"}]' >&3
+
+  # Wait for release failure
+  poll_until_true 'upgrade failure' "kubectl -n $E2E_NAMESPACE logs deploy/helm-operator | grep -E \"upgrade failed\""
+
+  # Assert `Released` condition becomes `False`
+  poll_until_equals 'released condition false' 'False' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  # Assert `Deployed` condition is `False`
+  run kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type=="Deployed")].status}'
+  [ "$output" = 'False' ]
 }
 
 function teardown() {

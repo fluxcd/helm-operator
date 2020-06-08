@@ -21,8 +21,16 @@ function setup() {
   kubectl apply -f "$FIXTURES_DIR/releases/git.yaml" >&3
   kubectl apply -f "$FIXTURES_DIR/releases/helm-repository.yaml" >&3
 
-  poll_until_equals 'podinfo-helm-repository HelmRelease' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o 'custom-columns=status:status.releaseStatus' --no-headers"
-  poll_until_equals 'podinfo-git HelmRelease' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o 'custom-columns=status:status.releaseStatus' --no-headers"
+  poll_until_equals 'helm repository chart deployed release status' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o 'custom-columns=status:status.releaseStatus' --no-headers"
+  poll_until_equals 'git deployed chart release status' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o 'custom-columns=status:status.releaseStatus' --no-headers"
+
+  # Assert `Released` and `Deployed` conditions are `True`
+  poll_until_equals 'helm repository chart released condition true' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+  run kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type=="Deployed")].status}'
+  [ "$output" = 'True' ]
+  poll_until_equals 'git chart released condition true' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+  run kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.type=="Deployed")].status}'
+  [ "$output" = 'True' ]
 }
 
 function teardown() {

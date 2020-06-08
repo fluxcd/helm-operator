@@ -14,14 +14,14 @@ function setup() {
   kubectl create namespace "$DEMO_NAMESPACE"
 }
 
-@test "When rollback.enable is set, failed releases are rolled back" {
+@test "When rollback.enable is set, releases with failed waits are rolled back" {
   # Apply the HelmRelease
   kubectl apply -f "$FIXTURES_DIR/releases/helm-repository.yaml" >&3
 
   # Wait for it to be deployed
   poll_until_equals 'release deploy' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
-  # Apply a faulty patch
+  # Apply a patch which causes wait to fail
   kubectl patch -f "$FIXTURES_DIR/releases/helm-repository.yaml" --type='json' -p='[{"op": "replace", "path": "/spec/values/faults/unready", "value":"true"}]' >&3
 
   # Wait for release failure

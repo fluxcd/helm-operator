@@ -122,6 +122,18 @@ func (hr HelmRelease) GetReuseValues() bool {
 	}
 }
 
+// GetWait returns if wait should be enabled. If not explicitly set
+// it is true if either rollbacks or tests are enabled, and false
+// otherwise.
+func (hr HelmRelease) GetWait() bool {
+	switch hr.Spec.Wait {
+	case nil:
+		return hr.Spec.Rollback.Enable || hr.Spec.Test.Enable
+	default:
+		return *hr.Spec.Wait
+	}
+}
+
 // GetValuesFromSources maintains backwards compatibility with
 // ValueFileSecrets by merging them into the ValuesFrom array.
 func (hr HelmRelease) GetValuesFromSources() []ValuesFromSource {
@@ -310,6 +322,40 @@ func (r Rollback) GetMaxRetries() int64 {
 	return *r.MaxRetries
 }
 
+type Test struct {
+	// Enable will mark this Helm release for tests.
+	// +optional
+	Enable bool `json:"enable,omitempty"`
+	// Timeout is the time to wait for any individual Kubernetes
+	// operation (like Jobs for hooks) during test.
+	// +optional
+	Timeout *int64 `json:"timeout,omitempty"`
+	// Cleanup, when targeting Helm 2, determines whether to delete
+	// test pods between each test run initiated by the Helm Operator.
+	// +optional
+	Cleanup *bool `json:"cleanup,omitempty"`
+}
+
+// GetTimeout returns the configured timout for the Helm release,
+// or the default of 300s.
+func (t Test) GetTimeout() time.Duration {
+	if t.Timeout == nil {
+		return 300 * time.Second
+	}
+	return time.Duration(*t.Timeout) * time.Second
+}
+
+// GetCleanup returns the configured test cleanup flag, or the
+// default of true.
+func (t Test) GetCleanup() bool {
+	switch t.Cleanup {
+	case nil:
+		return true
+	default:
+		return *t.Cleanup
+	}
+}
+
 // HelmVersion is the version of Helm to target. If not supplied,
 // the lowest _enabled Helm version_ will be targeted.
 // Valid HelmVersion values are:
@@ -409,7 +455,7 @@ type HelmReleaseSpec struct {
 	// StatefulSet, or ReplicaSet are in a ready state before marking
 	// the release as successful.
 	// +optional
-	Wait bool `json:"wait,omitempty"`
+	Wait *bool `json:"wait,omitempty"`
 	// Force will mark this Helm release to `--force` upgrades. This
 	// forces the resource updates through delete/recreate if needed.
 	// +optional
@@ -417,6 +463,9 @@ type HelmReleaseSpec struct {
 	// The rollback settings for this Helm release.
 	// +optional
 	Rollback Rollback `json:"rollback,omitempty"`
+	// The test settings for this Helm release.
+	// +optional
+	Test Test `json:"test,omitempty"`
 	// Values holds the values for this Helm release.
 	// +optional
 	Values HelmValues `json:"values,omitempty"`
@@ -425,9 +474,11 @@ type HelmReleaseSpec struct {
 // HelmReleaseConditionType represents an HelmRelease condition value.
 // Valid HelmReleaseConditionType values are:
 // "ChartFetched",
+// "Deployed",
 // "Released",
 // "RolledBack"
-// +kubebuilder:validation:Enum="ChartFetched";"Released";"RolledBack"
+// "Tested",
+// +kubebuilder:validation:Enum="ChartFetched";"Deployed";"Released";"RolledBack";"Tested"
 // +optional
 type HelmReleaseConditionType string
 
@@ -435,16 +486,22 @@ const (
 	// ChartFetched means the chart to which the HelmRelease refers
 	// has been fetched successfully.
 	HelmReleaseChartFetched HelmReleaseConditionType = "ChartFetched"
+	// Deployed means the chart to which the HelmRelease refers has
+	// been successfully installed or upgraded.
+	HelmReleaseDeployed HelmReleaseConditionType = "Deployed"
 	// Released means the chart release, as specified in this
 	// HelmRelease, has been processed by Helm.
 	HelmReleaseReleased HelmReleaseConditionType = "Released"
 	// RolledBack means the chart to which the HelmRelease refers
 	// has been rolled back.
 	HelmReleaseRolledBack HelmReleaseConditionType = "RolledBack"
+	// Tested means the chart to which the HelmRelease refers has
+	// been successfully tested.
+	HelmReleaseTested HelmReleaseConditionType = "Tested"
 )
 
 type HelmReleaseCondition struct {
-	// Type of the condition, one of ('ChartFetched', 'Released', 'RolledBack').
+	// Type of the condition, one of ('ChartFetched', 'Deployed', 'Released', 'RolledBack', 'Tested').
 	Type HelmReleaseConditionType `json:"type"`
 
 	// Status of the condition, one of ('True', 'False', 'Unknown').
@@ -477,12 +534,17 @@ type HelmReleaseCondition struct {
 // "ChartFetchFailed",
 // "Installing",
 // "Upgrading",
+// "Deployed",
+// "DeployFailed",
+// "Testing",
+// "TestFailed",
+// "Tested",
 // "Succeeded",
 // "Failed",
 // "RollingBack",
 // "RolledBack",
 // "RollbackFailed",
-// +kubebuilder:validation:Enum="ChartFetched";"ChartFetchFailed";"Installing";"Upgrading";"Succeeded";"Failed";"RollingBack";"RolledBack";"RollbackFailed"
+// +kubebuilder:validation:Enum="ChartFetched";"ChartFetchFailed";"Installing";"Upgrading";"Deployed";"DeployFailed";"Testing";"TestFailed";"Tested";"Succeeded";"Failed";"RollingBack";"RolledBack";"RollbackFailed"
 // +optional
 type HelmReleasePhase string
 
@@ -498,8 +560,22 @@ const (
 	HelmReleasePhaseInstalling HelmReleasePhase = "Installing"
 	// Upgrading means the upgrade for the HelmRelease is running.
 	HelmReleasePhaseUpgrading HelmReleasePhase = "Upgrading"
-	// Succeeded means the dry-run, installation, or upgrade for the
+	// Deployed means the dry-run, installation, or upgrade for the
 	// HelmRelease succeeded.
+	HelmReleasePhaseDeployed HelmReleasePhase = "Deployed"
+	// DeployFailed means the dry-run, installation, or upgrade for the
+	// HelmRelease failed.
+	HelmReleasePhaseDeployFailed HelmReleasePhase = "DeployFailed"
+
+	// Testing means a test for the HelmRelease is running.
+	HelmReleasePhaseTesting HelmReleasePhase = "Testing"
+	// TestFailed means the test for the HelmRelease failed.
+	HelmReleasePhaseTestFailed HelmReleasePhase = "TestFailed"
+	// Tested means the test for the HelmRelease succeeded.
+	HelmReleasePhaseTested HelmReleasePhase = "Tested"
+
+	// Succeeded means the chart release, as specified in this
+	// HelmRelease, has been processed by Helm.
 	HelmReleasePhaseSucceeded HelmReleasePhase = "Succeeded"
 	// Failed means the installation or upgrade for the HelmRelease
 	// failed.
@@ -521,7 +597,8 @@ type HelmReleaseStatus struct {
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
 	// Phase the release is in, one of ('ChartFetched',
-	// 'ChartFetchFailed', 'Installing', 'Upgrading', 'Succeeded',
+	// 'ChartFetchFailed', 'Installing', 'Upgrading', 'Deployed',
+	// 'DeployFailed', 'Testing', 'TestFailed', 'Tested', 'Succeeded',
 	// 'RollingBack', 'RolledBack', 'RollbackFailed')
 	// +optional
 	Phase HelmReleasePhase `json:"phase,omitempty"`

@@ -62,6 +62,7 @@ nav:
     - Release configuration: helmrelease-guide/release-configuration.md
     - Reconciliation and upgrades: helmrelease-guide/reconciliation-and-upgrades.md
     - Rollbacks: helmrelease-guide/rollbacks.md
+    - Tests: helmrelease-guide/tests.md
     - Automation: helmrelease-guide/automation.md
     - Debugging: helmrelease-guide/debugging.md
   - How-to:
