@@ -252,6 +252,13 @@ func (c *GitChartSync) sync(hr *v1.HelmRelease, mirrorName string, repo *git.Rep
 	if !ok || !s.forHelmRelease(hr, c.config.GitDefaultRef) {
 		s = sourceRef{mirror: mirrorName, remote: source.GitURL, ref: source.RefOrDefault(c.config.GitDefaultRef)}
 		changed = true
+
+		ctx, cancel := context.WithTimeout(context.Background(), c.config.GitTimeout)
+		err := repo.Refresh(ctx)
+		cancel()
+		if err != nil {
+			return sourceRef{}, false, ChartUnavailableError{err}
+		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), c.config.GitTimeout)
