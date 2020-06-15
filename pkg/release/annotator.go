@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/fluxcd/flux/pkg/resource"
-	"github.com/ghodss/yaml"
 	"helm.sh/helm/v3/pkg/releaseutil"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"sigs.k8s.io/yaml"
 
 	v1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/helm"
