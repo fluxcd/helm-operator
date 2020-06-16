@@ -11,6 +11,7 @@ commands:
           environment:
             E2E_KIND_CLUSTER_NUM: 4
             HELM_VERSION: <<parameters.helm_version>>
+            TEMPDIR: /home/circleci
 jobs:
   build:
     working_directory: /home/circleci/go/src/github.com/fluxcd/helm-operator

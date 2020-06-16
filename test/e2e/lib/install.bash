@@ -30,6 +30,8 @@ function install_helm_operator_with_helm() {
 
   [ -f "${GITSRV_KNOWN_HOSTS}" ] || download_gitsrv_known_hosts
 
+  enabled_versions=${HELM_ENABLED_VERSIONS:-$HELM_VERSION}
+
   helm upgrade -i helm-operator "${ROOT_DIR}/chart/helm-operator" \
     --wait \
     --namespace "${E2E_NAMESPACE}" \
@@ -47,7 +49,7 @@ function install_helm_operator_with_helm() {
     --set configureRepositories.repositories[0].url="https://kubernetes-charts.storage.googleapis.com" \
     --set configureRepositories.repositories[1].name="podinfo" \
     --set configureRepositories.repositories[1].url="https://stefanprodan.github.io/podinfo" \
-    --set helm.versions="${HELM_VERSION:-v2\,v3}" \
+    --set helm.versions="${enabled_versions}" \
     --set tillerNamespace="${E2E_NAMESPACE}"
 }
 

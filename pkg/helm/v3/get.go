@@ -42,7 +42,7 @@ func (h *HelmV3) Status(releaseName string, opts helm.StatusOptions) (helm.Statu
 		return "", err
 	}
 
-	status:= action.NewStatus(cfg)
+	status := action.NewStatus(cfg)
 	statusOptions(opts).configure(status)
 
 	res, err := status.Run(releaseName)

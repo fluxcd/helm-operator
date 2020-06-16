@@ -22,6 +22,37 @@ spec:
   helmVersion: v3
 ```
 
+## Migrating from Helm v2 to v3
+
+Helm Operator uses the [helm-2to3 plugin](https://github.com/helm/helm-2to3)
+under the hood to migrate HelmRelease objects.
+In order to perform a release conversion you have to:
+
+1. Set `.spec.helmVersion` to `v3`
+2. Add a migrate annotation `helm.fluxcd.io/migrate: "true"` (For testing, you
+can set the value to "dry-run" instead of "true")
+
+```yaml
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: redis
+  annotations:
+    helm.fluxcd.io/migrate: "true" # add annotation
+spec:
+  helmVersion: v3 # set helmVersion to v3
+  releaseName: redis
+  chart:
+    repository: https://kubernetes-charts.storage.googleapis.com
+    name: redis
+```
+
+After applying the new HelmRelease, the operator will take care of deleting the
+old v2 release that Tiller managed and converting it to the v3 format. Once
+you're satisfied with the migration, you can go ahead and remove the
+annotation. This approach allows teams to migrate their charts at scale to
+the v3 format without stopping the world.
+
 ## Configuring a target namespace
 
 It is possible to target a different namespace for the release than the
@@ -51,7 +82,7 @@ https://helm.sh/docs/faq/#release-names-are-now-scoped-to-the-namespace),
 and it still serves this purpose when a target namespace is defined.
 
 In some situations you may want to overwrite this generated release name, for
-example because you want to take over a release made with `helm`. This is 
+example because you want to take over a release made with `helm`. This is
 possible by declaring a `.releaseName` which will replace the generated format:
 
 ```yaml

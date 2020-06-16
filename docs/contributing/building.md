@@ -30,4 +30,15 @@ make test
 
 # End-to-end tests, acceptable Helm versions are v2,v3
 make e2e HELM_VERSION=<version>
+
+# Run specific end-to-end test
+E2E_TESTS=./10_helm_chart.bats HELM_VERSION=v2 make e2e
+```
+
+For e2e tests to work on macOS, you may need to install some dependencies
+
+```sh
+brew install bash
+brew install parallel
+brew install coreutils
 ```

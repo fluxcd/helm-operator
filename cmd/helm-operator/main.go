@@ -26,6 +26,7 @@ import (
 	"github.com/fluxcd/helm-operator/pkg/helm"
 	helmv2 "github.com/fluxcd/helm-operator/pkg/helm/v2"
 	helmv3 "github.com/fluxcd/helm-operator/pkg/helm/v3"
+	v3 "github.com/fluxcd/helm-operator/pkg/helm/v3"
 	daemonhttp "github.com/fluxcd/helm-operator/pkg/http/daemon"
 	"github.com/fluxcd/helm-operator/pkg/operator"
 	"github.com/fluxcd/helm-operator/pkg/release"
@@ -265,7 +266,10 @@ func main() {
 		chartsync.GitConfig{GitTimeout: *gitTimeout, GitPollInterval: *gitPollInterval, GitDefaultRef: *gitDefaultRef},
 		queue,
 	)
-
+	converter := v3.Converter{
+		TillerNamespace: *tillerNamespace,
+		KubeConfig:      *kubeconfig,
+	}
 	rel := release.New(
 		log.With(logger, "component", "release"),
 		helmClients,
@@ -273,6 +277,7 @@ func main() {
 		ifClient.HelmV1(),
 		gitChartSync,
 		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, DefaultHelmVersion: *defaultHelmVersion},
+		converter,
 	)
 
 	// prepare operator and start FluxRelease informer
