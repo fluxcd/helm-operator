@@ -36,7 +36,7 @@ function setup() {
   poll_until_equals 'release deploy' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Tested\")].status}'"
 }
 
-@test "When test.enable is set, releases with failed tests are uninstalled" {
+@test "When test.enable is set and test.rollbackOnFailure is true, releases with failed tests are uninstalled" {
   # Apply the HelmRelease
   kubectl apply -f "$FIXTURES_DIR/releases/test/fail.yaml" >&3
 
@@ -49,7 +49,7 @@ function setup() {
 }
 
 # TODO: Fail tests on install instead of upgrade once install retries can be disabled.
-@test "When tests fail, Tested and Released conditions are False" {
+@test "When tests fail and test.rollbackOnFailure is true, Tested and Released conditions are False" {
   # Apply the HelmRelease
   kubectl apply -f "$FIXTURES_DIR/releases/test/success.yaml" >&3
 
@@ -70,7 +70,24 @@ function setup() {
   [ "$output" = 'False' ]
 }
 
-@test "When test.enable and rollback.enable are set, releases with failed tests are rolled back" {
+@test "When tests fail and test.rollbackOnFailure is false, release has phase 'TestFailed' and Released/Tested condition is True " {
+  # Apply the HelmRelease that has test failure
+  kubectl apply -f "$FIXTURES_DIR/releases/test/fail-no-rollback.yaml" >&3
+
+  # Wait for test failure
+  poll_until_true 'test failure' "kubectl -n $E2E_NAMESPACE logs deploy/helm-operator | grep -E \"test failed\""
+
+  # Assert `Tested` condition is `True`
+  poll_until_equals 'tested condition True' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Tested\")].status}'"
+
+  # Assert `Released` condition is `True`
+  poll_until_equals 'released condition True' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  # Assert Helm Release `Phase` is `TestFailed`
+  poll_until_equals 'release phase is TestFailed' 'TestFailed' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.phase}'"
+}
+
+@test "When test.enable and rollback.enable are set and test.rollbackOnFailure is true, releases with failed tests are rolled back" {
   # Apply the HelmRelease
   kubectl apply -f "$FIXTURES_DIR/releases/test/success.yaml" >&3
 

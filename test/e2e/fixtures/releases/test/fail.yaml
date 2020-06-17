@@ -9,6 +9,7 @@ spec:
   timeout: 30
   test:
     enable: true
+    rollbackOnFailure: true
     timeout: 30
   rollback:
     enable: true
