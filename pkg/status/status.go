@@ -179,10 +179,6 @@ func HasSynced(hr *v1.HelmRelease) bool {
 // HasRolledBack returns if the current generation of the HelmRelease
 // has been rolled back.
 func HasRolledBack(hr *v1.HelmRelease) bool {
-	if !HasSynced(hr) {
-		return false
-	}
-
 	rolledBack := GetCondition(hr.Status, v1.HelmReleaseRolledBack)
 	if rolledBack == nil {
 		return false

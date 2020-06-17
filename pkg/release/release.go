@@ -212,30 +212,6 @@ func (r *Release) determineSyncAction(client helm.Client, hr *v1.HelmRelease, ch
 		return SkipAction, nil, fmt.Errorf("status '%s' of release does not allow a safe upgrade", s.String())
 	}
 
-	// If this revision of the `HelmRelease` has not been synchronized
-	// yet, we attempt an upgrade.
-	if !status.HasSynced(hr) {
-		return UpgradeAction, curRel, nil
-	}
-
-	// The release has been rolled back, inspect state.
-	if status.HasRolledBack(hr) {
-		if chart.changed || status.ShouldRetryUpgrade(hr) {
-			return UpgradeAction, curRel, nil
-		}
-		hist, err := client.History(hr.GetReleaseName(), helm.HistoryOptions{Namespace: hr.GetTargetNamespace(), Max: hr.GetMaxHistory()})
-		if err != nil {
-			return SkipAction, nil, fmt.Errorf("failed to retreive history for rolled back release: %w", err)
-		}
-		for _, r := range hist {
-			if r.Info.Status == helm.StatusFailed || r.Info.Status == helm.StatusSuperseded {
-				curRel = r
-				break
-			}
-		}
-	} else if chart.changed {
-		return UpgradeAction, curRel, nil
-	}
 	return DryRunCompareAction, curRel, nil
 }
 
@@ -249,6 +225,20 @@ next:
 	var err error
 	switch action {
 	case DryRunCompareAction:
+		rolledBack := status.HasRolledBack(hr)
+		if rolledBack {
+			hist, err := client.History(hr.GetReleaseName(), helm.HistoryOptions{Namespace: hr.GetTargetNamespace(), Max: hr.GetMaxHistory()})
+			if err != nil {
+				return fmt.Errorf("failed to retreive history for rolled back release: %w", err)
+			}
+			for _, r := range hist {
+				if r.Info.Status == helm.StatusFailed || r.Info.Status == helm.StatusSuperseded {
+					curRel = r
+					break
+				}
+			}
+		}
+
 		logger.Log("info", fmt.Sprintf("running dry-run upgrade to compare with release version '%d'", curRel.Version), "action", action)
 		var diff string
 		newRel, diff, err = r.dryRunCompare(client, curRel, hr, chart, values)
@@ -265,13 +255,22 @@ next:
 			default:
 				logger.Log("info", "difference detected during release comparison", "phase", action)
 			}
+			// TODO: Reset rollback count?
 			action = UpgradeAction
 			goto next
+		} else {
+			logger.Log("info", "no changes", "phase", action)
+			if rolledBack {
+				if status.ShouldRetryUpgrade(hr) {
+					logger.Log("info", "retrying upgrade", "phase", action)
+					action = UpgradeAction
+					goto next
+				}
+				logger.Log("info", "no upgrade tries remaining", "phase", action)
+			} else {
+				status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded)
+			}
 		}
-		if !status.HasRolledBack(hr) {
-			status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded)
-		}
-		logger.Log("info", "no changes", "phase", action)
 	case InstallAction:
 		logger.Log("info", "running installation", "phase", action)
 		newRel, err = r.install(client, hr, chart, values)
