@@ -1722,6 +1722,19 @@ bool
 </tr>
 <tr>
 <td>
+<code>rollbackOnFailure</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RollbackOnFailure will cause a Helm release to be rolled back
+if it fails otherwise it will be left in a released state</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>timeout</code><br>
 <em>
 int64

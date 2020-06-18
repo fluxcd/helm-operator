@@ -206,6 +206,10 @@ spec:
                 enable:
                   description: Enable will mark this Helm release for tests.
                   type: boolean
+                rollbackOnFailure:
+                  description: RollbackOnFailure will cause a Helm release to be rolled
+                    back if it fails otherwise it will be left in a released state
+                  type: boolean
                 timeout:
                   description: Timeout is the time to wait for any individual Kubernetes
                     operation (like Jobs for hooks) during test.
