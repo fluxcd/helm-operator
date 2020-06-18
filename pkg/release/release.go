@@ -301,7 +301,7 @@ next:
 			action = UpgradeAction
 			goto next
 		}
-		if !status.HasRolledBack(hr) {
+		if !status.HasRolledBack(hr) && !status.HasTestsFailed(hr) {
 			status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseSucceeded)
 		}
 		logger.Log("info", "no changes", "phase", action)
@@ -364,18 +364,28 @@ next:
 	case TestAction:
 		if hr.Spec.Test.Enable {
 			logger.Log("info", "running test", "action", TestAction)
-			if err = r.test(client, hr); err != nil {
+			status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTesting)
+
+			err := r.test(client, hr)
+			if err != nil {
+				status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTestFailed)
+				err = fmt.Errorf("test failed: %w", err)
+
 				logger.Log("error", err, "action", TestAction)
 				errs = append(errs, err)
 
-				if curRel == nil {
-					action = UninstallAction
+				if hr.Spec.Test.GetRollbackOnFailure() {
+					if curRel == nil {
+						action = UninstallAction
+					} else {
+						action = RollbackAction
+					}
 				} else {
-					action = RollbackAction
+					action = AnnotateAction
 				}
 				goto next
 			}
-
+			status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTested)
 			logger.Log("info", "test succeeded", "revision", chart.revision, "action", action)
 		}
 
@@ -548,24 +558,17 @@ func (r *Release) rollback(client helm.Client, hr *apiV1.HelmRelease, revision s
 }
 
 // test performs a test for the given HelmRelease,
-// while recording the phases on  the HelmRelease. It returns
-// the release result or an error.
+// It returns the release result or an error.
 func (r *Release) test(client helm.Client, hr *apiV1.HelmRelease) (err error) {
 	defer func(start time.Time) {
 		ObserveReleaseAction(start, TestAction, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
 	}(time.Now())
-	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseTesting)
+
 	err = client.Test(hr.GetReleaseName(), helm.TestOptions{
 		Namespace: hr.GetTargetNamespace(),
 		Timeout:   hr.Spec.Test.GetTimeout(),
 		Cleanup:   hr.Spec.Test.GetCleanup(),
 	})
-	if err != nil {
-		status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseTestFailed)
-		err = fmt.Errorf("test failed: %w", err)
-		return
-	}
-	status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseTested)
 	return
 }
 
