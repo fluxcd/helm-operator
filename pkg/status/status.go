@@ -191,6 +191,21 @@ func HasRolledBack(hr *v1.HelmRelease) bool {
 	return rolledBack.Status == v1.ConditionTrue
 }
 
+// HasTestsFailed returns if the current generation of the HelmRelease
+// have tests that have failed.
+func HasTestsFailed(hr *v1.HelmRelease) bool {
+	if !HasSynced(hr) {
+		return false
+	}
+
+	testsFailed := GetCondition(hr.Status, v1.HelmReleaseTested)
+	if testsFailed == nil {
+		return false
+	}
+
+	return testsFailed.Status == v1.ConditionFalse
+}
+
 // ShouldRetryUpgrade returns if the upgrade of a rolled back release should
 // be retried.
 func ShouldRetryUpgrade(hr *v1.HelmRelease) bool {

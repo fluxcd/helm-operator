@@ -23,6 +23,18 @@ spec:
 When tests are enabled, [resource waiting](release-configuration.md#wait-for-resources-to-be-ready)
 defaults to `true` since this is likely needed for test pre-conditions to be satisfied.
 
+## Rollback release on test failure
+
+RollbackOnFailure will cause a Helm release to be rolled back if the tests fails otherwise it 
+will be left in a released state. rollbackOnFailure is optional and defaults to true 
+
+```yaml
+spec:
+  test:
+    enable: true
+    rollbackOnFailure: true
+```
+
 ## Test timeout
 
 Test timeout can be set via the `.test.timeout` option.
