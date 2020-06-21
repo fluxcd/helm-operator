@@ -310,19 +310,22 @@ next:
 
 			err := r.test(client, hr)
 			if err != nil {
-				status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTestFailed)
 				err = fmt.Errorf("test failed: %w", err)
 
 				logger.Log("error", err, "action", TestAction)
 				errs = append(errs, err)
 
 				if hr.Spec.Test.GetRollbackOnFailure() {
+					status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseFailed)
+					status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTestFailed)
 					if curRel == nil {
 						action = UninstallAction
 					} else {
 						action = RollbackAction
 					}
 				} else {
+					status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseSucceeded)
+					status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTestFailed)
 					action = AnnotateAction
 				}
 				goto next
