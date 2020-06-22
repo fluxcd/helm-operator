@@ -129,9 +129,23 @@ func ConditionsForPhase(hr *v1.HelmRelease, phase v1.HelmReleasePhase) ([]v1.Hel
 		condition.Status = v1.ConditionTrue
 		condition.Message = fmt.Sprintf(`Tested Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
 	case v1.HelmReleasePhaseTestFailed:
+		message := fmt.Sprintf(`Test failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
 		condition.Type = v1.HelmReleaseTested
 		condition.Status = v1.ConditionFalse
-		condition.Message = fmt.Sprintf(`Test failed for Helm release '%s' in '%s'.`, hr.GetReleaseName(), hr.GetTargetNamespace())
+		condition.Message = message
+		if hr.Spec.Test.GetRollbackOnFailure() {
+			conditions = append(conditions, &v1.HelmReleaseCondition{
+				Type:    v1.HelmReleaseReleased,
+				Status:  v1.ConditionFalse,
+				Message: message,
+			})
+		} else {
+			conditions = append(conditions, &v1.HelmReleaseCondition{
+				Type:    v1.HelmReleaseReleased,
+				Status:  v1.ConditionTrue,
+				Message: message,
+			})
+		}
 	case v1.HelmReleasePhaseRollingBack:
 		condition.Type = v1.HelmReleaseRolledBack
 		condition.Status = v1.ConditionUnknown

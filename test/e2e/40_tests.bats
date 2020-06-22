@@ -70,7 +70,7 @@ function setup() {
   [ "$output" = 'False' ]
 }
 
-@test "When tests fail and test.rollbackOnFailure is false, release has phase 'TestFailed' and Released/Tested condition is True " {
+@test "When tests fail and test.rollbackOnFailure is false, release has phase 'TestFailed' and Released condition is True & Tested condition is False" {
   # Apply the HelmRelease that has test failure
   kubectl apply -f "$FIXTURES_DIR/releases/test/fail-no-rollback.yaml" >&3
 
