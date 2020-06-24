@@ -558,6 +558,8 @@ const (
 
 	// Installing means the installation for the HelmRelease is running.
 	HelmReleasePhaseInstalling HelmReleasePhase = "Installing"
+	// Migrating means the HelmRelease is converting from one version to another
+	HelmReleasePhaseMigrating HelmReleasePhase = "Migrating"
 	// Upgrading means the upgrade for the HelmRelease is running.
 	HelmReleasePhaseUpgrading HelmReleasePhase = "Upgrading"
 	// Deployed means the dry-run, installation, or upgrade for the

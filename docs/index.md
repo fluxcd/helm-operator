@@ -37,6 +37,7 @@ performed by the operator.
 * Parallel and scalable processing of different `HelmRelease` resources
   using workers
 * Supports both Helm 2 and 3
+* Supports automatic Helm migrations from v2 to v3
 
 ## Get started
 

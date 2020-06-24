@@ -3,7 +3,6 @@ module github.com/fluxcd/helm-operator
 go 1.14
 
 require (
-	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
@@ -16,6 +15,7 @@ require (
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.4.0
 	github.com/gorilla/mux v1.7.3
+	github.com/helm/helm-2to3 v0.5.1
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.6 // indirect
@@ -77,3 +77,6 @@ replace (
 // +-> helm.sh/helm/v3@v3.1.2
 //     +-> github.com/opencontainers/runc@v0.1.1
 replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc10
+
+// helm-2to3 package replaces these packages in its go.mod
+replace github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
