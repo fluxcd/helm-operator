@@ -326,10 +326,10 @@ type Test struct {
 	// Enable will mark this Helm release for tests.
 	// +optional
 	Enable bool `json:"enable,omitempty"`
-	// RollbackOnFailure will cause a Helm release to be rolled back
+	// IgnoreFailures will cause a Helm release to be rolled back
 	// if it fails otherwise it will be left in a released state
 	// +optional
-	RollbackOnFailure *bool `json:"rollbackOnFailure,omitempty"`
+	IgnoreFailures *bool `json:"ignoreFailures,omitempty"`
 	// Timeout is the time to wait for any individual Kubernetes
 	// operation (like Jobs for hooks) during test.
 	// +optional
@@ -340,14 +340,14 @@ type Test struct {
 	Cleanup *bool `json:"cleanup,omitempty"`
 }
 
-// RollbackOnFailure returns the configured rollbackOnFailure flag,
+// IgnoreFailures returns the configured ignoreFailures flag,
 // or the default of true to preserve backwards compatible
-func (t Test) GetRollbackOnFailure() bool {
-	switch t.RollbackOnFailure {
+func (t Test) GetIgnoreFailures() bool {
+	switch t.IgnoreFailures {
 	case nil:
 		return true
 	default:
-		return *t.RollbackOnFailure
+		return *t.IgnoreFailures
 	}
 }
 

@@ -25,14 +25,14 @@ defaults to `true` since this is likely needed for test pre-conditions to be sat
 
 ## Rollback release on test failure
 
-RollbackOnFailure will cause a Helm release to be rolled back if the tests fails otherwise it 
-will be left in a released state. rollbackOnFailure is optional and defaults to true 
+IgnoreFailures will cause a Helm release to be rolled back if the tests fails otherwise it 
+will be left in a released state. ignoreFailures is optional and defaults to true 
 
 ```yaml
 spec:
   test:
     enable: true
-    rollbackOnFailure: true
+    ignoreFailures: true
 ```
 
 ## Test timeout
