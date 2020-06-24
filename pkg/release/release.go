@@ -364,7 +364,7 @@ next:
 	case TestAction:
 		if hr.Spec.Test.Enable {
 			logger.Log("info", "running test", "action", TestAction)
-			status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTesting)
+			status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseTesting)
 
 			err := r.test(client, hr)
 			if err != nil {
@@ -372,7 +372,7 @@ next:
 
 				logger.Log("error", err, "action", TestAction)
 				errs = append(errs, err)
-				status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTestFailed)
+				status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseTestFailed)
 
 				if hr.Spec.Test.GetIgnoreFailures() {
 					if curRel == nil {
@@ -385,7 +385,7 @@ next:
 				}
 				goto next
 			}
-			status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTested)
+			status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseTested)
 			logger.Log("info", "test succeeded", "revision", chart.revision, "action", action)
 		}
 
