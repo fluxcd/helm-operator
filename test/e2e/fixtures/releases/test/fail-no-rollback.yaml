@@ -9,7 +9,7 @@ spec:
   timeout: 30
   test:
     enable: true
-    rollbackOnFailure: false
+    ignoreFailures: false
     timeout: 30
   chart:
     repository: https://stefanprodan.github.io/podinfo

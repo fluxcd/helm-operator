@@ -316,7 +316,7 @@ next:
 				errs = append(errs, err)
 				status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, v1.HelmReleasePhaseTestFailed)
 
-				if hr.Spec.Test.GetRollbackOnFailure() {
+				if hr.Spec.Test.GetIgnoreFailures() {
 					if curRel == nil {
 						action = UninstallAction
 					} else {
