@@ -1,6 +1,8 @@
 package v3
 
 import (
+	"strings"
+
 	"github.com/helm/helm-2to3/pkg/common"
 	helm2 "github.com/helm/helm-2to3/pkg/v2"
 	helm3 "github.com/helm/helm-2to3/pkg/v3"
@@ -22,7 +24,10 @@ func (c Converter) V2ReleaseExists(releaseName string) (bool, error) {
 		File: c.KubeConfig,
 	}
 	v2Releases, err := helm2.GetReleaseVersions(retrieveOpts, kubeConfig)
-	if err != nil {
+
+	// We check for the error message content because
+	// Helm 2to3 returns an error if it doesn't find release versions
+	if err != nil && !strings.Contains(err.Error(), "has no deployed releases") {
 		return false, err
 	}
 	return len(v2Releases) > 0, nil
