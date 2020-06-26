@@ -218,7 +218,7 @@ func (r *Release) determineSyncAction(client helm.Client, hr *apiV1.HelmRelease,
 			case string(apiV1.HelmV3):
 				v2ReleaseExists, err := r.converter.V2ReleaseExists(hr.GetReleaseName())
 				if err != nil {
-					return SkipAction, nil, fmt.Errorf("failed to retrieve Helm v2 release whil attempting migration: %w", err)
+					return SkipAction, nil, fmt.Errorf("failed to retrieve Helm v2 release while attempting migration: %w", err)
 				}
 				if v2ReleaseExists {
 					return MigrateAction, nil, nil

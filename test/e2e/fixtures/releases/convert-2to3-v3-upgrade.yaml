@@ -1,0 +1,24 @@
+---
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: podinfo-helm-repository
+  namespace: demo
+  annotations:
+    helm.fluxcd.io/migrate: "true"
+spec:
+  helmVersion: v3
+  releaseName: podinfo-helm-repository
+  timeout: 30
+  test:
+    enable: true
+    timeout: 30
+  rollback:
+    enable: true
+    wait: true
+  chart:
+    repository: https://stefanprodan.github.io/podinfo
+    name: podinfo
+    version: 4.0.1
+  values:
+    replicaCount: 1
