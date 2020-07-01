@@ -326,6 +326,10 @@ type Test struct {
 	// Enable will mark this Helm release for tests.
 	// +optional
 	Enable bool `json:"enable,omitempty"`
+	// IgnoreFailures will cause a Helm release to be rolled back
+	// if it fails otherwise it will be left in a released state
+	// +optional
+	IgnoreFailures *bool `json:"ignoreFailures,omitempty"`
 	// Timeout is the time to wait for any individual Kubernetes
 	// operation (like Jobs for hooks) during test.
 	// +optional
@@ -334,6 +338,17 @@ type Test struct {
 	// test pods between each test run initiated by the Helm Operator.
 	// +optional
 	Cleanup *bool `json:"cleanup,omitempty"`
+}
+
+// IgnoreFailures returns the configured ignoreFailures flag,
+// or the default of false to preserve backwards compatible
+func (t Test) GetIgnoreFailures() bool {
+	switch t.IgnoreFailures {
+	case nil:
+		return false
+	default:
+		return *t.IgnoreFailures
+	}
 }
 
 // GetTimeout returns the configured timout for the Helm release,

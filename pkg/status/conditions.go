@@ -133,11 +133,13 @@ func ConditionsForPhase(hr *v1.HelmRelease, phase v1.HelmReleasePhase) ([]v1.Hel
 		condition.Type = v1.HelmReleaseTested
 		condition.Status = v1.ConditionFalse
 		condition.Message = message
-		conditions = append(conditions, &v1.HelmReleaseCondition{
-			Type:    v1.HelmReleaseReleased,
-			Status:  v1.ConditionFalse,
-			Message: message,
-		})
+		if !hr.Spec.Test.GetIgnoreFailures() {
+			conditions = append(conditions, &v1.HelmReleaseCondition{
+				Type:    v1.HelmReleaseReleased,
+				Status:  v1.ConditionFalse,
+				Message: message,
+			})
+		}
 	case v1.HelmReleasePhaseRollingBack:
 		condition.Type = v1.HelmReleaseRolledBack
 		condition.Status = v1.ConditionUnknown
