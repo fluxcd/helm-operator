@@ -147,6 +147,7 @@ chart and their default values.
 | `readinessProbe.failureThreshold`                 | `3`                                                  | The number of times the readiness probe can failed before the container is marked as unready
 | `initContainers`                                  | `[]`                                                 | Init containers and their specs
 | `hostAliases`                                     | `{}`                                                 | Host aliases allow the modification of the hosts file (`/etc/hosts`) inside Helm Operator container. See <https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/>
+| `podSecurityContext`                              | `{}`                                                 | SecurityContext to add to the Flux pod(s). See <https://kubernetes.io/docs/tasks/configure-pod-container/security-context/>
 
 ## How-to
 
