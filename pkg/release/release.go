@@ -364,19 +364,24 @@ next:
 	case TestAction:
 		if hr.Spec.Test.Enable {
 			logger.Log("info", "running test", "action", TestAction)
+
 			if err = r.test(client, hr); err != nil {
 				logger.Log("error", err, "action", TestAction)
 				errs = append(errs, err)
 
-				if curRel == nil {
-					action = UninstallAction
+				if !hr.Spec.Test.GetIgnoreFailures() {
+					if curRel == nil {
+						action = UninstallAction
+					} else {
+						action = RollbackAction
+					}
+					goto next
 				} else {
-					action = RollbackAction
+					logger.Log("info", "test failed - ignoring failures", "revision", chart.revision)
 				}
-				goto next
+			} else {
+				logger.Log("info", "test succeeded", "revision", chart.revision, "action", action)
 			}
-
-			logger.Log("info", "test succeeded", "revision", chart.revision, "action", action)
 		}
 
 		status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseSucceeded, chart.revision)
