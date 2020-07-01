@@ -23,11 +23,11 @@ spec:
 When tests are enabled, [resource waiting](release-configuration.md#wait-for-resources-to-be-ready)
 defaults to `true` since this is likely needed for test pre-conditions to be satisfied.
 
-## Uninstall/Rollback release on test failure
+## Uninstall or rollback release on test failure
 
-The `spec.test.ignoreFailures` allows the helm release to be left in a released state if the tests fail.
-Setting ignoreFailures to false will automatically uninstall/rollback the Helm Release if any of the tests fail.
-If the tests are ignored, the `Released` condition will be left as true and `Tested` will be false.
+The `spec.test.ignoreFailures` allows the `HelmRelease` to be left in a released state if the tests fail.
+Setting `ignoreFailures` to `false` will automatically uninstall or rollback the `HelmRelease` if any of the tests fail.
+If the tests are ignored, the `Released` condition will be left as `true` and `Tested` will be `false`.
 
 ```yaml
 spec:
