@@ -119,6 +119,10 @@ spec:
                 version:
                   description: Version is the targeted Helm chart version, e.g. 7.0.1.
                   type: string
+            disableOpenAPIValidation:
+              description: DisableOpenAPIValidation controls whether OpenAPI validation
+                is enforced.
+              type: boolean
             forceUpgrade:
               description: Force will mark this Helm release to `--force` upgrades.
                 This forces the resource updates through delete/recreate if needed.
