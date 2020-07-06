@@ -39,6 +39,7 @@ type UpgradeOptions struct {
 	Recreate     bool
 	MaxHistory   int
 	Atomic       bool
+	DisableValidation bool
 }
 
 // RollbackOptions holds the options available for Helm rollback
