@@ -382,6 +382,10 @@
               "kubernetes_namespace": true,
               "kubernetes_pod_name": true,
               "pod_template_hash": true,
+              "endpoint": true,
+              "namespace": true,
+              "pod": true,
+              "service": true,
               "release": true
             },
             "indexByName": {},
@@ -459,6 +463,10 @@
               "kubernetes_namespace": true,
               "kubernetes_pod_name": true,
               "pod_template_hash": true,
+              "endpoint": true,
+              "namespace": true,
+              "pod": true,
+              "service": true,
               "release": true
             },
             "indexByName": {},
@@ -536,6 +544,10 @@
               "kubernetes_namespace": true,
               "kubernetes_pod_name": true,
               "pod_template_hash": true,
+              "endpoint": true,
+              "namespace": true,
+              "pod": true,
+              "service": true,
               "release": true
             },
             "indexByName": {},
