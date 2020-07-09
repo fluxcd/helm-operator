@@ -78,11 +78,11 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1594288668460,
+  "iteration": 1594295805662,
   "links": [],
   "panels": [
     {
-      "collapsed": true,
+      "collapsed": false,
       "datasource": "${DS_PROMETHEUS}",
       "gridPos": {
         "h": 1,
@@ -91,529 +91,526 @@
         "y": 0
       },
       "id": 24,
-      "panels": [
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 6,
-            "w": 4,
-            "x": 0,
-            "y": 1
-          },
-          "id": 6,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "mean"
-              ],
-              "fields": "",
-              "values": false
-            }
-          },
-          "pluginVersion": "7.0.5",
-          "targets": [
-            {
-              "expr": "flux_helm_operator_release_count{}",
-              "interval": "",
-              "legendFormat": "Synced Manifests",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Helm Releases Synced",
-          "type": "stat"
-        },
-        {
-          "aliasColors": {
-            "Sync Duration": "semi-dark-green"
-          },
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "${DS_PROMETHEUS}",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 12,
-            "w": 20,
-            "x": 4,
-            "y": 1
-          },
-          "hiddenSeries": false,
-          "id": 8,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "dataLinks": []
-          },
-          "percentage": false,
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "delta(flux_helm_operator_release_action_duration_seconds_sum{action=\"sync\"}[5m]) > 0",
-              "interval": "",
-              "legendFormat": "{{release_name}} sync",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Helm Release Sync Duration",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "s",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "s",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "description": "",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 6,
-            "w": 4,
-            "x": 0,
-            "y": 7
-          },
-          "id": 14,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "mean"
-              ],
-              "fields": "",
-              "values": false
-            }
-          },
-          "pluginVersion": "7.0.5",
-          "targets": [
-            {
-              "expr": "flux_helm_operator_release_queue_length_count{}",
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Helm Releases Not Synced",
-          "type": "stat"
-        }
-      ],
+      "panels": [],
       "title": "Main Metrics",
       "type": "row"
     },
     {
-      "collapsed": true,
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "pluginVersion": "7.0.5",
+      "targets": [
+        {
+          "expr": "flux_helm_operator_release_count{}",
+          "interval": "",
+          "legendFormat": "Synced Manifests",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Helm Releases Synced",
+      "type": "stat"
+    },
+    {
+      "aliasColors": {
+        "Sync Duration": "semi-dark-green"
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 12,
+        "w": 20,
+        "x": 4,
+        "y": 1
+      },
+      "hiddenSeries": false,
+      "id": 8,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "delta(flux_helm_operator_release_action_duration_seconds_sum{action=\"sync\"}[5m]) > 0",
+          "interval": "",
+          "legendFormat": "{{release_name}} sync",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Helm Release Sync Duration",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 7
+      },
+      "id": 14,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "pluginVersion": "7.0.5",
+      "targets": [
+        {
+          "expr": "flux_helm_operator_release_queue_length_count{}",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Helm Releases Not Synced",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
       "datasource": "${DS_PROMETHEUS}",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 1
+        "y": 13
       },
       "id": 22,
-      "panels": [
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "align": null
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 12,
-            "w": 8,
-            "x": 0,
-            "y": 2
-          },
-          "id": 12,
-          "options": {
-            "frameIndex": 0,
-            "showHeader": true,
-            "sortBy": []
-          },
-          "pluginVersion": "7.0.5",
-          "targets": [
-            {
-              "expr": "flux_helm_operator_release_condition_info{condition=\"Released\"} == 1",
-              "format": "table",
-              "instant": true,
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Helm Releases - Released",
-          "transformations": [
-            {
-              "id": "organize",
-              "options": {
-                "excludeByName": {
-                  "Value": true,
-                  "__name__": true,
-                  "app": true,
-                  "condition": true,
-                  "instance": true,
-                  "job": true,
-                  "kubernetes_namespace": true,
-                  "kubernetes_pod_name": true,
-                  "pod_template_hash": true,
-                  "release": true
-                },
-                "indexByName": {},
-                "renameByName": {
-                  "Time": "Latest Update",
-                  "release_name": "Release",
-                  "target_namespace": "Namespace"
-                }
-              }
-            }
-          ],
-          "type": "table"
-        },
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "align": null
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 12,
-            "w": 8,
-            "x": 8,
-            "y": 2
-          },
-          "id": 17,
-          "options": {
-            "frameIndex": 0,
-            "showHeader": true,
-            "sortBy": []
-          },
-          "pluginVersion": "7.0.5",
-          "targets": [
-            {
-              "expr": "flux_helm_operator_release_condition_info{condition=\"Released\"} == -1",
-              "format": "table",
-              "instant": true,
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Helm Releases - Failed",
-          "transformations": [
-            {
-              "id": "organize",
-              "options": {
-                "excludeByName": {
-                  "Value": true,
-                  "__name__": true,
-                  "app": true,
-                  "condition": true,
-                  "instance": true,
-                  "job": true,
-                  "kubernetes_namespace": true,
-                  "kubernetes_pod_name": true,
-                  "pod_template_hash": true,
-                  "release": true
-                },
-                "indexByName": {},
-                "renameByName": {
-                  "Time": "Latest Update",
-                  "release_name": "Release",
-                  "target_namespace": "Namespace"
-                }
-              }
-            }
-          ],
-          "type": "table"
-        },
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "align": null
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 12,
-            "w": 8,
-            "x": 16,
-            "y": 2
-          },
-          "id": 18,
-          "options": {
-            "frameIndex": 0,
-            "showHeader": true,
-            "sortBy": []
-          },
-          "pluginVersion": "7.0.5",
-          "targets": [
-            {
-              "expr": "flux_helm_operator_release_condition_info{condition=\"RolledBack\"} == 1",
-              "format": "table",
-              "instant": true,
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Helm Releases - RolledBack",
-          "transformations": [
-            {
-              "id": "organize",
-              "options": {
-                "excludeByName": {
-                  "Value": true,
-                  "__name__": true,
-                  "app": true,
-                  "condition": true,
-                  "instance": true,
-                  "job": true,
-                  "kubernetes_namespace": true,
-                  "kubernetes_pod_name": true,
-                  "pod_template_hash": true,
-                  "release": true
-                },
-                "indexByName": {},
-                "renameByName": {
-                  "Time": "Latest Update",
-                  "release_name": "Release",
-                  "target_namespace": "Namespace"
-                }
-              }
-            }
-          ],
-          "type": "table"
-        }
-      ],
+      "panels": [],
       "title": "Releases",
       "type": "row"
     },
     {
-      "collapsed": true,
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 0,
+        "y": 14
+      },
+      "id": 12,
+      "options": {
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "7.0.5",
+      "targets": [
+        {
+          "expr": "flux_helm_operator_release_condition_info{condition=\"Released\"} == 1",
+          "format": "table",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Helm Releases - Released",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Value": true,
+              "__name__": true,
+              "app": true,
+              "condition": true,
+              "instance": true,
+              "job": true,
+              "kubernetes_namespace": true,
+              "kubernetes_pod_name": true,
+              "pod_template_hash": true,
+              "release": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Time": "Latest Update",
+              "release_name": "Release",
+              "target_namespace": "Namespace"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 8,
+        "y": 14
+      },
+      "id": 17,
+      "options": {
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "7.0.5",
+      "targets": [
+        {
+          "expr": "flux_helm_operator_release_condition_info{condition=\"Released\"} == -1",
+          "format": "table",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Helm Releases - Failed",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Value": true,
+              "__name__": true,
+              "app": true,
+              "condition": true,
+              "instance": true,
+              "job": true,
+              "kubernetes_namespace": true,
+              "kubernetes_pod_name": true,
+              "pod_template_hash": true,
+              "release": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Time": "Latest Update",
+              "release_name": "Release",
+              "target_namespace": "Namespace"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 16,
+        "y": 14
+      },
+      "id": 18,
+      "options": {
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "7.0.5",
+      "targets": [
+        {
+          "expr": "flux_helm_operator_release_condition_info{condition=\"RolledBack\"} == 1",
+          "format": "table",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Helm Releases - RolledBack",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Value": true,
+              "__name__": true,
+              "app": true,
+              "condition": true,
+              "instance": true,
+              "job": true,
+              "kubernetes_namespace": true,
+              "kubernetes_pod_name": true,
+              "pod_template_hash": true,
+              "release": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Time": "Latest Update",
+              "release_name": "Release",
+              "target_namespace": "Namespace"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
       "datasource": "${DS_PROMETHEUS}",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 2
+        "y": 26
       },
       "id": 20,
-      "panels": [
-        {
-          "datasource": "${DS_LOKI}",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "align": null
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 20,
-            "w": 24,
-            "x": 0,
-            "y": 3
-          },
-          "id": 2,
-          "options": {
-            "showLabels": false,
-            "showTime": false,
-            "sortOrder": "Descending",
-            "wrapLogMessage": false
-          },
-          "pluginVersion": "7.0.3",
-          "targets": [
-            {
-              "expr": "{app=\"helm-operator\"} |~ \"$logs_search\"",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Helm Operator Logs",
-          "type": "logs"
-        }
-      ],
+      "panels": [],
       "title": "Logs",
       "type": "row"
+    },
+    {
+      "datasource": "${DS_LOKI}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 20,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 2,
+      "options": {
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "{app=\"helm-operator\"} |~ \"$logs_search\"",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Helm Operator Logs",
+      "type": "logs"
     }
   ],
   "schemaVersion": 25,
@@ -641,7 +638,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "Loki",
           "value": "Loki"
         },
@@ -652,6 +649,7 @@
         "name": "DS_LOKI",
         "options": [],
         "query": "loki",
+        "queryValue": "",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -660,8 +658,8 @@
       {
         "current": {
           "selected": false,
-          "text": "mysql",
-          "value": "mysql"
+          "text": "",
+          "value": ""
         },
         "hide": 0,
         "label": null,
@@ -669,11 +667,11 @@
         "options": [
           {
             "selected": true,
-            "text": "mysql",
-            "value": "mysql"
+            "text": "",
+            "value": ""
           }
         ],
-        "query": "mysql",
+        "query": "",
         "skipUrlSync": false,
         "type": "textbox"
       }
