@@ -10,15 +10,19 @@ import (
 
 // Converter Converts a given helm 2 release with all its release versions to helm 3 format and deletes the old release from tiller
 type Converter struct {
-	TillerNamespace string
-	KubeConfig      string // file path to kubeconfig
+	TillerNamespace  string
+	KubeConfig       string // file path to kubeconfig
+	TillerOutCluster bool
+	StorageType      string
 }
 
 // V2ReleaseExists helps you check if a helm v2 release exists or not
 func (c Converter) V2ReleaseExists(releaseName string) (bool, error) {
 	retrieveOpts := helm2.RetrieveOptions{
-		ReleaseName:     releaseName,
-		TillerNamespace: c.TillerNamespace,
+		ReleaseName:      releaseName,
+		TillerNamespace:  c.TillerNamespace,
+		TillerOutCluster: c.TillerOutCluster,
+		StorageType:      c.StorageType,
 	}
 	kubeConfig := common.KubeConfig{
 		File: c.KubeConfig,

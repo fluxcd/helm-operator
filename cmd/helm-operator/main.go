@@ -59,6 +59,9 @@ var (
 	tillerTLSCACert   *string
 	tillerTLSHostname *string
 
+	convertTillerOutCluster *bool
+	convertReleaseStorage   *string
+
 	chartsSyncInterval   *time.Duration
 	statusUpdateInterval *time.Duration
 	logReleaseDiffs      *bool
@@ -115,6 +118,9 @@ func init() {
 	tillerTLSCert = fs.String("tiller-tls-cert-path", "/etc/fluxd/helm/tls.crt", "path to certificate file used to communicate with the Tiller server")
 	tillerTLSCACert = fs.String("tiller-tls-ca-cert-path", "", "path to CA certificate file used to validate the Tiller server; required if tiller-tls-verify is enabled")
 	tillerTLSHostname = fs.String("tiller-tls-hostname", "", "server name used to verify the hostname on the returned certificates from the server")
+
+	convertTillerOutCluster = fs.Bool("convert-tiller-out-cluster", false, "when Tiller is not running in the cluster e.g. Tillerless")
+	convertReleaseStorage = fs.String("convert-release-storage", "secrets", "v2 release storage type/object. It can be 'secrets' or 'configmaps'. This is only used with the 'tiller-out-cluster' flag (default 'secrets')")
 
 	chartsSyncInterval = fs.Duration("charts-sync-interval", 3*time.Minute, "period on which to reconcile the Helm releases with HelmRelease resources")
 	statusUpdateInterval = fs.Duration("status-update-interval", 10*time.Second, "period on which to update the Helm release status in HelmRelease resources")
@@ -267,8 +273,10 @@ func main() {
 		queue,
 	)
 	converter := v3.Converter{
-		TillerNamespace: *tillerNamespace,
-		KubeConfig:      *kubeconfig,
+		TillerNamespace:  *tillerNamespace,
+		KubeConfig:       *kubeconfig,
+		TillerOutCluster: *convertTillerOutCluster,
+		StorageType:      *convertReleaseStorage,
 	}
 	rel := release.New(
 		log.With(logger, "component", "release"),

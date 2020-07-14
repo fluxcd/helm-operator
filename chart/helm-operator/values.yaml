@@ -50,6 +50,11 @@ tls:
   caContent: ""
   hostname: ""
 
+# available options when converting from helm 2 to 3
+convert:
+  releaseStorage: "secrets"
+  tillerOutCluster: false
+
 # ADVANCED: Allow for deploying Tiller as a sidecar (restricted to 'localhost' for security reasons).
 # When enabled, either .clusterRole.create should be true or .clusterRole.name should be set to the name of a cluster role granting the required privileges.
 # Please make extra sure you know what you are doing before enabling this. :)
