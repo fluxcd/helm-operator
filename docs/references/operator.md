@@ -65,6 +65,13 @@ enabled and a connection to Tiller needs to be made.
 | `--tiller-tls-ca-cert-path` |                               | Path to CA certificate file used to validate the Tiller server. Required if `--tiller-tls-verify` is enabled.
 | `--tiller-tls-hostname`     |                               | The server name used to verify the hostname on the returned certificates from the Tiller server.
 
+#### Helm 2to3 convert configurations
+
+| Flag                           | Default                       | Purpose
+| --------------------------     | ----------------------------- | ---
+| `--convert-release-storage`    | `secrets`                     | v2 release storage type/object. It can be 'secrets' or 'configmaps'. This is only used with the 'tiller-out-cluster' flag (default 'secrets')
+| `--convert-tiller-out-cluster` | `false`                       | When Tiller is not running in the cluster e.g. Tillerless
+
 ### Git chart source configuration
 
 | Flag                        | Default                       | Purpose

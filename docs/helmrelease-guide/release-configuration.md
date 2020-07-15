@@ -47,6 +47,11 @@ spec:
     name: redis
 ```
 
+3. Assuming you will be deleting the tiller deployment using gitops, consider
+setting the operator flags `--convert-tiller-out-cluster=true` and
+`--convert-release-storage=configmaps`. If tiller is in a custom namespace, make
+sure you set `--tiller-namespace=` flag as well.
+
 After applying the new HelmRelease, the operator will take care of deleting the
 old v2 release that Tiller managed and converting it to the v3 format. Once
 you're satisfied with the migration, you can go ahead and remove the
