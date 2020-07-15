@@ -26,6 +26,7 @@ import (
 	hrv1 "github.com/fluxcd/helm-operator/pkg/client/informers/externalversions/helm.fluxcd.io/v1"
 	iflister "github.com/fluxcd/helm-operator/pkg/client/listers/helm.fluxcd.io/v1"
 	"github.com/fluxcd/helm-operator/pkg/release"
+	"github.com/fluxcd/helm-operator/pkg/status"
 )
 
 const (
@@ -97,6 +98,7 @@ func New(
 			if hr, ok := checkCustomResourceType(controller.logger, old); ok {
 				releaseCount.Add(-1)
 				controller.release.Uninstall(hr.DeepCopy())
+				status.ObserveReleaseConditions(old.(helmfluxv1.HelmRelease), nil)
 			}
 		},
 	})
