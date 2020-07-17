@@ -158,8 +158,8 @@ clusterRole:
   create: true
   exist: false
   # The name of a cluster role to bind to; if not set and create is
-  # true, a name based on fullname is generated; if exist is true set ClusterRole
-  # name
+  # true, a name based on fullname is generated; if exist is true set existing 
+  # ClusterRole name
   name:
 
 kube:
