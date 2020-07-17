@@ -20,10 +20,17 @@ rules:
     verbs:
       - '*'
 ---
+{{- end -}}
+{{- if and .Values.rbac.create -}}
+{{- if or .Values.clusterRole.create .Values.clusterRole.exist -}}
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
+  {{- if and .Values.clusterRole.exist }}
+  name: {{ template "helm-operator.fullname" . }}
+  {{- else }}
   name: {{ template "helm-operator.clusterRoleName" . }}
+  {{- end }}
   labels:
     app: {{ template "helm-operator.name" . }}
     chart: {{ template "helm-operator.chart" . }}
@@ -32,9 +39,15 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
+  {{- if and .Values.clusterRole.exist }}
+  name: {{ .Values.clusterRole.name }}
+  {{- else }}
   name: {{ template "helm-operator.clusterRoleName" . }}
+  {{- end }}
 subjects:
   - name: {{ template "helm-operator.serviceAccountName" . }}
     namespace: {{ .Release.Namespace | quote }}
     kind: ServiceAccount
+---
+{{- end -}}
 {{- end -}}

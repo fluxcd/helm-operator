@@ -156,8 +156,10 @@ serviceAccount:
 # Additionally, the kubeconfig default context will be set to that namespace.
 clusterRole:
   create: true
+  exist: false
   # The name of a cluster role to bind to; if not set and create is
-  # true, a name based on fullname is generated
+  # true, a name based on fullname is generated; if exist is true set ClusterRole
+  # name
   name:
 
 kube:

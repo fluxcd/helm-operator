@@ -1,4 +1,4 @@
-{{- if and .Values.rbac.create (eq .Values.clusterRole.create false) -}}
+{{- if and .Values.rbac.create (eq .Values.clusterRole.create false) (eq .Values.clusterRole.exist false) -}}
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
 metadata:
