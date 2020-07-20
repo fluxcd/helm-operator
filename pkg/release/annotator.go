@@ -70,7 +70,7 @@ func annotateResources(rel *helm.Release, resourceID resource.ID) error {
 
 		// The timeout is set to a high value as it may take some time
 		// to annotate large umbrella charts.
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 		defer cancel()
 
 		cmd := exec.CommandContext(ctx, "kubectl", args...)
