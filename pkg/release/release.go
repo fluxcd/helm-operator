@@ -158,11 +158,15 @@ func (r *Release) prepareChart(client helm.Client, hr *apiV1.HelmRelease) (chart
 	case hr.Spec.RepoChartSource != nil && hr.Spec.RepoURL != "" && hr.Spec.Name != "" && hr.Spec.Version != "":
 		var err error
 
-		chartPath, changed, err = chartsync.EnsureChartFetched(client, r.config.ChartCache, hr.Spec.RepoChartSource)
-		revision = hr.Spec.RepoChartSource.Version
+		chartPath, _, err = chartsync.EnsureChartFetched(client, r.config.ChartCache, hr.Spec.RepoChartSource)
 		if err != nil {
 			return chart{}, nil, err
 		}
+		revision, err = client.GetChartRevision(chartPath)
+		if err != nil {
+			return chart{}, nil, err
+		}
+		changed = hr.Status.LastAttemptedRevision != revision
 	default:
 		return chart{}, nil, fmt.Errorf("could not find valid chart source configuration for release")
 	}
