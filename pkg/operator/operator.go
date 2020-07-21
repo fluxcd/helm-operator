@@ -98,7 +98,7 @@ func New(
 			if hr, ok := checkCustomResourceType(controller.logger, old); ok {
 				releaseCount.Add(-1)
 				controller.release.Uninstall(hr.DeepCopy())
-				status.ObserveReleaseConditions(old.(helmfluxv1.HelmRelease), nil)
+				status.ObserveReleaseConditions(hr, nil)
 			}
 		},
 	})
