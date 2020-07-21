@@ -147,8 +147,10 @@ chart and their default values.
 | `readinessProbe.failureThreshold`                 | `3`                                                  | The number of times the readiness probe can failed before the container is marked as unready
 | `initContainers`                                  | `[]`                                                 | Init containers and their specs
 | `hostAliases`                                     | `{}`                                                 | Host aliases allow the modification of the hosts file (`/etc/hosts`) inside Helm Operator container. See <https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/>
-| `dashboards.enabled`                               | `false`                                              | If enabled, helm-operator will create a configmap with a dashboard in json that's going to be picked up by grafana (see [sidecar.dashboards.enabled](https://github.com/helm/charts/tree/master/stable/grafana#configuration))
-
+| `dashboards.enabled`                              | `false`                                              | If enabled, helm-operator will create a configmap with a dashboard in json that's going to be picked up by grafana (see [sidecar.dashboards.enabled](https://github.com/helm/charts/tree/master/stable/grafana#configuration))
+| `securityContext`                                 | `{}`                                                 | Adding `securityContext` options to the pod
+| `containerSecurityContext.helmOperator`           | `{}`                                                 | Adding `securityContext` options to the helm operator container
+| `containerSecurityContext.tiller`                 | `{}`                                                 | Adding `securityContext` options to the tiller container
 ## How-to
 
 ### Use a custom Helm repository

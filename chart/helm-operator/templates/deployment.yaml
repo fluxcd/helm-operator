@@ -47,6 +47,10 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecret }}
       {{- end }}
+      {{- if .Values.securityContext }}
+      securityContext:
+{{ toYaml .Values.securityContext | indent 12 }}
+      {{- end }}
       volumes:
       {{- if .Values.kube.config }}
       - name: config
@@ -122,6 +126,10 @@ spec:
       - name: flux-helm-operator
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.containerSecurityContext.helmOperator }}
+        securityContext:
+{{ toYaml .Values.containerSecurityContext.helmOperator | indent 12 }}
+        {{- end }}
         ports:
         - name: http
           containerPort: 3030
@@ -293,6 +301,10 @@ spec:
         - --probe-listen=:44135
         - --storage={{ .Values.tillerSidecar.storage }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.containerSecurityContext.tiller }}
+        securityContext:
+ {{ toYaml .Values.containerSecurityContext.tiller | indent 12 }}
+        {{- end }}
         ports:
         - containerPort: 44135
           name: http
