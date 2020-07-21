@@ -35,6 +35,8 @@ function setup() {
 
   # Assert recovery
   poll_until_equals 'recovery' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  poll_no_restarts
 }
 
 @test "When rollback.retry is set, upgrades are reattempted after a rollback" {
@@ -58,6 +60,8 @@ function setup() {
 
   # Assert rollback count is reset
   poll_until_equals 'rollback count reset' '' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.rollbackCount}'" >&3
+
+  poll_no_restarts
 }
 
 @test "When rollback.maxRetries is set to 1,  upgrade is only retried once" {
@@ -78,6 +82,8 @@ function setup() {
 
   # Wait for dry-run to be compared, instead of retry
   poll_until_true 'dry-run comparison to failed release' "kubectl -n $E2E_NAMESPACE logs deploy/helm-operator | grep -E \"running dry-run upgrade to compare with release\""
+
+  poll_no_restarts
 }
 
 @test "When rollback.enable is set, validation error does not trigger a rollback" {
@@ -104,11 +110,18 @@ function setup() {
   # Assert rollback count is zero
   count=$(kubectl -n "$DEMO_NAMESPACE" get helmrelease/podinfo-git -o jsonpath='{.status.rollbackCount}')
   [ -z "$count" ]
+
+  poll_no_restarts
 }
 
 function teardown() {
   # Teardown is verbose when a test fails, and this will help most of the time
   # to determine _why_ it failed.
+  echo ""
+  echo "### Previous container:"
+  kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator -p
+  echo ""
+  echo "### Current container:"
   kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator
 
   # Removing the operator also takes care of the global resources it installs.

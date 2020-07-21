@@ -31,17 +31,24 @@ function setup() {
 
   kubectl apply -f "$FIXTURES_DIR/releases/convert-2to3-v3-upgrade.yaml" >&3
   poll_until_equals 'upgrades work after migration' '1' "kubectl get deploy/podinfo-helm-repository -n "$DEMO_NAMESPACE" -o jsonpath='{.spec.replicas}'"
+  poll_no_restarts
 }
 
 @test "Migration is skipped and install works when no v2 release exists" {
   kubectl apply -f "$FIXTURES_DIR/releases/convert-2to3-v3.yaml" >&3
   poll_until_equals 'helm3 shows helm release' 'podinfo-helm-repository' "HELM_VERSION=v3 helm ls -n $DEMO_NAMESPACE | grep podinfo-helm-repository | awk '{print \$1}'"
   poll_until_equals 'install successful' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+  poll_no_restarts
 }
 
 function teardown() {
   # Teardown is verbose when a test fails, and this will help most of the time
   # to determine _why_ it failed.
+  echo ""
+  echo "### Previous container:"
+  kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator -p
+  echo ""
+  echo "### Current container:"
   kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator
 
   # Removing the operator also takes care of the global resources it installs.

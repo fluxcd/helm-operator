@@ -34,6 +34,8 @@ function setup() {
 
   # Wait for `Tested` condition to be `True`
   poll_until_equals 'release deploy' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Tested\")].status}'"
+
+  poll_no_restarts
 }
 
 @test "When test.enable is set and test.ignoreFailures is false, releases with failed tests are uninstalled" {
@@ -46,6 +48,8 @@ function setup() {
   # Assert release uninstalled
   # TODO: Poll `helm ls` results directly for release removal once install retries can be disabled.
   poll_until_true 'release uninstalled' "kubectl -n $E2E_NAMESPACE logs deploy/helm-operator | grep -E \"running uninstall\""
+
+  poll_no_restarts
 }
 
 # TODO: Fail tests on install instead of upgrade once install retries can be disabled.
@@ -68,6 +72,8 @@ function setup() {
   # Assert `Tested` condition is `False`
   run kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type=="Tested")].status}'
   [ "$output" = 'False' ]
+
+  poll_no_restarts
 }
 
 @test "When tests fail and test.ignoreFailures is true, release has Released condition is True & Tested condition is False" {
@@ -97,6 +103,8 @@ function setup() {
 
   # Assert `Released` condition is `True`
   poll_until_equals 'released condition True' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  poll_no_restarts
 }
 
 @test "When test.enable and rollback.enable are set and test.ignoreFailures is false, releases with failed tests are rolled back" {
@@ -120,6 +128,8 @@ function setup() {
 
   # Assert recovery
   poll_until_equals 'recovery' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  poll_no_restarts
 }
 
 @test "When test.enable and rollback.enable are set, releases with timed out tests are rolled back" {
@@ -143,11 +153,18 @@ function setup() {
 
   # Assert recovery
   poll_until_equals 'recovery' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  poll_no_restarts
 }
 
 function teardown() {
   # Teardown is verbose when a test fails, and this will help most of the time
   # to determine _why_ it failed.
+  echo ""
+  echo "### Previous container:"
+  kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator -p
+  echo ""
+  echo "### Current container:"
   kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator
 
   # Removing the operator also takes care of the global resources it installs.

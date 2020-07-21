@@ -28,3 +28,8 @@ function poll_until_true() {
   done
   echo ' done' >&3
 }
+
+function poll_no_restarts() {
+  sleep 5 # allow enough time for the operator to react to previous operation
+  poll_until_equals 'no helm-operator restarts' '0' "kubectl get pod -n $E2E_NAMESPACE -l app=helm-operator -o jsonpath='{.items[*].status.containerStatuses[*].restartCount}'" '1'
+}

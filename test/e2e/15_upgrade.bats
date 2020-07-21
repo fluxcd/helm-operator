@@ -60,6 +60,8 @@ function setup() {
   # Assert `Deployed` condition is `True`
   run kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.type=="Deployed")].status}'
   [ "$output" = 'True' ]
+
+  poll_no_restarts
 }
 
 @test "When a values.yaml change in Git is made, a release is upgraded" {
@@ -86,6 +88,8 @@ function setup() {
 
   # Assert change is rolled out
   poll_until_equals 'revision match' "$head_hash" "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.revision}'"
+
+  poll_no_restarts
 }
 
 @test "When resetValues is explicitly set to false, previous values of a release are reused" {
@@ -112,6 +116,8 @@ function setup() {
 
     # Assert reset to chart default values
     poll_until_equals 'replica count resets to chart defaults' '1' "kubectl get deploy/podinfo-takeover -n "$DEMO_NAMESPACE" -o jsonpath='{.spec.replicas}'"
+
+    poll_no_restarts
 }
 
 @test "When a HelmRelease is nested in a chart, an upgrade does succeed" {
@@ -139,6 +145,8 @@ function setup() {
   # Wait for patch to be processed and assert successful release
   poll_until_equals 'patch to be processed for child release' "$((childReleaseGen+1))" "kubectl -n $DEMO_NAMESPACE get helmrelease/nested-helmrelease-child -o jsonpath='{.status.observedGeneration}'"
   poll_until_equals 'release status ok' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/nested-helmrelease-child -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  poll_no_restarts
 }
 
 @test "When an upgrade fails, Deployed and Released conditions are False" {
@@ -160,6 +168,8 @@ function setup() {
   # Assert `Deployed` condition is `False`
   run kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type=="Deployed")].status}'
   [ "$output" = 'False' ]
+
+  poll_no_restarts
 }
 
 function teardown() {
@@ -167,6 +177,11 @@ function teardown() {
 
   # Teardown is verbose when a test fails, and this will help most of the time
   # to determine _why_ it failed.
+  echo ""
+  echo "### Previous container:"
+  kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator -p
+  echo ""
+  echo "### Current container:"
   kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator
 
   # Removing the operator also takes care of the global resources it installs.
