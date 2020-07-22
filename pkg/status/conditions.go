@@ -7,7 +7,7 @@ import (
 	"k8s.io/client-go/util/retry"
 	"k8s.io/utils/clock"
 
-	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	v1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	v1client "github.com/fluxcd/helm-operator/pkg/client/clientset/versioned/typed/helm.fluxcd.io/v1"
 )
 
@@ -55,7 +55,7 @@ func SetConditions(client v1client.HelmReleaseInterface, hr *v1.HelmRelease, con
 			setter(cHr)
 		}
 
-		ObserveReleaseConditions(*hr, cHr)
+		ObserveReleaseConditions(hr, cHr)
 		_, err = client.UpdateStatus(cHr)
 		firstTry = false
 		return

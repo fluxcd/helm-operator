@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 function setup() {
-  # Load libraries in setup() to access BATS_* variables 
+  # Load libraries in setup() to access BATS_* variables
   load lib/env
   load lib/install
   load lib/poll
@@ -32,6 +32,8 @@ function setup() {
   # Check count of revisions is <= 10
   count=$(helm history podinfo-helm-repository --namespace "$DEMO_NAMESPACE" --skip-headers | tail -n +2 | wc -l)
   [ "$count" -eq 10 ]
+
+  poll_no_restarts
 }
 
 @test "When max history on release is set to 5 the most recent 5 revisions are kept" {
@@ -57,11 +59,18 @@ function setup() {
   # Check count of revisions is <= 5
   count=$(helm history podinfo-helm-repository --namespace "$DEMO_NAMESPACE" --skip-headers | tail -n +2 | wc -l)
   [ "$count" -eq 5 ]
+
+  poll_no_restarts
 }
 
 function teardown() {
   # Teardown is verbose when a test fails, and this will help most of the time
   # to determine _why_ it failed.
+  echo ""
+  echo "### Previous container:"
+  kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator -p
+  echo ""
+  echo "### Current container:"
   kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator
 
   # Removing the operator also takes care of the global resources it installs.

@@ -97,8 +97,10 @@ func New(
 		DeleteFunc: func(old interface{}) {
 			if hr, ok := checkCustomResourceType(controller.logger, old); ok {
 				releaseCount.Add(-1)
-				controller.release.Uninstall(hr.DeepCopy())
-				status.ObserveReleaseConditions(hr, nil)
+				if err := controller.release.Uninstall(hr.DeepCopy()); err != nil {
+					controller.logger.Log("error", err)
+				}
+				status.ObserveReleaseConditions(&hr, nil)
 			}
 		},
 	})

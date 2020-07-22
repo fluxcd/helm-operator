@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 function setup() {
-  # Load libraries in setup() to access BATS_* variables 
+  # Load libraries in setup() to access BATS_* variables
   load lib/env
   load lib/install
   load lib/poll
@@ -31,11 +31,18 @@ function setup() {
   poll_until_equals 'git chart released condition true' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
   run kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-git -o jsonpath='{.status.conditions[?(@.type=="Deployed")].status}'
   [ "$output" = 'True' ]
+
+  poll_no_restarts
 }
 
 function teardown() {
   # Teardown is verbose when a test fails, and this will help most of the time
   # to determine _why_ it failed.
+  echo ""
+  echo "### Previous container:"
+  kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator -p
+  echo ""
+  echo "### Current container:"
   kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator
 
   # Removing the operator also takes care of the global resources it installs.

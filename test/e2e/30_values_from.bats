@@ -54,6 +54,8 @@ EOF
 
   # Wait for release recovery
   poll_until_equals 'recovery after adding config map in namespace' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/configmap-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  poll_no_restarts
 }
 
 @test "When valuesFrom.secretKeyRefs are defined, they are sourced" {
@@ -96,6 +98,8 @@ EOF
 
   # Wait for release recovery
   poll_until_equals 'recovery after adding secret in namespace' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/secret-values  -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  poll_no_restarts
 }
 
 @test "When valuesFrom.externalSourceRefs are defined, they are sourced" {
@@ -116,6 +120,8 @@ EOF
 
   # Wait for release recovery
   poll_until_equals 'recovery after making external source optional' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/external-source-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  poll_no_restarts
 }
 
 @test "When valuesFrom.chartFileRefs are defined, they are sourced" {
@@ -137,6 +143,7 @@ EOF
   # Wait for release recovery
   poll_until_equals 'recovery after making chart file optional' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/chartfile-values -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
 
+  poll_no_restarts
 }
 
 function teardown() {
@@ -144,6 +151,11 @@ function teardown() {
 
   # Teardown is verbose when a test fails, and this will help most of the time
   # to determine _why_ it failed.
+  echo ""
+  echo "### Previous container:"
+  kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator -p
+  echo ""
+  echo "### Current container:"
   kubectl logs -n "$E2E_NAMESPACE" deploy/helm-operator
 
   # Removing the operator also takes care of the global resources it installs.

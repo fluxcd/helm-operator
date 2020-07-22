@@ -3,6 +3,7 @@
 function setup() {
   # Load libraries in setup() to access BATS_* variables
   load lib/env
+  load lib/helm
   load lib/install
   load lib/poll
 
@@ -13,18 +14,16 @@ function setup() {
   kubectl create namespace "$DEMO_NAMESPACE"
 }
 
-@test "When skipCRDs is set" {
-  if [ "$HELM_VERSION" != "v3" ]; then
-    skip
-  fi
-
+@test "Deletes cleanup resources successfully" {
   # Apply the HelmRelease
-  kubectl apply -f "$FIXTURES_DIR/releases/skip-crd.yaml" >&3
-  poll_until_equals 'skip-crd HelmRelease' 'deployed' "kubectl -n $DEMO_NAMESPACE get helmrelease/skip-crd -o 'custom-columns=status:status.releaseStatus' --no-headers"
+  kubectl apply -f "$FIXTURES_DIR/releases/helm-repository.yaml" >&3
 
-  # Assert no CRDs were installed
-  count=$(kubectl get crd --no-headers | grep 'konghq.com' | wc -l)
-  [ "$count" -eq 0 ]
+  # Wait for it to be released
+  poll_until_equals 'release deploy' 'True' "kubectl -n $DEMO_NAMESPACE get helmrelease/podinfo-helm-repository -o jsonpath='{.status.conditions[?(@.type==\"Released\")].status}'"
+
+  kubectl delete -f "$FIXTURES_DIR/releases/helm-repository.yaml" >&3
+
+  poll_until_true 'deployment is deleted' "kubectl get deploy -n $DEMO_NAMESPACE podinfo-helm-repository 2>&1 | grep 'NotFound'"
 
   poll_no_restarts
 }
