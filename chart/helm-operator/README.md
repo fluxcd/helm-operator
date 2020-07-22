@@ -107,6 +107,7 @@ chart and their default values.
 | `logFormat`                                       | `fmt`                                                | Log format (fmt or json)
 | `logReleaseDiffs`                                 | `false`                                              | Helm Operator should log the diff when a chart release diverges (possibly insecure)
 | `allowNamespace`                                  | `None`                                               | If set, this limits the scope to a single namespace. If not specified, all namespaces will be watched
+| `allowedNamespaces`                               | `[]`                                                 | Allow helm-operator to manage resources in the specified namespaces. The namespace flux is deployed in will always be included
 | `helm.versions`                                   | `v2,v3`                                              | Helm versions supported by this operator instance, if v2 is specified then Tiller is required
 | `tillerNamespace`                                 | `kube-system`                                        | Namespace in which the Tiller server can be found
 | `tillerSidecar.enabled`                           | `false`                                              | Whether to deploy Tiller as a sidecar (and listening on `localhost` only).

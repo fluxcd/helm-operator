@@ -231,7 +231,7 @@ spec:
         {{- if .Values.workers }}
         - --workers={{ .Values.workers }}
         {{- end }}
-        {{- if not .Values.clusterRole.create }}
+        {{- if (and  (not .Values.clusterRole.create) ( not .Values.allowedNamespaces)) }}
         - --allow-namespace={{ .Release.Namespace }}
         {{- else if .Values.allowNamespace }}
         - --allow-namespace={{ .Values.allowNamespace }}

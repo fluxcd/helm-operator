@@ -17,6 +17,8 @@ service:
 createCRD: false
 # Limit the operator scope to a single namespace
 allowNamespace:
+# Specifies which namespaces helm-operator should have access to
+allowedNamespaces: []
 # Update dependencies for charts
 updateChartDeps: true
 # Log format can be fmt or json
