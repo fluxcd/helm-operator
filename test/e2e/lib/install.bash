@@ -53,7 +53,9 @@ function install_helm_operator_with_helm() {
     --set configureRepositories.repositories[1].name="podinfo" \
     --set configureRepositories.repositories[1].url="https://stefanprodan.github.io/podinfo" \
     --set helm.versions="${enabled_versions}" \
-    --set tillerNamespace="${E2E_NAMESPACE}"
+    --set tillerNamespace="${E2E_NAMESPACE}" \
+    --set livenessProbe.failureThreshold=10 \
+    --set readinessProbe.failureThreshold=10
 }
 
 function uninstall_helm_operator_with_helm() {
