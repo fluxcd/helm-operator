@@ -123,7 +123,7 @@ chart and their default values.
 | `configureRepositories.enable`                    | `false`                                              | Enable volume mount for a `repositories.yaml` configuration file and repository cache
 | `configureRepositories.volumeName`                | `repositories-yaml`                                  | Name of the volume for the `repositories.yaml` file
 | `configureRepositories.secretName`                | `flux-helm-repositories`                             | Name of the secret containing the contents of the `repositories.yaml` file
-| `configureRepositories.cacheName`                 | `repositories-cache`                                 | Name for the repository cache volume
+| `configureRepositories.cacheVolumeName`           | `repositories-cache`                                 | Name for the repository cache volume
 | `configureRepositories.repositories`              | `None`                                               | List of custom Helm repositories to add. If non empty, the corresponding secret with a `repositories.yaml` will be created
 | `initPlugins.enable`                              | `false`                                              | Enable the initialization of Helm plugins using init containers
 | `initPlugins.cacheVolumeName`                     | `plugins-cache`                                      | Name for the plugins cache volume
