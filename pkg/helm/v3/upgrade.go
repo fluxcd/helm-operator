@@ -59,6 +59,7 @@ func (opts installOptions) configure(action *action.Install, releaseName string)
 	action.Timeout = opts.Timeout
 	action.Wait = opts.Wait
 	action.SkipCRDs = opts.SkipCRDs
+	action.DisableOpenAPIValidation = opts.DisableValidation
 }
 
 type upgradeOptions helm.UpgradeOptions

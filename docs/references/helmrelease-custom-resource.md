@@ -288,6 +288,18 @@ HelmValues
 <p>Values holds the values for this Helm release.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>disableOpenAPIValidation</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DisableOpenAPIValidation controls whether OpenAPI validation is enforced.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -1085,6 +1097,18 @@ HelmValues
 <td>
 <em>(Optional)</em>
 <p>Values holds the values for this Helm release.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>disableOpenAPIValidation</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DisableOpenAPIValidation controls whether OpenAPI validation is enforced.</p>
 </td>
 </tr>
 </tbody>

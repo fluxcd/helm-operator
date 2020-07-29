@@ -466,13 +466,14 @@ func (r *Release) install(client helm.Client, hr *apiV1.HelmRelease, chart chart
 	}(time.Now())
 	status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseInstalling, chart.revision)
 	rel, err = client.UpgradeFromPath(chart.chartPath, hr.GetReleaseName(), values, helm.UpgradeOptions{
-		Namespace:  hr.GetTargetNamespace(),
-		Timeout:    hr.GetTimeout(),
-		Install:    true,
-		Force:      hr.Spec.ForceUpgrade,
-		SkipCRDs:   hr.Spec.SkipCRDs,
-		MaxHistory: hr.GetMaxHistory(),
-		Wait:       hr.GetWait(),
+		Namespace:         hr.GetTargetNamespace(),
+		Timeout:           hr.GetTimeout(),
+		Install:           true,
+		Force:             hr.Spec.ForceUpgrade,
+		SkipCRDs:          hr.Spec.SkipCRDs,
+		MaxHistory:        hr.GetMaxHistory(),
+		Wait:              hr.GetWait(),
+		DisableValidation: hr.Spec.DisableOpenAPIValidation,
 	})
 	if err != nil {
 		status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseDeployFailed)
@@ -511,15 +512,16 @@ func (r *Release) upgrade(client helm.Client, hr *apiV1.HelmRelease, chart chart
 	}(time.Now())
 	status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseUpgrading, chart.revision)
 	rel, err = client.UpgradeFromPath(chart.chartPath, hr.GetReleaseName(), values, helm.UpgradeOptions{
-		Namespace:   hr.GetTargetNamespace(),
-		Timeout:     hr.GetTimeout(),
-		Install:     false,
-		Force:       hr.Spec.ForceUpgrade,
-		ReuseValues: hr.GetReuseValues(),
-		ResetValues: !hr.GetReuseValues(),
-		SkipCRDs:    hr.Spec.SkipCRDs,
-		MaxHistory:  hr.GetMaxHistory(),
-		Wait:        hr.GetWait(),
+		Namespace:         hr.GetTargetNamespace(),
+		Timeout:           hr.GetTimeout(),
+		Install:           false,
+		Force:             hr.Spec.ForceUpgrade,
+		ReuseValues:       hr.GetReuseValues(),
+		ResetValues:       !hr.GetReuseValues(),
+		SkipCRDs:          hr.Spec.SkipCRDs,
+		MaxHistory:        hr.GetMaxHistory(),
+		Wait:              hr.GetWait(),
+		DisableValidation: hr.Spec.DisableOpenAPIValidation,
 	})
 	if err != nil {
 		status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseDeployFailed)
