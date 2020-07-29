@@ -1,3 +1,85 @@
+## 1.2.0 (2020-07-29)
+
+> **Note on the future of the Helm Operator and Flux:**
+> We are working on a next generation Flux assembled from components
+> as part of a bigger [GitOps Toolkit](https://toolkit.fluxcd.io) project.
+> One of the components is the [helm-controller](https://toolkit.fluxcd.io/components/helm/controller/)
+> which eventually will replace the Helm Operator. The roadmap for this
+> can be found [here](https://toolkit.fluxcd.io/roadmap/#the-road-to-helm-operator-v2).
+>
+> We are eager to hear [feedback, suggestions, and/or feature requests](https://github.com/fluxcd/toolkit/discussions)
+> for the helm-controller and other Toolkit components.
+
+This is the second minor release, it adds support for Helm tests and
+v2 to v3 release conversions, and includes a variety of bug fixes.
+
+### Bug fixes
+
+ - metrics: use release name and namespace in `release_condition_info`
+   labels
+   [fluxcd/helm-operator#431][#431]
+ - operator: obtain lock before obtaining release data
+   fluxcd/helm-operator{[#437][], [#445][]}
+ - misc: use sigs.k8s.io/yaml everywhere
+   [fluxcd/helm-operator#455][#455]
+ - release: increase timeout for annotator to support large umbrella
+   charts
+   [fluxcd/helm-operator#478][#478]
+ - metrics: remove `release_condition_info` data on delete
+   fluxcd/helm-operator{[#485][], [#492][], [#495][]}
+ - release: prevent spurious upgrades for semver ranges
+   [fluxcd/helm-operator#490][#490]
+ - helm/v3: slightly increase GC offset anonymous files
+   [fluxcd/helm-operator#491][#491]
+   
+### Enhancement
+
+ - helm: add `helm test` integration
+   fluxcd/helm-operator{[#415][], [#472][]}
+ - helm/v3: add v2->v3 release converter
+   fluxcd/helm-operator{[#415][], [#471][], [#486][]}
+ - helm/v3: add flag for disabling OpenAPI Validation
+   [fluxcd/helm-operator#480][#480]
+ 
+### Maintenance and documentation
+
+ - docs: fix `HelmReleaseError` alert rule expression in monitoring
+   reference
+   [fluxcd/helm-operator#429][#429]
+ - docs: fix comment regarding repositories.yaml setup
+   [fluxcd/helm-operator#433][#433]
+ - docs: replace v1.13 API reference URLs with v1.18
+   [fluxcd/helm-operator#442][#442]
+ - e2e: increase liveness and readiness probe failureThreshold during
+   tests
+   [fluxcd/helm-operator#500][#500] 
+
+### Thanks
+
+Thanks to @stefanprodan, @sa-spag, @MMartyn, @seaneagan, @hezhizhen,
+@saada, @chrisjholly, @avielb, @luxas, @waseem-h, and others for their
+contributions to this release, feedback, and reporting issues.
+
+[#415]: https://github.com/fluxcd/helm-operator/pull/415
+[#429]: https://github.com/fluxcd/helm-operator/pull/429
+[#431]: https://github.com/fluxcd/helm-operator/pull/431
+[#433]: https://github.com/fluxcd/helm-operator/pull/433
+[#437]: https://github.com/fluxcd/helm-operator/pull/437
+[#442]: https://github.com/fluxcd/helm-operator/pull/442
+[#445]: https://github.com/fluxcd/helm-operator/pull/445
+[#455]: https://github.com/fluxcd/helm-operator/pull/455
+[#471]: https://github.com/fluxcd/helm-operator/pull/471
+[#472]: https://github.com/fluxcd/helm-operator/pull/472
+[#478]: https://github.com/fluxcd/helm-operator/pull/478
+[#480]: https://github.com/fluxcd/helm-operator/pull/480
+[#485]: https://github.com/fluxcd/helm-operator/pull/485
+[#486]: https://github.com/fluxcd/helm-operator/pull/486
+[#490]: https://github.com/fluxcd/helm-operator/pull/490
+[#491]: https://github.com/fluxcd/helm-operator/pull/491
+[#492]: https://github.com/fluxcd/helm-operator/pull/492
+[#495]: https://github.com/fluxcd/helm-operator/pull/495
+[#500]: https://github.com/fluxcd/helm-operator/pull/500
+
 ## 1.1.0 (2020-05-21)
 
 This is the first minor release, it focuses on metrics improvements,
