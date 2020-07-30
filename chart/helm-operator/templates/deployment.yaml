@@ -48,6 +48,12 @@ spec:
         - name: {{ .Values.image.pullSecret }}
       {{- end }}
       volumes:
+      {{- if .Values.kube.config }}
+      - name: config
+        configMap:
+          name: {{ template "helm-operator.fullname" . }}-kube-config
+          defaultMode: 0600
+      {{- end }}
       {{- if .Values.git.ssh.known_hosts }}
       - name: sshknownhosts
         configMap:
@@ -138,6 +144,11 @@ spec:
           successThreshold: {{ .Values.readinessProbe.successThreshold }}
           failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
         volumeMounts:
+        {{- if .Values.kube.config }}
+        - name: config
+          mountPath: /root/.kube
+          readOnly: true
+        {{- end }}
         {{- if .Values.git.ssh.known_hosts }}
         - name: sshknownhosts
           mountPath: /root/.ssh/known_hosts
@@ -213,6 +224,9 @@ spec:
         - --helm-repository-import={{ $version }}:/root/.helm/repository/repositories.yaml
         {{- end }}
         {{- end }}
+        {{- end }}
+        {{- if .Values.kube.config }}
+        - --kubeconfig=/root/.kube/config
         {{- end }}
         {{- if .Values.logFormat }}
         - --log-format={{ .Values.logFormat }}
