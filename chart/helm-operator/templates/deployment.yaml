@@ -49,7 +49,7 @@ spec:
       {{- end }}
       {{- if .Values.securityContext }}
       securityContext:
-{{ toYaml .Values.securityContext | indent 12 }}
+{{ toYaml .Values.securityContext | indent 8 }}
       {{- end }}
       volumes:
       {{- if .Values.kube.config }}
@@ -128,7 +128,7 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         {{- if .Values.containerSecurityContext.helmOperator }}
         securityContext:
-{{ toYaml .Values.containerSecurityContext.helmOperator | indent 12 }}
+{{ toYaml .Values.containerSecurityContext.helmOperator | indent 10 }}
         {{- end }}
         ports:
         - name: http
@@ -303,7 +303,7 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         {{- if .Values.containerSecurityContext.tiller }}
         securityContext:
- {{ toYaml .Values.containerSecurityContext.tiller | indent 12 }}
+ {{ toYaml .Values.containerSecurityContext.tiller | indent 10 }}
         {{- end }}
         ports:
         - containerPort: 44135
