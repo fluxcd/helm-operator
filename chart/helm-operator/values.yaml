@@ -240,6 +240,6 @@ dashboards:
 
 securityContext: {}
 
-containerSecurityContext: {}
+containerSecurityContext:
   helmOperator: {}
   tiller: {}
