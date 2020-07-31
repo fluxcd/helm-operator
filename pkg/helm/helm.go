@@ -18,6 +18,7 @@ type Client interface {
 	Pull(ref, version, dest string) (string, error)
 	PullWithRepoURL(repoURL, name, version, dest string) (string, error)
 	Uninstall(releaseName string, opts UninstallOptions) error
+	GetChartRevision(chartPath string) (string, error)
 	Version() string
 }
 

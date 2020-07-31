@@ -29,7 +29,7 @@ func init() {
 	stdprometheus.MustRegister(releaseCondition)
 }
 
-func ObserveReleaseConditions(old v1.HelmRelease, new *v1.HelmRelease) {
+func ObserveReleaseConditions(old *v1.HelmRelease, new *v1.HelmRelease) {
 	conditions := make(map[v1.HelmReleaseConditionType]*v1.ConditionStatus)
 
 	for _, condition := range old.Status.Conditions {
@@ -43,15 +43,18 @@ func ObserveReleaseConditions(old v1.HelmRelease, new *v1.HelmRelease) {
 	}
 
 	for conditionType, conditionStatus := range conditions {
-		labels := stdprometheus.Labels{
-			LabelTargetNamespace: new.GetTargetNamespace(),
-			LabelReleaseName:     new.GetReleaseName(),
-			LabelCondition:       string(conditionType),
-		}
 		if conditionStatus == nil {
-			releaseCondition.Delete(labels)
+			releaseCondition.Delete(labelsForRelease(old, conditionType))
 		} else {
-			releaseCondition.With(labels).Set(conditionStatusToGaugeValue[*conditionStatus])
+			releaseCondition.With(labelsForRelease(new, conditionType)).Set(conditionStatusToGaugeValue[*conditionStatus])
 		}
+	}
+}
+
+func labelsForRelease(hr *v1.HelmRelease, conditionType v1.HelmReleaseConditionType) stdprometheus.Labels {
+	return stdprometheus.Labels{
+		LabelTargetNamespace: hr.GetTargetNamespace(),
+		LabelReleaseName:     hr.GetReleaseName(),
+		LabelCondition:       string(conditionType),
 	}
 }

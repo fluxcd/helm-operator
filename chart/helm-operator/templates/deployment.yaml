@@ -47,7 +47,17 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecret }}
       {{- end }}
+      {{- if .Values.securityContext }}
+      securityContext:
+{{ toYaml .Values.securityContext | indent 8 }}
+      {{- end }}
       volumes:
+      {{- if .Values.kube.config }}
+      - name: config
+        configMap:
+          name: {{ template "helm-operator.fullname" . }}-kube-config
+          defaultMode: 0600
+      {{- end }}
       {{- if .Values.git.ssh.known_hosts }}
       - name: sshknownhosts
         configMap:
@@ -116,6 +126,10 @@ spec:
       - name: flux-helm-operator
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.containerSecurityContext.helmOperator }}
+        securityContext:
+{{ toYaml .Values.containerSecurityContext.helmOperator | indent 10 }}
+        {{- end }}
         ports:
         - name: http
           containerPort: 3030
@@ -138,6 +152,11 @@ spec:
           successThreshold: {{ .Values.readinessProbe.successThreshold }}
           failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
         volumeMounts:
+        {{- if .Values.kube.config }}
+        - name: config
+          mountPath: /root/.kube
+          readOnly: true
+        {{- end }}
         {{- if .Values.git.ssh.known_hosts }}
         - name: sshknownhosts
           mountPath: /root/.ssh/known_hosts
@@ -214,6 +233,9 @@ spec:
         {{- end }}
         {{- end }}
         {{- end }}
+        {{- if .Values.kube.config }}
+        - --kubeconfig=/root/.kube/config
+        {{- end }}
         {{- if .Values.logFormat }}
         - --log-format={{ .Values.logFormat }}
         {{- end }}
@@ -279,6 +301,10 @@ spec:
         - --probe-listen=:44135
         - --storage={{ .Values.tillerSidecar.storage }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.containerSecurityContext.tiller }}
+        securityContext:
+ {{ toYaml .Values.containerSecurityContext.tiller | indent 10 }}
+        {{- end }}
         ports:
         - containerPort: 44135
           name: http

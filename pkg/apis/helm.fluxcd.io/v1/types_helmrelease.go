@@ -484,6 +484,9 @@ type HelmReleaseSpec struct {
 	// Values holds the values for this Helm release.
 	// +optional
 	Values HelmValues `json:"values,omitempty"`
+	// DisableOpenAPIValidation controls whether OpenAPI validation is enforced.
+	// +optional
+	DisableOpenAPIValidation bool `json:"disableOpenAPIValidation,omitempty"`
 }
 
 // HelmReleaseConditionType represents an HelmRelease condition value.

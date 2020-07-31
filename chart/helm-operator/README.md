@@ -86,6 +86,7 @@ chart and their default values.
 | `serviceAccount.annotations`                      | `{}`                                                 | Additional Service Account annotations
 | `serviceAccount.name`                             | `flux`                                               | Service account to be used
 | `clusterRole.create`                              | `true`                                               | If `false`, Helm Operator will be restricted to the namespace where is deployed
+| `clusterRole.exist`                              | `false`                                               | If `true`, Helm Operator will use exist clusterRole. You need to set the name of the cluster role to `clusterRole.name`
 | `clusterRole.name`                                | `None`                                               | The name of a cluster role to bind to
 | `createCRD`                                       | `false`                                              | Install the `HelmRelease` CRD. Setting this value only has effect for Helm 2, as Helm 3 uses `--skip-crds` and will skip installation if the CRD is already present. Managing CRDs outside of Helm is recommended, also see the [Helm best practices](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/)
 | `service.type`                                    | `ClusterIP`                                          | Service type to be used (exposing the Helm Operator API outside of the cluster is not advised)
@@ -123,7 +124,7 @@ chart and their default values.
 | `configureRepositories.enable`                    | `false`                                              | Enable volume mount for a `repositories.yaml` configuration file and repository cache
 | `configureRepositories.volumeName`                | `repositories-yaml`                                  | Name of the volume for the `repositories.yaml` file
 | `configureRepositories.secretName`                | `flux-helm-repositories`                             | Name of the secret containing the contents of the `repositories.yaml` file
-| `configureRepositories.cacheName`                 | `repositories-cache`                                 | Name for the repository cache volume
+| `configureRepositories.cacheVolumeName`           | `repositories-cache`                                 | Name for the repository cache volume
 | `configureRepositories.repositories`              | `None`                                               | List of custom Helm repositories to add. If non empty, the corresponding secret with a `repositories.yaml` will be created
 | `initPlugins.enable`                              | `false`                                              | Enable the initialization of Helm plugins using init containers
 | `initPlugins.cacheVolumeName`                     | `plugins-cache`                                      | Name for the plugins cache volume
@@ -147,8 +148,10 @@ chart and their default values.
 | `readinessProbe.failureThreshold`                 | `3`                                                  | The number of times the readiness probe can failed before the container is marked as unready
 | `initContainers`                                  | `[]`                                                 | Init containers and their specs
 | `hostAliases`                                     | `{}`                                                 | Host aliases allow the modification of the hosts file (`/etc/hosts`) inside Helm Operator container. See <https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/>
-| `dashboards.enabled`                               | `false`                                              | If enabled, helm-operator will create a configmap with a dashboard in json that's going to be picked up by grafana (see [sidecar.dashboards.enabled](https://github.com/helm/charts/tree/master/stable/grafana#configuration))
-
+| `dashboards.enabled`                              | `false`                                              | If enabled, helm-operator will create a configmap with a dashboard in json that's going to be picked up by grafana (see [sidecar.dashboards.enabled](https://github.com/helm/charts/tree/master/stable/grafana#configuration))
+| `securityContext`                                 | `{}`                                                 | Adding `securityContext` options to the pod
+| `containerSecurityContext.helmOperator`           | `{}`                                                 | Adding `securityContext` options to the helm operator container
+| `containerSecurityContext.tiller`                 | `{}`                                                 | Adding `securityContext` options to the tiller container
 ## How-to
 
 ### Use a custom Helm repository
