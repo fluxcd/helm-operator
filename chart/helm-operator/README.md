@@ -151,6 +151,8 @@ chart and their default values.
 | `securityContext`                                 | `{}`                                                 | Adding `securityContext` options to the pod
 | `containerSecurityContext.helmOperator`           | `{}`                                                 | Adding `securityContext` options to the helm operator container
 | `containerSecurityContext.tiller`                 | `{}`                                                 | Adding `securityContext` options to the tiller container
+| `sidecarContainers`                               | `{}`                                                 | Sidecar containers along with the specifications.
+
 ## How-to
 
 ### Use a custom Helm repository

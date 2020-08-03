@@ -326,6 +326,9 @@ spec:
         - name: TILLER_HISTORY_MAX
           value: "10"
       {{- end }}
+{{- if .Values.sidecarContainers }}
+{{- toYaml .Values.sidecarContainers | nindent 6 }}
+{{- end }}
 {{- if .Values.hostAliases }}
       hostAliases:
 {{ toYaml .Values.hostAliases |indent 8 }}
