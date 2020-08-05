@@ -1,3 +1,27 @@
+## 1.2.0 (2020-08-05)
+
+### Improvements
+
+ - Update Helm Operator to `1.2.0`
+   [fluxcd/helm-operator#505](https://github.com/fluxcd/helm-operator/pull/505)
+ - Adding securityContext options at the pod and container level
+   [fluxcd/helm-operator#494](https://github.com/fluxcd/helm-operator/pull/494)
+ - Enable additional sidecar containers
+   [fluxcd/helm-operator#484](https://github.com/fluxcd/helm-operator/pull/484)
+ - Add grafana helm-operator dashboard
+   [fluxcd/helm-operator#482](https://github.com/fluxcd/helm-operator/pull/482)
+ - Roll deployment on update known_hosts
+   [fluxcd/helm-operator#441](https://github.com/fluxcd/helm-operator/pull/441)
+
+### Bug fixes
+
+ - Fix kubeconfig override in chart/deployment
+   [fluxcd/helm-operator#507](https://github.com/fluxcd/helm-operator/pull/507)
+ - Documentation fixes
+   [fluxcd/helm-operator#502](https://github.com/fluxcd/helm-operator/pull/502)
+   [fluxcd/helm-operator#451](https://github.com/fluxcd/helm-operator/pull/451)
+   [fluxcd/helm-operator#438](https://github.com/fluxcd/helm-operator/pull/438)
+   
 ## 1.1.0 (2020-05-28)
 
 ### Improvements
