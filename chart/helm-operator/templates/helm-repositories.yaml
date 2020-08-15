@@ -3,6 +3,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ .Values.configureRepositories.secretName }}
+  namespace: {{ .Release.Namespace }}
 type: Opaque
 data:
   repositories.yaml: {{ include "helm-operator.customRepositories" . | b64enc }}
