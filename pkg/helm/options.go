@@ -25,20 +25,20 @@ type StatusOptions struct {
 // fields supported by that version but can (silently) ignore
 // unsupported set values.
 type UpgradeOptions struct {
-	Namespace    string
-	Timeout      time.Duration
-	Wait         bool
-	Install      bool
-	DisableHooks bool
-	DryRun       bool
-	ClientOnly   bool
-	Force        bool
-	ResetValues  bool
-	SkipCRDs     bool
-	ReuseValues  bool
-	Recreate     bool
-	MaxHistory   int
-	Atomic       bool
+	Namespace         string
+	Timeout           time.Duration
+	Wait              bool
+	Install           bool
+	DisableHooks      bool
+	DryRun            bool
+	ClientOnly        bool
+	Force             bool
+	ResetValues       bool
+	SkipCRDs          bool
+	ReuseValues       bool
+	Recreate          bool
+	MaxHistory        int
+	Atomic            bool
 	DisableValidation bool
 }
 
@@ -77,6 +77,7 @@ type UninstallOptions struct {
 	DryRun       bool
 	KeepHistory  bool
 	Timeout      time.Duration
+	Continuous   bool
 }
 
 // HistoryOption holds the options available for Helm history

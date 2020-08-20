@@ -338,6 +338,9 @@ type Test struct {
 	// test pods between each test run initiated by the Helm Operator.
 	// +optional
 	Cleanup *bool `json:"cleanup,omitempty"`
+	// Set Continuous to true will run test continuously.
+	// +optional
+	Continuous bool `json:"continuous,omitempty"`
 }
 
 // IgnoreFailures returns the configured ignoreFailures flag,
