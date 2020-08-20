@@ -309,6 +309,11 @@ next:
 			status.SetStatusPhase(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseSucceeded)
 		}
 		logger.Log("info", "no changes", "phase", action)
+		if hr.Spec.Test.Enable && hr.Spec.Test.Continuous == true {
+			logger.Log("info", "Triggering continuous test", "phase", action)
+			action = TestAction
+			goto next
+		}
 	case InstallAction:
 		logger.Log("info", "running installation", "phase", action)
 		newRel, err = r.install(client, hr, chart, values)
