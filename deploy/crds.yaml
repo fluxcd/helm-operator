@@ -219,9 +219,6 @@ spec:
                     operation (like Jobs for hooks) during test.
                   type: integer
                   format: int64
-                continuous:
-                  description: Set Continuous to true will run test continuously.
-                  type: boolean
             timeout:
               description: Timeout is the time to wait for any individual Kubernetes
                 operation (like Jobs for hooks) during installation and upgrade operations.

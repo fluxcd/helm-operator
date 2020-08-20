@@ -1783,6 +1783,18 @@ bool
 test pods between each test run initiated by the Helm Operator.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>continuous</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Set Continuous to true will run test continuously.</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
