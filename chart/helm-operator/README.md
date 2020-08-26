@@ -148,6 +148,8 @@ chart and their default values.
 | `initContainers`                                  | `[]`                                                 | Init containers and their specs
 | `hostAliases`                                     | `{}`                                                 | Host aliases allow the modification of the hosts file (`/etc/hosts`) inside Helm Operator container. See <https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/>
 | `dashboards.enabled`                              | `false`                                              | If enabled, helm-operator will create a configmap with a dashboard in json that's going to be picked up by grafana (see [sidecar.dashboards.enabled](https://github.com/helm/charts/tree/master/stable/grafana#configuration))
+| `dashboards.namespace`                            | ``                                                   | The namespace where the dashboard is deployed, defaults to the installation namespace
+| `dashboards.nameprefix`                           | `flux-dashboards`                                    | The prefix of the generated configmaps
 | `securityContext`                                 | `{}`                                                 | Adding `securityContext` options to the pod
 | `containerSecurityContext.helmOperator`           | `{}`                                                 | Adding `securityContext` options to the helm operator container
 | `containerSecurityContext.tiller`                 | `{}`                                                 | Adding `securityContext` options to the tiller container
