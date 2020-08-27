@@ -268,6 +268,12 @@ spec:
         {{- else }}
         - --tiller-namespace={{ .Values.tillerNamespace }}
         {{- end }}
+        {{- if .Values.convert.releaseStorage }}
+        - --convert-release-storage={{ .Values.convert.releaseStorage }}
+        {{- end }}
+        {{- if .Values.convert.tillerOutCluster }}
+        - --convert-tiller-out-cluster={{ .Values.convert.tillerOutCluster }}
+        {{- end }}
         {{- if .Values.tls.enable }}
         - --tiller-tls-enable={{ .Values.tls.enable }}
         - --tiller-tls-key-path=/etc/fluxd/helm/{{ .Values.tls.keyFile }}
@@ -277,12 +283,6 @@ spec:
         - --tiller-tls-ca-cert-path=/etc/fluxd/helm-ca/ca.crt
         {{- if .Values.tls.hostname }}
         - --tiller-tls-hostname={{ .Values.tls.hostname }}
-        {{- end }}
-        {{- if .Values.convert.releaseStorage }}
-        - --convert-release-storage={{ .Values.convert.releaseStorage }}
-        {{- end }}
-        {{- if .Values.convert.tillerOutCluster }}
-        - --convert-tiller-out-cluster={{ .Values.convert.tillerOutCluster }}
         {{- end }}
         {{- end }}
         {{- end }}
