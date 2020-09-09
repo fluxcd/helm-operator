@@ -63,11 +63,13 @@ The definition of the listed keys is as follows:
   
   Putting `/index.yaml` behind the URL it should return an index file with all
   available charts for the Helm repository.
+
 * `name`: The name of the Helm chart _without_ an alias, e.g. `podinfo`
   (instead of `<alias>/podinfo`).
   
   Having doubts about what to put here? Use the `name` as listed in the
   `Chart.yaml` of the Helm chart you want to use.
+
 * `version`: The targeted Helm chart version, e.g. `3.2.0`.
 
 In the [introduction](introduction.md) you already had a brief exposure to this
