@@ -510,7 +510,13 @@ func (r *Release) upgrade(client helm.Client, hr *apiV1.HelmRelease, chart chart
 	defer func(start time.Time) {
 		ObserveReleaseAction(start, UpgradeAction, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
 	}(time.Now())
-	status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseUpgrading, chart.revision)
+
+	statusErr := status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseUpgrading, chart.revision)
+	if statusErr != nil {
+		logger := releaseLogger(r.logger, client, hr)
+		logger.Log("warning", statusErr, "action", "upgrade")
+	}
+
 	rel, err = client.UpgradeFromPath(chart.chartPath, hr.GetReleaseName(), values, helm.UpgradeOptions{
 		Namespace:         hr.GetTargetNamespace(),
 		Timeout:           hr.GetTimeout(),
