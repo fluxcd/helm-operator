@@ -42,7 +42,7 @@ and defines the Helm chart that should be installed by the Helm Operator. This
 from a [Helm repository chart source](chart-sources.md#helm-repositories).
 
 Applying this to the cluster and making the Helm Operator do the release is
-equivalent to equals to a human running the following `helm` commands:
+equivalent to a human running the following `helm` commands:
 
 ```console
 $ helm repo add podinfo https://stefanprodan.github.io/podinfo
