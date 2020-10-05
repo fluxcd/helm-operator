@@ -7,6 +7,14 @@ assignees: ''
 
 ---
 
+<!--
+NOTE: the Helm Operator is in maintenance mode, and it will take a bit
+      longer until we get around to issues and PRs.
+      
+      For more information, and details about the Helm Operator's
+      future, see: https://github.com/fluxcd/helm-operator/issues/546
+-->
+
 **Describe the bug**
 
 A clear and concise description of what the bug is.

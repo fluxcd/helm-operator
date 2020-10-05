@@ -1,4 +1,12 @@
 <!--
+# Notice
+
+The Helm Operator is in maintenance mode, and it will take a bit
+longer until we get around to issues and PRs.
+      
+For more information, and details about the Helm Operator's future,
+see: https://github.com/fluxcd/helm-operator/issues/546 
+
 # General contribution criteria
 
 Please have a look at our contribution guidelines: https://github.com/fluxcd/helm-operator/blob/master/CONTRIBUTING.md
