@@ -306,10 +306,9 @@ spec:
 The definition of the listed keys is as follows:
 
 * `git`: The URL of the Git repository, e.g. `git@github.com:org/repo` or
-   `https://github.com/org/repo.git`.
-  
-  **Note:** specifying a custom port only works when the protocol is specified,
-  e.g. `ssh://git@github.com:2222/org/repo.git` and not `git@github.com:2222/org/repo`.
+   `https://github.com/org/repo.git`. **Note:** specifying a custom port only
+   works when the protocol is specified,
+   e.g. `ssh://git@github.com:2222/org/repo.git` and not `git@github.com:2222/org/repo`.
 * `ref` _(Optional)_: The Git reference, e.g. a branch, tag, or (short) commit
    hash. When omitted, defaults to `master` or the configured `--git-default-ref`.
 * `path`: The path of the chart relative to the root of the Git repository.
