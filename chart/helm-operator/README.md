@@ -99,7 +99,8 @@ chart and their default values.
 | `git.ssh.configMapName`                           | `None`                                               | The name of a kubernetes config map containing the ssh config
 | `git.ssh.configMapKey`                            | `config`                                             | The name of the key in the kubernetes config map specified above
 | `git.config.enabled`                              | `false`                                              | If `true`, mount the .gitconfig into the Helm Operator pod created from the `git.config.data`
-| `git.config.secretName`                           | `None`                                               | The name of the kubernetes secret to store .gitconfig data created from the `git.config.data`
+| `git.config.secretName`                           | `None`                                               | The name of the kubernetes secret with .gitconfig data. It can be created manually or automatically using `git.config.createSecret` and `git.config.data`
+| `git.config.createSecret`                         | `true`                                               | If `true`, create the kubernetes secret with the value of `git.config.data`
 | `git.config.data`                                 | `None`                                               | The .gitconfig to be mounted into the home directory of the Helm Operator pod
 | `chartsSyncInterval`                              | `3m`                                                 | Period on which to reconcile the Helm releases with `HelmRelease` resources
 | `statusUpdateInterval`                            | `30s`                                                | Period on which to update the Helm release status in `HelmRelease` resources

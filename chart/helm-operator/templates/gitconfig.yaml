@@ -1,4 +1,4 @@
-{{- if .Values.git.config.enabled -}}
+{{- if and .Values.git.config.enabled .Values.git.config.createSecret  -}}
 apiVersion: v1
 kind: Secret
 metadata:
