@@ -3,6 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
 metadata:
   name: {{ template "helm-operator.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "helm-operator.name" . }}
     chart: {{ template "helm-operator.chart" . }}
@@ -20,6 +21,7 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
 metadata:
   name: {{ template "helm-operator.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "helm-operator.name" . }}
     chart: {{ template "helm-operator.chart" . }}
