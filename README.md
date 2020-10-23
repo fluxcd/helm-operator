@@ -86,6 +86,7 @@ be interested in the following:
 If you have any questions about the Helm Operator and continuous delivery:
 
 - Read [the Helm Operator docs](https://docs.fluxcd.io/projects/helm-operator/).
+- Nov 13: Join our planned workshop on migrating from Helm Operator to Helm Controller (part of [GitOps Days EMEA](https://www.gitopsdays.com/)).
 - Invite yourself to the <a href="https://slack.cncf.io" target="_blank">CNCF
   community</a> slack and ask a question on the
   [#flux](https://cloud-native.slack.com/messages/flux/) channel.
