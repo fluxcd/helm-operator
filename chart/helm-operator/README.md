@@ -77,6 +77,7 @@ chart and their default values.
 | `extraVolumeMounts`                               | `[]`                                                 | Extra volume mounts to be added to the Helm Operator pod(s)
 | `extraVolumes`                                    | `[]`                                                 | Extra volume to be added to the Helm Operator pod(s)
 | `priorityClassName`                               | `""`                                                 | Set priority class for Helm Operator
+| `terminationGracePeriodSeconds`                   | `""`                                                 | Set terminationGracePeriod in seconds for Helm Operator
 | `extraEnvs`                                       | `[]`                                                 | Extra environment variables for the Helm Operator pod(s)
 | `podAnnotations`                                  | `{}`                                                 | Additional pod annotations
 | `podLabels`                                       | `{}`                                                 | Additional pod labels

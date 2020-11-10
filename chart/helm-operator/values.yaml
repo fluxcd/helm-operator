@@ -233,6 +233,8 @@ hostAliases: {}
 
 priorityClassName: ""
 
+terminationGracePeriodSeconds: ""
+
 dashboards:
   # If enabled, helm-operator will create a configmap with a dashboard in json that's going to be picked up by grafana
   # See https://github.com/helm/charts/tree/master/stable/grafana#configuration - `sidecar.dashboards.enabled`
