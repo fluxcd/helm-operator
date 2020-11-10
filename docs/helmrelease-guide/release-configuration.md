@@ -131,7 +131,7 @@ spec:
 
 !!! warning
     When your chart requires a high non-default `timeout` value it is advised
-    to increase the `teriminationGracePeriod` on the Helm Operator pod to not
+    to increase the `terminationGracePeriod` on the Helm Operator pod to not
     end up with a release in a faulty state due to the operator receiving a
     `SIGKILL` signal during an upgrade.
 
