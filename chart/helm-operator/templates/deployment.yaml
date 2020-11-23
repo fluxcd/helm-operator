@@ -78,6 +78,8 @@ spec:
           items:
             - key: {{ .Values.git.ssh.configMapKey | default "config" }}
               path: config
+            - key: known_hosts
+              path: known_hosts  
           defaultMode: 0400
       {{- end }}
       - name: git-key
