@@ -2,6 +2,7 @@ package operator
 
 import (
 	"fmt"
+	"github.com/fluxcd/helm-operator/pkg/api"
 	"os"
 	"path"
 	"sync"
@@ -44,6 +45,7 @@ type Controller struct {
 	hrSynced cache.InformerSynced
 
 	release *release.Release
+	apiServer api.Server
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
@@ -64,7 +66,8 @@ func New(
 	kubeclientset kubernetes.Interface,
 	hrInformer hrv1.HelmReleaseInformer,
 	releaseWorkqueue workqueue.RateLimitingInterface,
-	release *release.Release) *Controller {
+	release *release.Release,
+	apiServer api.Server) *Controller {
 
 	// Add helm-operator types to the default Kubernetes Scheme so Events can be
 	// logged for helm-operator types.
@@ -81,6 +84,7 @@ func New(
 		releaseWorkqueue: releaseWorkqueue,
 		recorder:         recorder,
 		release:          release,
+		apiServer:        apiServer,
 	}
 
 	controller.logger.Log("info", "setting up event handlers")
@@ -273,6 +277,10 @@ func (c *Controller) enqueueUpdateJob(old, new interface{}) {
 	// undo) mutations to Helm charts.
 	if sDiff := cmp.Diff(oldHr.Status, newHr.Status); diff == "" && sDiff != "" {
 		return
+	}
+
+	if csDiff := cmp.Diff(oldHr.Spec.ChartSource,newHr.Spec.ChartSource); csDiff != "" {
+		c.apiServer.SyncMirrors()
 	}
 
 	c.enqueueJob(new)

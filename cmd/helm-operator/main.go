@@ -293,7 +293,7 @@ func main() {
 	// _before_ starting it or else the cache sync seems to hang at
 	// random
 	opr := operator.New(log.With(logger, "component", "operator"),
-		*logReleaseDiffs, kubeClient, hrInformer, queue, rel)
+		*logReleaseDiffs, kubeClient, hrInformer, queue, rel, gitChartSync)
 	go ifInformerFactory.Start(shutdown)
 
 	// wait for the caches to be synced before starting _any_ workers
