@@ -2,6 +2,7 @@ package operator
 
 import (
 	"fmt"
+	"github.com/fluxcd/helm-operator/pkg/chartsync"
 	"os"
 	"path"
 	"sync"
@@ -43,7 +44,8 @@ type Controller struct {
 	hrLister iflister.HelmReleaseLister
 	hrSynced cache.InformerSynced
 
-	release *release.Release
+	release      *release.Release
+	gitChartSync *chartsync.GitChartSync
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
@@ -64,7 +66,8 @@ func New(
 	kubeclientset kubernetes.Interface,
 	hrInformer hrv1.HelmReleaseInformer,
 	releaseWorkqueue workqueue.RateLimitingInterface,
-	release *release.Release) *Controller {
+	release *release.Release,
+	gitChartSync *chartsync.GitChartSync) *Controller {
 
 	// Add helm-operator types to the default Kubernetes Scheme so Events can be
 	// logged for helm-operator types.
@@ -81,6 +84,7 @@ func New(
 		releaseWorkqueue: releaseWorkqueue,
 		recorder:         recorder,
 		release:          release,
+		gitChartSync:     gitChartSync,
 	}
 
 	controller.logger.Log("info", "setting up event handlers")
@@ -273,6 +277,14 @@ func (c *Controller) enqueueUpdateJob(old, new interface{}) {
 	// undo) mutations to Helm charts.
 	if sDiff := cmp.Diff(oldHr.Status, newHr.Status); diff == "" && sDiff != "" {
 		return
+	}
+
+	// if there is a change in the chartsource (ref change, eg),
+	// its possible that the mirror's ref-sha be obsolete w.r.t. upstream
+	// repo's ref-sha. To avoid spurious deploy, mirror is synced before
+	// doing helm reconciliation
+	if csDiff := cmp.Diff(oldHr.Spec.ChartSource, newHr.Spec.ChartSource); csDiff != "" {
+		c.gitChartSync.SyncMirror(&newHr)
 	}
 
 	c.enqueueJob(new)

@@ -203,6 +203,21 @@ func (c *GitChartSync) Delete(hr *v1.HelmRelease) bool {
 	return ok
 }
 
+// SyncMirror instructs the helmrelease's git mirror to sync from its upstream
+func (c *GitChartSync) SyncMirror(hr *v1.HelmRelease) error {
+	mirror := mirrorName(hr)
+	c.logger.Log("info", "starting sync of git mirror", "mirror", mirror)
+	repo, ok := c.mirrors.Get(mirror)
+	if !ok {
+		return ChartNotReadyError{ErrNoMirror}
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), c.config.GitTimeout)
+	repo.Refresh(ctx)
+	cancel()
+	c.logger.Log("info", "finished syncing git mirror", "mirror", mirror)
+	return nil
+}
+
 // SyncMirrors instructs all git mirrors to sync from their respective
 // upstreams.
 func (c *GitChartSync) SyncMirrors() {
