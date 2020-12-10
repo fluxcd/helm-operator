@@ -3,6 +3,7 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -226,11 +227,16 @@ type RepoChartSource struct {
 	ChartPullSecret *LocalObjectReference `json:"chartPullSecret,omitempty"`
 }
 
-// CleanRepoURL returns the RepoURL but ensures it ends with a trailing
-// slash.
+// CleanRepoURL returns the RepoURL but removes the query string and ensures
+// it ends with a trailing slash.
 func (s RepoChartSource) CleanRepoURL() string {
-	cleanURL := strings.TrimRight(s.RepoURL, "/")
-	return cleanURL + "/"
+	cleanURL, err := url.Parse(s.RepoURL)
+	if err != nil {
+		return strings.TrimSuffix(s.RepoURL, "/") + "/"
+	}
+	cleanURL.Path = strings.TrimSuffix(cleanURL.Path, "/") + "/"
+	cleanURL.RawQuery = ""
+	return cleanURL.String()
 }
 
 type ValuesFromSource struct {
