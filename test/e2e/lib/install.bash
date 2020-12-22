@@ -49,7 +49,7 @@ function install_helm_operator_with_helm() {
     --set-string git.ssh.known_hosts="$(cat "${GITSRV_KNOWN_HOSTS}")" \
     --set configureRepositories.enable=true \
     --set configureRepositories.repositories[0].name="stable" \
-    --set configureRepositories.repositories[0].url="https://kubernetes-charts.storage.googleapis.com" \
+    --set configureRepositories.repositories[0].url="https://charts.helm.sh/stable" \
     --set configureRepositories.repositories[1].name="podinfo" \
     --set configureRepositories.repositories[1].url="https://stefanprodan.github.io/podinfo" \
     --set helm.versions="${enabled_versions}" \
