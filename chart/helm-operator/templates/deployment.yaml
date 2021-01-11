@@ -294,6 +294,11 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
       {{- if .Values.tillerSidecar.enabled }}
       - name: tiller
         image: "{{ .Values.tillerSidecar.image.repository }}:{{ .Values.tillerSidecar.image.tag }}"
@@ -346,3 +351,7 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
       {{- end }}
+      securityContext:
+        fsGroup: 1
+        supplementalGroups:
+        - 1

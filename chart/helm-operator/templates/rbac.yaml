@@ -1,5 +1,5 @@
 {{- if and .Values.rbac.create (eq .Values.clusterRole.create true) -}}
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ template "helm-operator.clusterRoleName" . }}
@@ -9,18 +9,19 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 rules:
-  - apiGroups:
-      - '*'
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - nonResourceURLs:
-      - '*'
-    verbs:
-      - '*'
+  # Allow access to the CRD
+  - apiGroups: ["helm.fluxcd.io"]
+    resources: ["helmreleases"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["helm.fluxcd.io"]
+    resources: ["helmreleases/status"]
+    verbs: ["create", "patch", "update"]
+  - apiGroups: ["", "events.k8s.io"]
+    resources: ["events"]
+    verbs: ["create", "patch", "update"]
+{{ .Values.rbac.rules | toYaml | indent 2 }}
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ template "helm-operator.clusterRoleName" . }}
