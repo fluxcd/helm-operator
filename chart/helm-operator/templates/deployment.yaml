@@ -352,6 +352,5 @@ spec:
 {{ toYaml . | indent 8 }}
       {{- end }}
       securityContext:
-        fsGroup: 1
         supplementalGroups:
         - 1
