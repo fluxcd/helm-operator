@@ -1,11 +1,18 @@
 <!--
-# Notice
+# ---- NOTICE -----
 
-The Helm Operator is in maintenance mode, and it will take a bit
-longer until we get around to issues and PRs.
-      
-For more information, and details about the Helm Operator's future,
-see: https://github.com/fluxcd/helm-operator/issues/546 
+Helm Operator v1 is in maintenance mode and Flux v2 is getting
+closer to GA. If you want to learn about migrating to Flux v2,
+please review <https://github.com/fluxcd/flux2/discussions/413>.
+
+As it will take longer until we get around to issues and PRs in
+Helm Operator v1, we strongly recommend that you start
+familiarising yourself with Flux v2: <https://toolkit.fluxcd.io/>
+
+This means that new features will only be added after very careful
+consideration, if at all. Refer to the links above for more detail.
+
+# ---- END NOTICE -----
 
 # General contribution criteria
 
