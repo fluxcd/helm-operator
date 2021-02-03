@@ -13,7 +13,7 @@ function install_tiller() {
   if ! helm version > /dev/null 2>&1; then # only if helm isn't already installed
     kubectl --namespace "$E2E_NAMESPACE" create sa tiller
     kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount="$E2E_NAMESPACE":tiller
-    helm init --tiller-namespace "$E2E_NAMESPACE" --service-account tiller --upgrade --wait
+    helm init --stable-repo-url https://charts.helm.sh/stable --tiller-namespace "$E2E_NAMESPACE" --service-account tiller --upgrade --wait
     # wait for tiller to be ready
     poll_until_equals 'tiller ready' '1' "kubectl get deploy -n $E2E_NAMESPACE tiller-deploy -o jsonpath='{.status.readyReplicas}'"
   fi
