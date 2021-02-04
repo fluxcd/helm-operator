@@ -394,6 +394,9 @@ const (
 type HelmValues struct {
 	// Data holds the configuration keys and values.
 	// Work around for https://github.com/kubernetes-sigs/kubebuilder/issues/528
+	
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +kubebuilder:validation:XPreserveUnknownFields
 	Data map[string]interface{} `json:"-"`
 }
 
