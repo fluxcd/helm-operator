@@ -13,7 +13,12 @@ function install_tiller() {
   if ! helm version > /dev/null 2>&1; then # only if helm isn't already installed
     kubectl --namespace "$E2E_NAMESPACE" create sa tiller
     kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount="$E2E_NAMESPACE":tiller
-    helm init --tiller-namespace "$E2E_NAMESPACE" --service-account tiller --upgrade --wait
+    helm init --tiller-namespace \
+      "$E2E_NAMESPACE" \
+      --service-account tiller \
+      --stable-repo-url "https://charts.helm.sh/stable" \
+      --upgrade \
+      --wait
     # wait for tiller to be ready
     poll_until_equals 'tiller ready' '1' "kubectl get deploy -n $E2E_NAMESPACE tiller-deploy -o jsonpath='{.status.readyReplicas}'"
   fi
@@ -49,7 +54,7 @@ function install_helm_operator_with_helm() {
     --set-string git.ssh.known_hosts="$(cat "${GITSRV_KNOWN_HOSTS}")" \
     --set configureRepositories.enable=true \
     --set configureRepositories.repositories[0].name="stable" \
-    --set configureRepositories.repositories[0].url="https://kubernetes-charts.storage.googleapis.com" \
+    --set configureRepositories.repositories[0].url="https://charts.helm.sh/stable" \
     --set configureRepositories.repositories[1].name="podinfo" \
     --set configureRepositories.repositories[1].url="https://stefanprodan.github.io/podinfo" \
     --set helm.versions="${enabled_versions}" \

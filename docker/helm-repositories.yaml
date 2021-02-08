@@ -6,7 +6,7 @@ repositories:
   keyFile: ""
   name: stable
   password: ""
-  url: https://kubernetes-charts.storage.googleapis.com
+  url: https://charts.helm.sh/stable
   username: ""
 - caFile: ""
   cache: /var/fluxd/helm/repository/cache/fluxcd-index.yaml
