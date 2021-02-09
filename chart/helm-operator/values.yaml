@@ -131,6 +131,7 @@ git:
   config:
     enabled: false
     secretName: ""
+    createSecret: true
     data: ""
     # data: |
     #   [credential "https://github.com"]
