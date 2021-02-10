@@ -1,17 +1,5 @@
 # Helm Operator
 
-!!!info "Helm Operator v1 is in maintenance mode"
-    You are looking at the documentation of Helm Operator v1, which
-    [is in maintenance mode](https://github.com/fluxcd/helm-operator/issues/546).
-
-    The Flux community is working with most of its energy on
-    **[Flux v2](https://toolkit.fluxcd.io/)** these days which is a more modern
-    approach to GitOps, implements some long-requested features of v1 and
-    is generally more flexible. It will be GA soon.
-
-    We strongly recommend you familiarise yourself with Flux v2 and start
-    looking at your [migration path](https://github.com/fluxcd/flux2/discussions/413).
-
 The Helm Operator is a [Kubernetes operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/),
 allowing one to declaratively manage Helm chart releases. Combined with
 [Flux](https://github.com/fluxcd/flux) this can be utilized to automate
