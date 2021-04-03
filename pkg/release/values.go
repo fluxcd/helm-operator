@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"reflect"
+	"regexp"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,7 +22,7 @@ import (
 // composeValues attempts to compose the final values for the given
 // `HelmRelease`. It returns the values as bytes and a checksum,
 // or an error in case anything went wrong.
-func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease, chartPath string) ([]byte, error) {
+func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease, chartPath string, anchorPattern string) ([]byte, error) {
 	result := helm.Values{}
 
 	for _, v := range hr.GetValuesFromSources() {
@@ -123,7 +126,75 @@ func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease
 	}
 
 	result = mergeValues(result, hr.Spec.Values.Data)
+
+	if anchorPattern != "" {
+		var anchors []string
+		if anchors = strings.SplitN(anchorPattern, "|", 2); len(anchors) != 2 {
+			return nil, fmt.Errorf("anchor patterns is not 2, check your string and syntax docs")
+		}
+		references := make(map[string]string)
+		dereferences := make(map[string]*string)
+
+		final := buildAnchorMaps(result, anchors, references, dereferences)
+		for k, v := range dereferences {
+			if rval, ok := references[k]; ok {
+				*v = rval
+			}
+		}
+		return yaml.Marshal(final)
+	}
 	return result.YAML()
+}
+
+// Create an anchor if a substitution character is defined
+func buildAnchorMaps(valuesYaml interface{}, anchors []string, references map[string]string, dereferences map[string]*string) interface{} {
+
+	refrenceRegex := regexp.MustCompile(`(?:^\s*` + regexp.QuoteMeta(anchors[0]) + `)(?P<key>\S*)(?:\s*)(?P<value>.*)`)
+	derefrenceRegex := regexp.MustCompile(`(?:^\s*` + regexp.QuoteMeta(anchors[1]) + `)(?P<key>\S*)`)
+
+	newValues := make(map[string]interface{})
+
+	if valuesYaml == nil {
+		return nil
+	}
+
+	r := reflect.ValueOf(valuesYaml)
+	switch r.Kind() {
+	case reflect.Map:
+		i := r.MapRange()
+		for i.Next() {
+			k := i.Key().Interface().(string)
+			v := i.Value().Interface()
+			newValues[k] = buildAnchorMaps(v, anchors, references, dereferences)
+		}
+	case reflect.String:
+		s := r.Interface().(string)
+		refs := refrenceRegex.FindStringSubmatch(s)
+		drefs := derefrenceRegex.FindStringSubmatch(s)
+		if refs != nil {
+			result := make(map[string]string)
+			for i, name := range refrenceRegex.SubexpNames() {
+				if i != 0 && name != "" {
+					result[name] = refs[i]
+				}
+			}
+			references[result["key"]] = result["value"]
+		}
+		if drefs != nil {
+			result := make(map[string]string)
+			for i, name := range derefrenceRegex.SubexpNames() {
+				if i != 0 && name != "" {
+					result[name] = drefs[i]
+				}
+			}
+			dereferences[result["key"]] = &s
+			return &s
+		}
+		return s
+	default:
+		return valuesYaml
+	}
+	return newValues
 }
 
 // readURL attempts to read a file from an HTTP(S) URL.

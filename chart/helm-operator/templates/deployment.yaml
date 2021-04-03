@@ -240,6 +240,9 @@ spec:
         {{- if .Values.kube.config }}
         - --kubeconfig=/root/.kube/config
         {{- end }}
+        {{- if .Values.anchorPattern }}
+        - --anchor-pattern={{ .Values.anchorPattern }}
+        {{- end }}
         {{- if .Values.logFormat }}
         - --log-format={{ .Values.logFormat }}
         {{- end }}

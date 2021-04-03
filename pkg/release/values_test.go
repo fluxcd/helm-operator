@@ -209,9 +209,133 @@ func TestComposeValues(t *testing.T) {
 			}
 			hr.Namespace = c.releaseNamespace
 
-			values, err := composeValues(client.CoreV1(), hr, "")
+			values, err := composeValues(client.CoreV1(), hr, "", "")
 			t.Log(values)
 			assert.NoError(t, err)
+			for _, assertion := range c.assertions {
+				var hv helm.Values
+				yaml.Unmarshal(values, &hv)
+				assertion(t, hv)
+			}
+		})
+	}
+}
+func TestComposeValuesWithAnchors(t *testing.T) {
+
+	client := fake.NewSimpleClientset(
+		&corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "anchor-configmap",
+				Namespace: "flux",
+			},
+			Data: map[string]string{
+				"values.yaml": `reference: ^&anchor success
+dereference: ^^anchor`,
+			},
+		}, &corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "nil-configmap",
+				Namespace: "flux",
+			},
+			Data: map[string]string{
+				"values.yaml": `reference:
+dereference: ^^anchor`,
+			},
+		},
+	)
+
+	cases := []struct {
+		description      string
+		shouldFail       bool
+		releaseNamespace string
+		valuesFromSource []v1.ValuesFromSource
+		assertions       []func(*testing.T, helm.Values)
+		anchors          string
+	}{
+		{
+			description:      "anchor substitution pass test",
+			releaseNamespace: "flux",
+			shouldFail:       false,
+			valuesFromSource: []v1.ValuesFromSource{
+				{
+					ConfigMapKeyRef: &v1.OptionalConfigMapKeySelector{
+						ConfigMapKeySelector: v1.ConfigMapKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "anchor-configmap",
+							},
+							Key: "values.yaml",
+						},
+					},
+				},
+			},
+			anchors: "^&|^^",
+			assertions: []func(*testing.T, helm.Values){
+				func(t *testing.T, values helm.Values) {
+					assert.Equal(t, values["dereference"], "success", "Derefrence should be success")
+				},
+			},
+		}, {
+			description:      "anchor substitution fail test",
+			releaseNamespace: "flux",
+			shouldFail:       true,
+			valuesFromSource: []v1.ValuesFromSource{
+				{
+					ConfigMapKeyRef: &v1.OptionalConfigMapKeySelector{
+						ConfigMapKeySelector: v1.ConfigMapKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "anchor-configmap",
+							},
+							Key: "values.yaml",
+						},
+					},
+				},
+			},
+			anchors: "^&",
+			assertions: []func(*testing.T, helm.Values){
+				func(t *testing.T, values helm.Values) {
+
+				},
+			},
+		}, {
+			description:      "nil handling",
+			releaseNamespace: "flux",
+			shouldFail:       false,
+			valuesFromSource: []v1.ValuesFromSource{
+				{
+					ConfigMapKeyRef: &v1.OptionalConfigMapKeySelector{
+						ConfigMapKeySelector: v1.ConfigMapKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "nil-configmap",
+							},
+							Key: "values.yaml",
+						},
+					},
+				},
+			},
+			anchors: "doesnt|matter",
+			assertions: []func(*testing.T, helm.Values){
+				func(t *testing.T, values helm.Values) {
+
+				},
+			},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.description, func(t *testing.T) {
+			hr := &v1.HelmRelease{
+				Spec: v1.HelmReleaseSpec{
+					ValuesFrom: c.valuesFromSource,
+				},
+			}
+			hr.Namespace = c.releaseNamespace
+
+			values, err := composeValues(client.CoreV1(), hr, "", c.anchors)
+			t.Log(values)
+			if c.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 			for _, assertion := range c.assertions {
 				var hv helm.Values
 				yaml.Unmarshal(values, &hv)

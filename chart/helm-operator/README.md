@@ -156,6 +156,8 @@ chart and their default values.
 | `containerSecurityContext.helmOperator`           | `{}`                                                 | Adding `securityContext` options to the helm operator container
 | `containerSecurityContext.tiller`                 | `{}`                                                 | Adding `securityContext` options to the tiller container
 | `sidecarContainers`                               | `{}`                                                 | Sidecar containers along with the specifications.
+| `anchorPattern`                                   | `""`                                                 | A pattern for string substitution using an yaml anchor like syntax 
+
 
 ## How-to
 
@@ -328,6 +330,44 @@ spec:
     replicaCount: 1
 EOF
 ```
+
+### Use custom anchors
+Perhaps you use a single config map for multiple services, it might look something like this:
+```
+...
+data:
+  prometheus.yaml: |
+    server:
+      global:
+        external_labels:
+          cluster: kubernetes-sandbox-us-east-2
+  splunk.yaml: |
+    global:
+      region: us-east-2
+      clusterName: kubernetes-sandbox-us-east-2
+      splunk:
+        hec:
+          indexName: my-index
+      kubernetes:
+        clusterName: kubernetes-sandbox-us-east-2
+...
+```
+
+With custom anchors, given a string such as "^&|swap-" it can look like
+```
+...
+data:
+  global.yaml: |-
+    clusterName: ^&cluster_name kubernetes-sandbox-us-east-2
+  splunk.yaml: |-
+    region: ^&region us-east-2
+    index: ^&index my-index
+...
+```
+
+Anywhere in your flux helm resource values you can simply define swap-cluster_name and that line will be swaped with it's reference. Strings are arbitrary, and can be almost anything as long as it does not conflict with the yaml spec (starting with & for example would be problematic).
+
+
 
 ### Uninstall
 

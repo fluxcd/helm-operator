@@ -25,6 +25,7 @@ type Config struct {
 	UpdateDeps         bool
 	LogDiffs           bool
 	DefaultHelmVersion string
+	AnchorPattern      string
 }
 
 // WithDefaults sets the default values for the release config.
@@ -93,7 +94,7 @@ func (r *Release) Sync(hr *apiV1.HelmRelease) (err error) {
 	}
 
 	var values []byte
-	values, err = composeValues(r.coreV1Client, hr, chart.chartPath)
+	values, err = composeValues(r.coreV1Client, hr, chart.chartPath, r.config.AnchorPattern)
 	if err != nil {
 		status.SetStatusPhase(r.hrClient.HelmReleases(hr.GetTargetNamespace()), hr, apiV1.HelmReleasePhaseFailed)
 		err = fmt.Errorf("failed to compose values for release: %w", err)
