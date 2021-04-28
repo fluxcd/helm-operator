@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/fluxcd/flux/pkg/resource"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -108,6 +109,16 @@ func (hr HelmRelease) GetMaxHistory() int {
 		return 10
 	}
 	return *hr.Spec.MaxHistory
+}
+
+// GetValues unmarshals the raw values to a map[string]interface{} and returns
+// the result.
+func (in HelmRelease) GetValues() map[string]interface{} {
+	var values map[string]interface{}
+	if in.Spec.Values != nil {
+		_ = json.Unmarshal(in.Spec.Values.Raw, &values)
+	}
+	return values
 }
 
 // GetReuseValues returns if the values of the previous release should
@@ -391,51 +402,6 @@ const (
 	HelmV3 HelmVersion = "v3"
 )
 
-type HelmValues struct {
-	// Data holds the configuration keys and values.
-	// Work around for https://github.com/kubernetes-sigs/kubebuilder/issues/528
-	Data map[string]interface{} `json:"-"`
-}
-
-// MarshalJSON marshals the HelmValues data to a JSON blob.
-func (v HelmValues) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.Data)
-}
-
-// UnmarshalJSON sets the HelmValues to a copy of data.
-func (v *HelmValues) UnmarshalJSON(data []byte) error {
-	var out map[string]interface{}
-	err := json.Unmarshal(data, &out)
-	if err != nil {
-		return err
-	}
-	v.Data = out
-	return nil
-}
-
-// DeepCopyInto is an deepcopy function, copying the receiver, writing
-// into out. In must be non-nil. Declaring this here prevents it from
-// being generated in `zz_generated.deepcopy.go`.
-//
-// This exists here to work around https://github.com/kubernetes/code-generator/issues/50,
-// and partially around https://github.com/kubernetes-sigs/controller-tools/pull/126
-// and https://github.com/kubernetes-sigs/controller-tools/issues/294.
-func (in *HelmValues) DeepCopyInto(out *HelmValues) {
-	b, err := json.Marshal(in.Data)
-	if err != nil {
-		// The marshal should have been performed cleanly as otherwise
-		// the resource would not have been created by the API server.
-		panic(err)
-	}
-	var c map[string]interface{}
-	err = json.Unmarshal(b, &c)
-	if err != nil {
-		panic(err)
-	}
-	out.Data = c
-	return
-}
-
 type HelmReleaseSpec struct {
 	HelmVersion `json:"helmVersion,omitempty"`
 	// +kubebuilder:validation:Required
@@ -489,7 +455,7 @@ type HelmReleaseSpec struct {
 	Test Test `json:"test,omitempty"`
 	// Values holds the values for this Helm release.
 	// +optional
-	Values HelmValues `json:"values,omitempty"`
+	Values *apiextensionsv1.JSON `json:"values,omitempty"`
 	// DisableOpenAPIValidation controls whether OpenAPI validation is enforced.
 	// +optional
 	DisableOpenAPIValidation bool `json:"disableOpenAPIValidation,omitempty"`

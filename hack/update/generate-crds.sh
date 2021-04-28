@@ -50,8 +50,9 @@ CRD_DIR="./chart/helm-operator/crds"
 echo "Generating OpenAPI v3 schemas for chart CRDs"
 bin/controller-gen \
   schemapatch:manifests="${CRD_DIR}" \
-  output:dir="${CRD_DIR}" \
-  paths=./pkg/apis/...
+  output:stdout \
+  crd:crdVersions=v1 \
+  paths=./pkg/apis/... | tail -n+3 - > ${CRD_DIR}/helmrelease.yaml
 
 echo "Forging CRD template for \`pkg/install\` from generated chart CRDs"
 out="./pkg/install/templates/crds.yaml.tmpl"

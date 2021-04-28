@@ -1,0 +1,3 @@
+env:
+  open:
+    DISABLE_API: false
