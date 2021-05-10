@@ -1,6 +1,7 @@
 package release
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -37,7 +38,7 @@ func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease
 			if key == "" {
 				key = "values.yaml"
 			}
-			configMap, err := coreV1Client.ConfigMaps(ns).Get(name, metav1.GetOptions{})
+			configMap, err := coreV1Client.ConfigMaps(ns).Get(context.Background(), name, metav1.GetOptions{})
 			if err != nil {
 				if errors.IsNotFound(err) && cm.Optional {
 					continue
@@ -67,7 +68,7 @@ func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease
 			if key == "" {
 				key = "values.yaml"
 			}
-			secret, err := coreV1Client.Secrets(ns).Get(name, metav1.GetOptions{})
+			secret, err := coreV1Client.Secrets(ns).Get(context.Background(), name, metav1.GetOptions{})
 			if err != nil {
 				if errors.IsNotFound(err) && s.Optional {
 					continue
