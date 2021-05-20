@@ -13,6 +13,8 @@
 This is the second minor release, it adds support for Helm tests and
 v2 to v3 release conversions, and includes a variety of bug fixes.
 
+NOTE: Make sure to update the CRD when upgrading from a previous version as they have been changed in this release.
+
 ### Bug fixes
 
  - metrics: use release name and namespace in `release_condition_info`
