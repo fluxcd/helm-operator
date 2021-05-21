@@ -17,7 +17,7 @@ import (
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
+	v1 "github.com/fluxcd/helm-operator/pkg/apis/helm.fluxcd.io/v1"
 	lister "github.com/fluxcd/helm-operator/pkg/client/listers/helm.fluxcd.io/v1"
 )
 
@@ -393,7 +393,7 @@ func (c *GitChartSync) getAuthFromSecret(secretRef *v1.ObjectReference) (string,
 
 	secretName := secretRef.Name
 	ns := secretRef.Namespace
-	secret, err := c.coreV1Client.Secrets(ns).Get(secretName, metav1.GetOptions{})
+	secret, err := c.coreV1Client.Secrets(ns).Get(context.Background(), secretName, metav1.GetOptions{})
 	if err != nil {
 		return "", "", err
 	}
