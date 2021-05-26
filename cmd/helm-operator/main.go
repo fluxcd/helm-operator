@@ -5,6 +5,7 @@ import (
 	golog "log"
 	"os"
 	"os/signal"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 	"sync"
 	"syscall"
@@ -100,7 +101,7 @@ func init() {
 
 	logFormat = fs.String("log-format", "fmt", "change the log format.")
 
-	kubeconfig = fs.String("kubeconfig", "", "path to a kubeconfig; required if out-of-cluster")
+	kubeconfig = fs.String("kubeconfig", "/Users/xishengcai/.kube/config", "path to a kubeconfig; required if out-of-cluster")
 	master = fs.String("master", "", "address of the Kubernetes API server; overrides any value in kubeconfig; required if out-of-cluster")
 	namespace = fs.String("allow-namespace", "", "if set, this limits the scope to a single namespace; if not specified, all namespaces will be watched")
 
@@ -133,7 +134,7 @@ func init() {
 
 	versionedHelmRepositoryIndexes = fs.StringSlice("helm-repository-import", nil, "Targeted version and the path of the Helm repository index to import, i.e. v3:/tmp/v3/index.yaml,v2:/tmp/v2/index.yaml")
 
-	enabledHelmVersions = fs.StringSlice("enabled-helm-versions", []string{helmv2.VERSION, helmv3.VERSION}, "Helm versions supported by this operator instance")
+	enabledHelmVersions = fs.StringSlice("enabled-helm-versions", []string{helmv3.VERSION}, "Helm versions supported by this operator instance")
 }
 
 func main() {
@@ -207,6 +208,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	clientIn, _ := client.New(cfg, client.Options{})
+
 	// initialize versioned Helm clients
 	helmClients := &helm.Clients{}
 	for _, v := range *enabledHelmVersions {
@@ -279,12 +282,17 @@ func main() {
 		StorageType:      *convertReleaseStorage,
 	}
 	rel := release.New(
+		clientIn,
 		log.With(logger, "component", "release"),
 		helmClients,
 		kubeClient.CoreV1(),
 		ifClient.HelmV1(),
 		gitChartSync,
-		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, DefaultHelmVersion: *defaultHelmVersion},
+		release.Config{
+			ChartCache:         "./tmp",
+			LogDiffs:           *logReleaseDiffs,
+			UpdateDeps:         *updateDependencies,
+			DefaultHelmVersion: *defaultHelmVersion},
 		converter,
 	)
 

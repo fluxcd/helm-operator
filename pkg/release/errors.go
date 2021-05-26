@@ -8,7 +8,7 @@ type errCollection []error
 
 func (err errCollection) Error() string {
 	var errs []string
-	for i := len(err)-1; i >= 0; i-- {
+	for i := len(err) - 1; i >= 0; i-- {
 		errs = append(errs, err[i].Error())
 	}
 	return strings.Join(errs, ", previous error:")

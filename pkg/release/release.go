@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
 	"github.com/fluxcd/flux/pkg/git"
@@ -38,6 +39,7 @@ func (c Config) WithDefaults() Config {
 // Release holds the elements required to perform a Helm release,
 // and provides the methods to perform a sync or uninstall.
 type Release struct {
+	client       client.Client
 	logger       log.Logger
 	helmClients  *helm.Clients
 	coreV1Client corev1client.CoreV1Interface
@@ -48,9 +50,10 @@ type Release struct {
 }
 
 // New returns a new instance of Release
-func New(logger log.Logger, helmClients *helm.Clients, coreV1Client corev1client.CoreV1Interface, hrClient v1client.HelmV1Interface,
+func New(clientIn client.Client, logger log.Logger, helmClients *helm.Clients, coreV1Client corev1client.CoreV1Interface, hrClient v1client.HelmV1Interface,
 	gitChartSync *chartsync.GitChartSync, config Config, converter helmV3.Converter) *Release {
 	r := &Release{
+		client:       clientIn,
 		logger:       logger,
 		helmClients:  helmClients,
 		coreV1Client: coreV1Client,
@@ -109,7 +112,7 @@ func (r *Release) Sync(hr *apiV1.HelmRelease) (err error) {
 		logger.Log("error", err)
 		return
 	}
-	return r.run(logger, client, action, hr, curRel, chart, values)
+	return r.run(logger, client, action, hr, r.client, curRel, chart, values)
 }
 
 // Uninstalls removes the Helm release for the given HelmRelease,
@@ -120,7 +123,7 @@ func (r *Release) Uninstall(hr *apiV1.HelmRelease) error {
 		return fmt.Errorf(`no client found for Helm '%s'`, r.config.DefaultHelmVersion)
 	}
 	logger := releaseLogger(r.logger, client, hr)
-	return r.run(logger, client, UninstallAction, hr, nil, chart{}, nil)
+	return r.run(logger, client, UninstallAction, hr, nil, nil, chart{}, nil)
 }
 
 // chart is a reference to a Helm chart used internally during the release.
@@ -235,7 +238,7 @@ func (r *Release) determineSyncAction(client helm.Client, hr *apiV1.HelmRelease,
 	// Check if the release is managed by our resource: if the release is
 	// appears to be managed by another `HelmRelease` resource, or an error
 	// is returned, we skip to avoid conflicts.
-	managedBy, antecedent, err := managedByHelmRelease(curRel, *hr)
+	managedBy, antecedent, err := managedByHelmRelease(curRel, *hr, r.client)
 	if err != nil {
 		return SkipAction, nil, fmt.Errorf("failed to determine ownership over release: %w", err)
 	}
@@ -277,7 +280,7 @@ func (r *Release) determineSyncAction(client helm.Client, hr *apiV1.HelmRelease,
 }
 
 // run starts on the given action and loops through the release cycle.
-func (r *Release) run(logger log.Logger, client helm.Client, action action, hr *apiV1.HelmRelease, curRel *helm.Release,
+func (r *Release) run(logger log.Logger, client helm.Client, action action, hr *apiV1.HelmRelease, c client.Client, curRel *helm.Release,
 	chart chart, values []byte) error {
 
 	var newRel *helm.Release
@@ -393,7 +396,7 @@ next:
 		action = AnnotateAction
 		goto next
 	case AnnotateAction:
-		if err := annotate(hr, newRel); err != nil {
+		if err := annotate(hr, c, newRel); err != nil {
 			logger.Log("warning", err, "phase", action)
 		}
 	case RollbackAction:
@@ -582,11 +585,11 @@ func (r *Release) test(client helm.Client, hr *apiV1.HelmRelease) (err error) {
 
 // annotate annotates the given release resources on the cluster with
 // the resource ID of the given HelmRelease.
-func annotate(hr *apiV1.HelmRelease, rel *helm.Release) (err error) {
+func annotate(hr *apiV1.HelmRelease, c client.Client, rel *helm.Release) (err error) {
 	defer func(start time.Time) {
 		ObserveReleaseAction(start, AnnotateAction, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
 	}(time.Now())
-	err = annotateResources(rel, hr.ResourceID())
+	err = annotateResources(rel, c, hr.ResourceID())
 	if err != nil {
 		err = fmt.Errorf("failed to annotate release resources: %w", err)
 	}
