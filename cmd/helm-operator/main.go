@@ -5,6 +5,7 @@ import (
 	golog "log"
 	"os"
 	"os/signal"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 	"sync"
 	"syscall"
@@ -207,6 +208,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	clientIn, _ := client.New(cfg, client.Options{})
+
 	// initialize versioned Helm clients
 	helmClients := &helm.Clients{}
 	for _, v := range *enabledHelmVersions {
@@ -279,12 +282,17 @@ func main() {
 		StorageType:      *convertReleaseStorage,
 	}
 	rel := release.New(
+		clientIn,
 		log.With(logger, "component", "release"),
 		helmClients,
 		kubeClient.CoreV1(),
 		ifClient.HelmV1(),
 		gitChartSync,
-		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, DefaultHelmVersion: *defaultHelmVersion},
+		release.Config{
+			ChartCache:         "./tmp",
+			LogDiffs:           *logReleaseDiffs,
+			UpdateDeps:         *updateDependencies,
+			DefaultHelmVersion: *defaultHelmVersion},
 		converter,
 	)
 
