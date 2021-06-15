@@ -86,9 +86,17 @@ change.
     
 11. Consider releasing a new version of the Helm chart, the process for this is described below.
 
+12. Check out the [website repository](https://github.com/fluxcd/website) and run e.g.
+
+```sh
+./hack/update-helm-op.sh 1.2.3
+```
+
+to update the docs to point to the new version. Commit your changes and get the PR merged for the website to be updated.
+
 **Bookkeeping**
 
-12. Close the GitHub milestone relating to the release. If there are open issues or unmerged PRs in the milestone, they will need to be either reassigned to the next milestone, or (if unclear where they belong), unassigned.
+13. Close the GitHub milestone relating to the release. If there are open issues or unmerged PRs in the milestone, they will need to be either reassigned to the next milestone, or (if unclear where they belong), unassigned.
 
 ## Helm chart release process
 
