@@ -1,1 +1,0 @@
-../../chart/helm-operator/README.md
