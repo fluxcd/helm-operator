@@ -83,6 +83,9 @@ func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease
 				return nil, fmt.Errorf("could not find key %s in Secret %s/%s", key, ns, name)
 			}
 			if err := yaml.Unmarshal(d, &valueFile); err != nil {
+				if s.Optional {
+					continue
+				}
 				return nil, fmt.Errorf("unable to yaml.Unmarshal %v from %s in Secret %s/%s", d, key, ns, name)
 			}
 		case v.ExternalSourceRef != nil:
