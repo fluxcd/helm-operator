@@ -93,7 +93,7 @@ func (r *Release) Sync(hr *apiV1.HelmRelease) (err error) {
 	}
 
 	var values []byte
-	values, err = composeValues(r.coreV1Client, hr, chart.chartPath)
+	values, err = composeValues(logger,r.coreV1Client, hr, chart.chartPath)
 	if err != nil {
 		status.SetStatusPhase(r.hrClient.HelmReleases(hr.GetTargetNamespace()), hr, apiV1.HelmReleasePhaseFailed)
 		err = fmt.Errorf("failed to compose values for release: %w", err)

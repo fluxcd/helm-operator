@@ -1,6 +1,8 @@
 package release
 
 import (
+	"github.com/go-kit/kit/log"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -209,7 +211,7 @@ func TestComposeValues(t *testing.T) {
 			}
 			hr.Namespace = c.releaseNamespace
 
-			values, err := composeValues(client.CoreV1(), hr, "")
+			values, err := composeValues(log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr)), client.CoreV1(), hr, "")
 			t.Log(values)
 			assert.NoError(t, err)
 			for _, assertion := range c.assertions {
