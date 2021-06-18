@@ -1,4 +1,4 @@
-Flux Helm Operator docs https://docs.fluxcd.io
+Flux Helm Operator docs https://fluxcd.io/legacy/helm-operator
 
 Example:
 

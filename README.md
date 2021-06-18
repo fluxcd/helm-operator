@@ -7,7 +7,7 @@
 
 [![CircleCI](https://circleci.com/gh/fluxcd/helm-operator.svg?style=svg)](https://circleci.com/gh/fluxcd/helm-operator)
 [![GoDoc](https://godoc.org/github.com/fluxcd/helm-operator?status.svg)](https://godoc.org/github.com/fluxcd/helm-operator)
-[![Documentation](https://img.shields.io/badge/latest-documentation-informational)](https://docs.fluxcd.io/projects/helm-operator/en/latest/)
+[![Documentation](https://img.shields.io/badge/latest-documentation-informational)](https://fluxcd.io/legacy/helm-operator/)
 
 The Helm Operator is a [Kubernetes operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/),
 allowing one to declaratively manage Helm chart releases. Combined with
@@ -37,7 +37,7 @@ performed by the operator.
 * Automated purging on release install failures
 * Automated (optional) rollback on upgrade failures
 * Automated (optional) helm test gating of installs and upgrades.
-* Automated image upgrades [using Flux](https://docs.fluxcd.io/en/stable/references/helm-operator-integration)
+* Automated image upgrades [using Flux](https://fluxcd.io/legacy/flux/references/helm-operator-integration/)
 * Automated (configurable) chart dependency updates for Helm charts
   from Git sources on install or upgrade
 * Detection and recovery from Helm storage mutations
@@ -50,7 +50,7 @@ performed by the operator.
 ## Get started with the Helm Operator
 
 Get started [installing the Helm Operator](chart/helm-operator/README.md)
-or just [browse through the documentation](https://docs.fluxcd.io/projects/helm-operator/).
+or just [browse through the documentation](https://fluxcd.io/legacy/helm-operator/).
 
 ### Integrations
 
@@ -78,14 +78,14 @@ To familiarise yourself with the project and how things work, you might
 be interested in the following:
 
 - [Our contributions guidelines](CONTRIBUTING.md)
-- [Build documentation](https://docs.fluxcd.io/projects/helm-operator/en/latest/contributing/building/)
+- [Build documentation](https://fluxcd.io/legacy/helm-operator/contributing/building/)
 - [Release documentation](internal_docs/releasing.md)
 
 ## <a name="help"></a>Getting Help
 
 If you have any questions about the Helm Operator and continuous delivery:
 
-- Read [the Helm Operator docs](https://docs.fluxcd.io/projects/helm-operator/).
+- Read [the Helm Operator docs](https://fluxcd.io/legacy/helm-operator/).
 - Invite yourself to the <a href="https://slack.cncf.io" target="_blank">CNCF
   community</a> slack and ask a question on the
   [#flux](https://cloud-native.slack.com/messages/flux/) channel.
