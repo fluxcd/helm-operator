@@ -77,6 +77,8 @@ var (
 
 	enabledHelmVersions *[]string
 	defaultHelmVersion  *string
+
+	anchorPattern *string
 )
 
 const (
@@ -134,6 +136,8 @@ func init() {
 	versionedHelmRepositoryIndexes = fs.StringSlice("helm-repository-import", nil, "Targeted version and the path of the Helm repository index to import, i.e. v3:/tmp/v3/index.yaml,v2:/tmp/v2/index.yaml")
 
 	enabledHelmVersions = fs.StringSlice("enabled-helm-versions", []string{helmv2.VERSION, helmv3.VERSION}, "Helm versions supported by this operator instance")
+
+	anchorPattern = fs.String("anchor-pattern", "", `[reference pattern|dereference pattern] e.g. "^&|swap-". Custom yaml anchors for simple string substitution`)
 }
 
 func main() {
@@ -284,7 +288,7 @@ func main() {
 		kubeClient.CoreV1(),
 		ifClient.HelmV1(),
 		gitChartSync,
-		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, DefaultHelmVersion: *defaultHelmVersion},
+		release.Config{LogDiffs: *logReleaseDiffs, UpdateDeps: *updateDependencies, DefaultHelmVersion: *defaultHelmVersion, AnchorPattern: *anchorPattern},
 		converter,
 	)
 
