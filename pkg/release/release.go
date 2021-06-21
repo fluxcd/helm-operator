@@ -465,6 +465,7 @@ func (r *Release) install(client helm.Client, hr *apiV1.HelmRelease, chart chart
 		ObserveReleaseAction(start, InstallAction, err == nil, hr.GetTargetNamespace(), hr.GetReleaseName())
 	}(time.Now())
 	status.SetStatusPhaseWithRevision(r.hrClient.HelmReleases(hr.Namespace), hr, apiV1.HelmReleasePhaseInstalling, chart.revision)
+
 	rel, err = client.UpgradeFromPath(chart.chartPath, hr.GetReleaseName(), values, helm.UpgradeOptions{
 		Namespace:         hr.GetTargetNamespace(),
 		Timeout:           hr.GetTimeout(),

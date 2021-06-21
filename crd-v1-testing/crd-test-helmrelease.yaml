@@ -1,0 +1,10 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: crd-test
+  namespace: default
+spec:
+  chart:
+    repository: http://chartmuseum-chartmuseum.default.svc.cluster.local:8080
+    name: crd-test
+    version: 0.1.0

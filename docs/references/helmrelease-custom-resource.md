@@ -278,9 +278,7 @@ Test
 <td>
 <code>values</code><br>
 <em>
-<a href="#helm.fluxcd.io/v1.HelmValues">
-HelmValues
-</a>
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
 </em>
 </td>
 <td>
@@ -1089,9 +1087,7 @@ Test
 <td>
 <code>values</code><br>
 <em>
-<a href="#helm.fluxcd.io/v1.HelmValues">
-HelmValues
-</a>
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
 </em>
 </td>
 <td>
@@ -1240,38 +1236,6 @@ successful upgrade or revision change.</p>
 <em>(Optional)</em>
 <p>Conditions contains observations of the resource&rsquo;s state, e.g.,
 has the chart which it refers to been fetched.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="helm.fluxcd.io/v1.HelmValues">HelmValues
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#helm.fluxcd.io/v1.HelmReleaseSpec">HelmReleaseSpec</a>)
-</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>-</code><br>
-<em>
-map[string]interface{}
-</em>
-</td>
-<td>
-<p>Data holds the configuration keys and values.
-Work around for <a href="https://github.com/kubernetes-sigs/kubebuilder/issues/528">https://github.com/kubernetes-sigs/kubebuilder/issues/528</a></p>
 </td>
 </tr>
 </tbody>

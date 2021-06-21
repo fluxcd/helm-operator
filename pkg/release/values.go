@@ -126,7 +126,7 @@ func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease
 		result = mergeValues(result, valueFile)
 	}
 
-	result = mergeValues(result, hr.Spec.Values.Data)
+	result = mergeValues(result, hr.GetValues())
 	return result.YAML()
 }
 
