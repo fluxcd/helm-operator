@@ -1,3 +1,43 @@
+## 1.3.0 (2021-06-25)
+
+> **Note on the future of the Helm Operator and Flux:**
+> We are working on a next generation Flux assembled from components
+> as part of a bigger [GitOps Toolkit](https://toolkit.fluxcd.io) project.
+> One of the components is the [helm-controller](https://toolkit.fluxcd.io/components/helm/controller/)
+> which eventually will replace the Helm Operator. The roadmap for this
+> can be found [here](https://toolkit.fluxcd.io/roadmap/#the-road-to-helm-operator-v2).
+>
+> We are eager to hear [feedback, suggestions, and/or feature requests](https://github.com/fluxcd/toolkit/discussions)
+> for the helm-controller and other Toolkit components.
+
+This is the third minor release, it adds ... upgrades ... TODO
+breaks (...), fixes (...) This Changelog is a placeholder, WIP
+
+(Y/N?) NOTE: Make sure to update the CRD when upgrading from a previous version as they have been changed in this release.
+
+### Bug fixes
+
+ - category: bug fix that was merged in
+   [fluxcd/helm-operator#999][#999]
+
+### Enhancement
+
+ - category: enhancement that was merged in
+   fluxcd/helm-operator{[#998][], [#999][]}
+
+### Maintenance and documentation
+
+ - category: reference
+   [fluxcd/helm-operator#999][#999]
+
+### Thanks
+
+Thanks to @stefanprodan, @hiddeco, @dholbach, @kingdonb, and others for their
+contributions to this release, feedback, and reporting issues.
+
+[#998]: https://github.com/fluxcd/helm-operator/pull/998
+[#999]: https://github.com/fluxcd/helm-operator/pull/999
+
 ## 1.2.0 (2020-07-29)
 
 > **Note on the future of the Helm Operator and Flux:**
