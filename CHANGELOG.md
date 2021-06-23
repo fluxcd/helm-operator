@@ -1,3 +1,28 @@
+## 1.4.0 (2021-06-25)
+
+> **Note: Breaking Changes**
+
+This release of Helm Operator will break compatibility with older releases of Kubernetes, in order to ensure forward compatibility with long-awaited breaking changes in Kubernetes 1.22.0.
+
+The `v1beta1` release of `CustomResourceDefinition` as well as `Role`, `ClusterRole`, and role bindings, have been replaced by their `v1` counterparts, and will finally be removed.
+
+> **Helm Operator and Flux are in maintenance:**
+> Efforts have been focused on the next generation of Flux, also called the [GitOps Toolkit](https://toolkit.fluxcd.io), which has crossed the feature-parity milestone, and is already recommended for production use in many cases. The [helm-controller](https://toolkit.fluxcd.io/components/helm/controller/) is the replacement for Helm Operator. The roadmap for Flux v2 development including Helm Controller can be found [here](https://fluxcd.io/docs/roadmap/).
+>
+> We are eager to hear [feedback, suggestions, and/or feature requests](https://github.com/fluxcd/toolkit/discussions) for the helm-controller and other Toolkit components. The [migration timetable](https://fluxcd.io/docs/migration/timetable/) will be kept updated with developments regarding the ongoing support of Helm Operator.
+>
+> Users of Helm Operator should be planning or executing their migrations, and report any blocking issues so that they can be addressed as early as possible.
+
+NOTE: Make sure to update the CRD when upgrading from a previous version as they have been changed since the prior release.
+
+### Maintenance
+
+- Update CRD version for CustomResourceDefinition [fluxcd/helm-operator#599][#599]
+- Update CRD version for rbac.authorization.k8s.io [fluxcd/helm-operator#618][#618]
+
+[#599]: https://github.com/fluxcd/helm-operator/pull/599
+[#618]: https://github.com/fluxcd/helm-operator/pull/618
+
 ## 1.3.0 (2021-06-25)
 
 > **Helm Operator and Flux are in maintenance:**
