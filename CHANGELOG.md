@@ -15,6 +15,8 @@ The `v1beta1` release of `CustomResourceDefinition` as well as `Role`, `ClusterR
 
 NOTE: Make sure to update the CRD when upgrading from a previous version as they have been changed since the prior release.
 
+Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/docs/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/docs/migration/timetable/).
+
 ### Maintenance
 
 - Update CRD version for CustomResourceDefinition [fluxcd/helm-operator#599][#599]
