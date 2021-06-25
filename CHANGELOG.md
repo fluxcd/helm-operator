@@ -34,11 +34,13 @@ NOTE: Make sure to update the CRD when upgrading from a previous version as they
 
 NOTE: Make sure to update the CRD when upgrading from a previous version as they may have been changed since the prior release.
 
-Documentation for Helm Operator has moved under [fluxcd.io/legacy/flux](https://fluxcd.io/legacy/flux/). This release includes any merged fixes that were unreleased for the past year, and does not include any breaking changes.
+Documentation for Helm Operator has moved under [fluxcd.io/legacy/flux](https://fluxcd.io/legacy/flux/). This release includes any merged fixes that were unreleased for the past year, including an upgrade from Helm 3.1.x to Helm 3.5.4 which also covered some [breaking changes](https://github.com/helm/helm/releases/tag/v3.5.2) in Helm.
 
 The next MINOR (1.4.0) release of Helm Operator will break compatibility with older releases of Kubernetes, in order to ensure forward compatibility with long-awaited breaking changes in Kubernetes 1.22.0.
 
 ([fluxcd/helm-operator#599][#599] and [fluxcd/helm-operator#618][#618] describe the breaking changes that are upcoming in Helm Operator 1.4.0.)
+
+Please note, this is a security update and while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/docs/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/docs/migration/timetable/).
 
 ### Maintenance
 
