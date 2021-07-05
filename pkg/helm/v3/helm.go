@@ -123,9 +123,9 @@ func newStorageDriver(client *kubernetes.Clientset, logFunc infoLogFunc, namespa
 }
 
 func getterProviders() getter.Providers {
-	return getter.All(&cli.EnvSettings{
-		RepositoryConfig: repositoryConfig,
-		RepositoryCache:  repositoryCache,
-		PluginsDirectory: pluginsDir,
-	})
+	settings := cli.New()
+	settings.RepositoryConfig = repositoryConfig
+	settings.RepositoryCache = repositoryCache
+	settings.PluginsDirectory = pluginsDir
+	return getter.All(settings)
 }
