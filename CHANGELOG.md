@@ -25,7 +25,7 @@ Please note, while we continue the Helm Operator support, there are some known i
 [#599]: https://github.com/fluxcd/helm-operator/pull/599
 [#618]: https://github.com/fluxcd/helm-operator/pull/618
 
-## 1.3.0 (2021-06-25)
+## 1.3.0 (2021-07-07)
 
 > **Helm Operator and Flux are in maintenance:**
 > Efforts have been focused on the next generation of Flux, also called the [GitOps Toolkit](https://toolkit.fluxcd.io), which has crossed the feature-parity milestone, and is already recommended for production use in many cases. The [helm-controller](https://toolkit.fluxcd.io/components/helm/controller/) is the replacement for Helm Operator. The roadmap for Flux v2 development including Helm Controller can be found [here](https://fluxcd.io/docs/roadmap/).
