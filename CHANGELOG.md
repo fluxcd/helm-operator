@@ -1,3 +1,101 @@
+## 1.3.0 (2021-07-07)
+
+> **Helm Operator and Flux are in maintenance:**
+> Efforts have been focused on the next generation of Flux, also called the [GitOps Toolkit](https://toolkit.fluxcd.io), which has crossed the feature-parity milestone, and is already recommended for production use in many cases. The [helm-controller](https://toolkit.fluxcd.io/components/helm/controller/) is the replacement for Helm Operator. The roadmap for Flux v2 development including Helm Controller can be found [here](https://fluxcd.io/docs/roadmap/).
+>
+> We are eager to hear [feedback, suggestions, and/or feature requests](https://github.com/fluxcd/toolkit/discussions) for the helm-controller and other Toolkit components. The [migration timetable](https://fluxcd.io/docs/migration/timetable/) will be kept updated with developments regarding the ongoing support of Helm Operator.
+>
+> Users of Helm Operator should be planning their migrations, and report any blocking issues so that they can be addressed as early as possible.
+
+NOTE: Make sure to update the CRD when upgrading from a previous version as they may have been changed since the prior release.
+
+Documentation for Helm Operator has moved under [fluxcd.io/legacy/flux](https://fluxcd.io/legacy/flux/). This release includes any merged fixes that were unreleased for the past year, including an upgrade from Helm 3.1.x to Helm 3.5.4 which also covered some [breaking changes](https://github.com/helm/helm/releases/tag/v3.5.2) in Helm.
+
+The next MINOR (1.4.0) release of Helm Operator will break compatibility with older releases of Kubernetes, in order to ensure forward compatibility with long-awaited breaking changes in Kubernetes 1.22.0.
+
+([fluxcd/helm-operator#599][#599] and [fluxcd/helm-operator#618][#618] describe the breaking changes that are upcoming in Helm Operator 1.4.0.)
+
+Please note, this is a security update and while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/docs/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/docs/migration/timetable/).
+
+### Maintenance
+
+- Update helm v2 and v3 to latest [fluxcd/helm-operator#604][]
+- Update Alpine to 3.13 [fluxcd/helm-operator#589][]
+- Update Helm stable repository url [fluxcd/helm-operator#577][]
+- Move Fons to maintainer emeritus [fluxcd/helm-operator#547][]
+- Disable link-checking [fluxcd/helm-operator#594][]
+- Add maintenance note to GitHub templates and README [fluxcd/helm-operator#548][]
+
+### Enhancements
+
+- Add `terminationGracePeriodSeconds` value to Helm Operator Chart [fluxcd/helm-operator#564][]
+- Default kubeconfig to None in chart [fluxcd/helm-operator#521][]
+- Remove the query string from the CleanURL [fluxcd/helm-operator#571][]
+- Sync chart mirror on chart spec change to prevent incorrect reconciliation [fluxcd/helm-operator#573][]
+- Add explicit namespace field to namespaced resources [fluxcd/helm-operator#517][]
+- Add more Helm chart dashboard options [fluxcd/helm-operator#522][]
+- Unnest convert settings from tls [fluxcd/helm-operator#524][]
+- Enable additional sidecar containers [fluxcd/helm-operator#484][]
+- Adding securityContext options at the pod and container level. [fluxcd/helm-operator#494][]
+
+### Fixes
+
+- fix: kubeconfig override in chart/deployment [fluxcd/helm-operator#507][]
+- fix: make passing gitconfig as a value optional [fluxcd/helm-operator#551][]
+- fix: Address constant release creation [fluxcd/helm-operator#533][]
+- fix: take ignored OptionalSecretKeySelector into account [fluxcd/helm-operator#616][]
+
+### Documentation
+
+- docs: Fix Readme (configureRepositories.cacheVolumeName) [fluxcd/helm-operator#502][]
+- docs: Remove docs, point to new location where relevant [fluxcd/helm-operator#611][]
+- docs: Update issue/PR templates with new info on v2 [fluxcd/helm-operator#583][]
+- docs: Add website, twitter, linkedin to docs.f.i [fluxcd/helm-operator#592][]
+- docs: how to update the helm-op docs post-release [fluxcd/helm-operator#610][]
+- docs: Make docs v1 warning global [fluxcd/helm-operator#590][]
+- docs: Point to flux2 from our docs [fluxcd/helm-operator#588][]
+- docs: Malformed list in Chart sources -> Git repositories [fluxcd/helm-operator#549][]
+- docs: Remove redundant text [fluxcd/helm-operator#542][]
+- docs: Fix bullet lists in chart-sources.md [fluxcd/helm-operator#529][]
+
+### Thanks
+
+Thanks to @Carles-Figuerola, @amit-handda, @bmalynovytch, @coultenholt, @dholbach, @em-schmidt, @flimzy, @fredr, @hiddeco, @jbuettnerbild, @kingdonb, @krichardson-apexclearing, @mattjw, @mbrancato, @mnaser, @neil-greenwood, @nilesh892003, @smarthall, @stefanprodan, @swade1987, @t1bb4r, @tux-00 and @wujiangfa-xlauncher for their contributions to this release.
+
+[#618]: https://github.com/fluxcd/helm-operator/pull/618
+[fluxcd/helm-operator#616]: https://github.com/fluxcd/helm-operator/pull/616
+[fluxcd/helm-operator#611]: https://github.com/fluxcd/helm-operator/pull/611
+[fluxcd/helm-operator#610]: https://github.com/fluxcd/helm-operator/pull/610
+[fluxcd/helm-operator#605]: https://github.com/fluxcd/helm-operator/pull/605
+[fluxcd/helm-operator#604]: https://github.com/fluxcd/helm-operator/pull/604
+[#599]: https://github.com/fluxcd/helm-operator/pull/599
+[fluxcd/helm-operator#594]: https://github.com/fluxcd/helm-operator/pull/594
+[fluxcd/helm-operator#592]: https://github.com/fluxcd/helm-operator/pull/592
+[fluxcd/helm-operator#590]: https://github.com/fluxcd/helm-operator/pull/590
+[fluxcd/helm-operator#589]: https://github.com/fluxcd/helm-operator/pull/589
+[fluxcd/helm-operator#588]: https://github.com/fluxcd/helm-operator/pull/588
+[fluxcd/helm-operator#583]: https://github.com/fluxcd/helm-operator/pull/583
+[fluxcd/helm-operator#577]: https://github.com/fluxcd/helm-operator/pull/577
+[fluxcd/helm-operator#573]: https://github.com/fluxcd/helm-operator/pull/573
+[fluxcd/helm-operator#571]: https://github.com/fluxcd/helm-operator/pull/571
+[fluxcd/helm-operator#564]: https://github.com/fluxcd/helm-operator/pull/564
+[fluxcd/helm-operator#551]: https://github.com/fluxcd/helm-operator/pull/551
+[fluxcd/helm-operator#549]: https://github.com/fluxcd/helm-operator/pull/549
+[fluxcd/helm-operator#548]: https://github.com/fluxcd/helm-operator/pull/548
+[fluxcd/helm-operator#547]: https://github.com/fluxcd/helm-operator/pull/547
+[fluxcd/helm-operator#542]: https://github.com/fluxcd/helm-operator/pull/542
+[fluxcd/helm-operator#533]: https://github.com/fluxcd/helm-operator/pull/533
+[fluxcd/helm-operator#529]: https://github.com/fluxcd/helm-operator/pull/529
+[fluxcd/helm-operator#524]: https://github.com/fluxcd/helm-operator/pull/524
+[fluxcd/helm-operator#522]: https://github.com/fluxcd/helm-operator/pull/522
+[fluxcd/helm-operator#521]: https://github.com/fluxcd/helm-operator/pull/521
+[fluxcd/helm-operator#517]: https://github.com/fluxcd/helm-operator/pull/517
+[fluxcd/helm-operator#507]: https://github.com/fluxcd/helm-operator/pull/507
+[fluxcd/helm-operator#506]: https://github.com/fluxcd/helm-operator/pull/506
+[fluxcd/helm-operator#502]: https://github.com/fluxcd/helm-operator/pull/502
+[fluxcd/helm-operator#494]: https://github.com/fluxcd/helm-operator/pull/494
+[fluxcd/helm-operator#484]: https://github.com/fluxcd/helm-operator/pull/484
+
 ## 1.2.0 (2020-07-29)
 
 > **Note on the future of the Helm Operator and Flux:**
