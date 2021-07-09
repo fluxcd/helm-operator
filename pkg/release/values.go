@@ -3,6 +3,7 @@ package release
 import (
 	"context"
 	"fmt"
+	"github.com/go-kit/kit/log"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -20,7 +21,7 @@ import (
 // composeValues attempts to compose the final values for the given
 // `HelmRelease`. It returns the values as bytes and a checksum,
 // or an error in case anything went wrong.
-func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease, chartPath string) ([]byte, error) {
+func composeValues(logger log.Logger, coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease, chartPath string) ([]byte, error) {
 	result := helm.Values{}
 
 	for _, v := range hr.GetValuesFromSources() {
@@ -41,22 +42,27 @@ func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease
 			configMap, err := coreV1Client.ConfigMaps(ns).Get(context.Background(), name, metav1.GetOptions{})
 			if err != nil {
 				if errors.IsNotFound(err) && cm.Optional {
+					logger.Log("warning", fmt.Sprintf("skip optional ConfigMapKeyRef : ConfigMap %s/%s not found", ns, name))
 					continue
 				}
 				return nil, err
 			}
 			d, ok := configMap.Data[key]
 			if !ok {
+				err = fmt.Errorf("could not find key %v in ConfigMap %s/%s", key, ns, name)
 				if cm.Optional {
+					logger.Log("warning", fmt.Sprintf("skip optional ConfigMapKeyRef : %v", err))
 					continue
 				}
-				return nil, fmt.Errorf("could not find key %v in ConfigMap %s/%s", key, ns, name)
+				return nil, err
 			}
 			if err := yaml.Unmarshal([]byte(d), &valueFile); err != nil {
+				err = fmt.Errorf("unable to yaml.Unmarshal %v from %s in ConfigMap %s/%s", d, key, ns, name)
 				if cm.Optional {
+					logger.Log("warning", fmt.Sprintf("skip optional ConfigMapKeyRef : %v", err))
 					continue
 				}
-				return nil, fmt.Errorf("unable to yaml.Unmarshal %v from %s in ConfigMap %s/%s", d, key, ns, name)
+				return nil, err
 			}
 		case v.SecretKeyRef != nil:
 			s := v.SecretKeyRef
@@ -71,22 +77,27 @@ func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease
 			secret, err := coreV1Client.Secrets(ns).Get(context.Background(), name, metav1.GetOptions{})
 			if err != nil {
 				if errors.IsNotFound(err) && s.Optional {
+					logger.Log("warning", fmt.Sprintf("skip optional SecretKeyRef : Secret %s/%s not found", ns, name))
 					continue
 				}
 				return nil, err
 			}
 			d, ok := secret.Data[key]
 			if !ok {
+				err = fmt.Errorf("could not find key %s in Secret %s/%s", key, ns, name)
 				if s.Optional {
+					logger.Log("warning", fmt.Sprintf("skip optional SecretKeyRef : %v", err))
 					continue
 				}
-				return nil, fmt.Errorf("could not find key %s in Secret %s/%s", key, ns, name)
+				return nil, err
 			}
 			if err := yaml.Unmarshal(d, &valueFile); err != nil {
+				err = fmt.Errorf("unable to yaml.Unmarshal %v from %s in Secret %s/%s", d, key, ns, name)
 				if s.Optional {
+					logger.Log("warning", fmt.Sprintf("skip optional SecretKeyRef : %v", err))
 					continue
 				}
-				return nil, fmt.Errorf("unable to yaml.Unmarshal %v from %s in Secret %s/%s", d, key, ns, name)
+				return nil, err
 			}
 		case v.ExternalSourceRef != nil:
 			es := v.ExternalSourceRef
@@ -94,16 +105,20 @@ func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease
 			optional := es.Optional != nil && *es.Optional
 			b, err := readURL(u)
 			if err != nil {
+				err = fmt.Errorf("unable to read value file from URL %s", u)
 				if optional {
+					logger.Log("warning", fmt.Sprintf("skip optional ExternalSourceRef : %v", err))
 					continue
 				}
-				return nil, fmt.Errorf("unable to read value file from URL %s", u)
+				return nil, err
 			}
 			if err := yaml.Unmarshal(b, &valueFile); err != nil {
+				err = fmt.Errorf("unable to yaml.Unmarshal %v from URL %s", b, u)
 				if optional {
+					logger.Log("warning", fmt.Sprintf("skip optional ExternalSourceRef : %v", err))
 					continue
 				}
-				return nil, fmt.Errorf("unable to yaml.Unmarshal %v from URL %s", b, u)
+				return nil, err
 			}
 		case v.ChartFileRef != nil:
 			cf := v.ChartFileRef
@@ -111,16 +126,20 @@ func composeValues(coreV1Client corev1client.CoreV1Interface, hr *v1.HelmRelease
 			optional := cf.Optional != nil && *cf.Optional
 			f, err := readLocalChartFile(filepath.Join(chartPath, filePath))
 			if err != nil {
+				err = fmt.Errorf("unable to read value file from path %s", filePath)
 				if optional {
+					logger.Log("warning", fmt.Sprintf("skip optional ChartFileRef : %v", err))
 					continue
 				}
-				return nil, fmt.Errorf("unable to read value file from path %s", filePath)
+				return nil, err
 			}
 			if err := yaml.Unmarshal(f, &valueFile); err != nil {
+				err = fmt.Errorf("unable to yaml.Unmarshal %v from path %s", f, filePath)
 				if optional {
+					logger.Log("warning", fmt.Sprintf("skip optional ChartFileRef : %v", err))
 					continue
 				}
-				return nil, fmt.Errorf("unable to yaml.Unmarshal %v from path %s", f, filePath)
+				return nil, err
 			}
 		}
 		result = mergeValues(result, valueFile)
