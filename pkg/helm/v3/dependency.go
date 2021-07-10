@@ -16,7 +16,7 @@ func (h *HelmV3) DependencyUpdate(chartPath string) error {
 	// anonymous files from previous runs are cleared, with
 	// a safe guard time offset to not touch any files in
 	// use.
-	garbageCollect(repositoryCache, time.Second * 300)
+	garbageCollect(repositoryCache, time.Second*300)
 	out := utils.NewLogWriter(h.logger)
 	man := &downloader.Manager{
 		Out:              out,
