@@ -19,6 +19,11 @@ BATS_EXTRA_ARGS=""
 source "${E2E_DIR}/lib/defer.bash"
 trap run_deferred EXIT
 
+if [[ -z "$HELM_VERSION" ]]; then
+  echo "HELM_VERSION not set. Valid v2, v3. See $ROOT_DIR/docs/contributing/building.md"
+  exit 1
+fi
+
 function install_kind() {
   if [ ! -f "${KIND_CACHE_PATH}" ]; then
     echo '>>> Downloading Kind'
