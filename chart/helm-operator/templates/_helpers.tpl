@@ -47,11 +47,34 @@ Create the name of the cluster role to use.
 */}}
 {{- define "helm-operator.clusterRoleName" -}}
 {{- if .Values.clusterRole.create -}}
-    {{ default (include "helm-operator.fullname" .) .Values.clusterRole.name }}
+{{- $name := printf "%s-%s" .Release.Namespace (include "helm-operator.fullname" .) -}}
+{{ default $name .Values.clusterRole.name }}
 {{- else -}}
-    {{ default "default" .Values.clusterRole.name }}
+{{ default "default" .Values.clusterRole.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create cluster wide name for psp cluster role (includes the current namespace)
+*/}}
+{{- define "helm-operator.clusterrole.psp.name" -}}
+{{- printf "%s-%s-%s" .Release.Namespace (include "helm-operator.fullname" .) "psp" | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Create cluster wide name for psp cluster role (includes the current namespace)
+*/}}
+{{- define "helm-operator.rolebinding.psp.name" -}}
+{{- printf "%s-%s" (include "helm-operator.fullname" .) "psp" | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Create cluster wide name for psp (includes the current namespace)
+*/}}
+{{- define "helm-operator.psp.name" -}}
+{{- printf "%s-%s" .Release.Namespace (include "helm-operator.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
 
 {{/*
 Create a custom repositories.yaml for Helm.
