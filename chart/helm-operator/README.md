@@ -21,7 +21,7 @@ CRD it will be possible to define `HelmRelease` resources on the
 cluster:
 
 ```sh
-kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/{{ version }}/deploy/crds.yaml
+kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/{{ version }}/chart/helm-operator/crds/helmrelease.yaml
 ```
 
 Install the Helm operator using the chart:
