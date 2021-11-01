@@ -3,9 +3,10 @@ package release
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -145,7 +146,7 @@ func readURL(URL string) ([]byte, error) {
 	}
 	switch resp.StatusCode {
 	case http.StatusOK:
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -157,7 +158,7 @@ func readURL(URL string) ([]byte, error) {
 
 // readLocalChartFile attempts to read a file from the chart path.
 func readLocalChartFile(filePath string) ([]byte, error) {
-	f, err := ioutil.ReadFile(filePath)
+	f, err := os.ReadFile(filePath)
 	if err != nil {
 		return []byte{}, err
 	}

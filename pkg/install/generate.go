@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -43,7 +42,7 @@ func main() {
 			os.Exit(1)
 		}
 		for fileName, contents := range manifests {
-			if err := ioutil.WriteFile(fileName, contents, 0600); err != nil {
+			if err := os.WriteFile(fileName, contents, 0600); err != nil {
 				fmt.Fprintf(os.Stderr, "error: failed to write deploy file %s: %s\n", fileName, err)
 				os.Exit(1)
 			}

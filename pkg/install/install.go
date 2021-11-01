@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"text/template"
@@ -42,7 +41,7 @@ func FillInTemplates(params TemplateParameters) (map[string][]byte, error) {
 		if info.IsDir() {
 			return nil
 		}
-		manifestTemplateBytes, err := ioutil.ReadAll(rs)
+		manifestTemplateBytes, err := io.ReadAll(rs)
 		if err != nil {
 			return fmt.Errorf("cannot read embedded file %q: %s", info.Name(), err)
 		}
