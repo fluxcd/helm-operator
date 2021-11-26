@@ -1,3 +1,9 @@
+## 1.4.1 (2021-11-26)
+
+This release of Helm Operator has no code changes, only base image and dependency updates.
+
+CHANGELOG - TODO
+
 ## 1.4.0 (2021-07-08)
 
 > **Note: Breaking Changes**
