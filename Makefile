@@ -98,7 +98,7 @@ cache/%/kubectl-$(KUBECTL_VERSION): docker/kubectl.version
 
 cache/%/helm-$(HELM2_VERSION): docker/helm2.version
 	mkdir -p cache/$*
-	curl --fail -L -o cache/$*/helm-$(HELM2_VERSION).tar.gz "https://storage.googleapis.com/kubernetes-helm/helm-v$(HELM2_VERSION)-$*.tar.gz"
+	curl --fail -L -o cache/$*/helm-$(HELM2_VERSION).tar.gz "https://get.helm.sh/helm-v$(HELM2_VERSION)-$*.tar.gz"
 	[ $* != "linux-$(ARCH)" ] || echo "$(HELM2_CHECKSUM_$(ARCH))  cache/$*/helm-$(HELM2_VERSION).tar.gz" | shasum -a 256 -c
 	tar -m -C ./cache -xzf cache/$*/helm-$(HELM2_VERSION).tar.gz $*/helm
 	mv cache/$*/helm $@
