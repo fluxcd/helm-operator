@@ -1,3 +1,17 @@
+## 1.4.1 (2021-11-26)
+
+This release of Helm Operator has no code changes, only base image and dependency updates.
+
+### Maintenance
+
+- Release 1.4.1 [fluxcd/helm-operator#639][#639]
+
+> **Helm Operator and Flux v1 are in maintenance:**
+
+Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/docs/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/docs/migration/timetable/).
+
+[#639]: https://github.com/fluxcd/helm-operator/pull/639
+
 ## 1.4.0 (2021-07-08)
 
 > **Note: Breaking Changes**
