@@ -44,7 +44,8 @@ replace github.com/fluxcd/helm-operator/pkg/install => ./pkg/install
 
 // Transitive requirement from Helm: https://github.com/helm/helm/blob/v3.5.2/go.mod#L52-L53
 replace (
-	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
+	github.com/docker/distribution => github.com/docker/distribution v2.7.0-rc.0+incompatible
+
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 )
 
@@ -82,3 +83,6 @@ replace github.com/containerd/containerd => github.com/containerd/containerd v1.
 
 // Mitigating: GHSA-77vh-xpmg-72qh
 replace github.com/opencontainers/image-spec => github.com/opencontainers/image-spec v1.0.2
+
+// Mitigating: CVE-2021-41092
+replace github.com/docker/cli => github.com/docker/cli v20.10.9+incompatible
