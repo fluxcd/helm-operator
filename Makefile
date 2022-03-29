@@ -20,7 +20,7 @@ ifeq ($(ARCH),)
 	ARCH=amd64
 endif
 CURRENT_OS_ARCH=$(shell echo `go env GOOS`-`go env GOARCH`)
-GOBIN?=$(shell echo `go env GOPATH`/bin)
+GOBIN?=$(shell echo `go env GOPATH|cut -d: -f1`/bin)
 
 MAIN_GO_MODULE:=$(shell go list -mod=readonly -m -f '{{ .Path }}')
 LOCAL_GO_MODULES:=$(shell go list -mod=readonly -m -f '{{ .Path }}' all | grep $(MAIN_GO_MODULE))
