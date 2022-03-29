@@ -3,6 +3,7 @@ module github.com/fluxcd/helm-operator
 go 1.14
 
 require (
+	github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d // indirect
 	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/bshuster-repo/logrus-logstash-hook v1.0.2 // indirect
@@ -47,7 +48,8 @@ replace github.com/fluxcd/helm-operator/pkg/install => ./pkg/install
 
 // Transitive requirement from Helm: https://github.com/helm/helm/blob/v3.5.2/go.mod#L52-L53
 replace (
-	github.com/docker/distribution => github.com/docker/distribution v2.7.0-rc.0+incompatible
+	// Mitigating: GHSA-qq97-vm5h-rrhg
+	github.com/docker/distribution => github.com/docker/distribution v2.8.1+incompatible
 
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 )
@@ -79,10 +81,11 @@ replace (
 // github.com/fluxcd/helm-operator
 // +-> helm.sh/helm/v3@v3.6.3
 //     +-> github.com/opencontainers/runc@v1.0.2
-replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.2
+// Mitigating: GHSA-v95c-p5hm-xq8f
+replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3
 
-// Mitigating: GHSA-5j5w-g665-5m35
-replace github.com/containerd/containerd => github.com/containerd/containerd v1.4.12
+// Mitigating: GHSA-crp2-qrr5-8pq7
+replace github.com/containerd/containerd => github.com/containerd/containerd v1.4.13
 
 // Mitigating: GHSA-77vh-xpmg-72qh
 replace github.com/opencontainers/image-spec => github.com/opencontainers/image-spec v1.0.2
