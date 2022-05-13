@@ -64,6 +64,14 @@ func New(logger log.Logger, helmClients *helm.Clients, coreV1Client corev1client
 
 // Sync synchronizes the given HelmRelease with Helm.
 func (r *Release) Sync(hr *apiV1.HelmRelease) (err error) {
+	if hr.GetAnnotations()[SuspendAnnotation] == "true" {
+		r.logger.Log("info", "Reconciliation is suspended for this object",
+			"release", hr.GetReleaseName(),
+			"targetNamespace", hr.GetTargetNamespace(),
+			"resource", hr.ResourceID().String())
+		return nil
+	}
+
 	client, ok := r.helmClients.Load(hr.GetHelmVersion(r.config.DefaultHelmVersion))
 	if !ok {
 		status.SetStatusPhase(r.hrClient.HelmReleases(hr.GetTargetNamespace()), hr, apiV1.HelmReleasePhaseFailed)
@@ -189,6 +197,7 @@ const (
 
 const (
 	MigrateAnnotation string = "helm.fluxcd.io/migrate"
+	SuspendAnnotation string = "helm.fluxcd.io/suspend"
 )
 
 // shouldSync determines if the given HelmRelease should be synced
