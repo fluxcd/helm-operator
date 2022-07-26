@@ -16,7 +16,7 @@ jobs:
   build:
     working_directory: /home/circleci/go/src/github.com/fluxcd/helm-operator
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:2022.04.2
     resource_class: large
     environment:
       GO_VERSION: 1.14.2
