@@ -19,7 +19,7 @@ jobs:
       image: ubuntu-2004:2022.04.2
     resource_class: large
     environment:
-      GO_VERSION: 1.14.2
+      GO_VERSION: 1.16.15
       # We don't need a GOPATH but CircleCI defines it, so we override it
       GOPATH: /home/circleci/go
       GOPROXY: https://proxy.golang.org

@@ -1,10 +1,8 @@
 module github.com/fluxcd/helm-operator
 
-go 1.14
+go 1.16
 
 require (
-	github.com/bitly/go-simplejson v0.5.0 // indirect
-	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/bshuster-repo/logrus-logstash-hook v1.0.2 // indirect
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
@@ -24,6 +22,7 @@ require (
 	github.com/ncabatoff/go-seq v0.0.0-20180805175032-b08ef85ed833
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.7.1
+	github.com/shurcooL/vfsgen v0.0.0-20181202132449-6a9ea43bcacd
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
 	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect

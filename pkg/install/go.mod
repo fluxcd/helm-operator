@@ -1,6 +1,6 @@
 module github.com/fluxcd/helm-operator/pkg/install
 
-go 1.14
+go 1.16
 
 require (
 	github.com/instrumenta/kubeval v0.0.0-20190918223246-8d013ec9fc56
