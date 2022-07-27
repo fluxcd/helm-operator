@@ -20,7 +20,8 @@ ifeq ($(ARCH),)
 	ARCH=amd64
 endif
 CURRENT_OS_ARCH=$(shell echo `go env GOOS`-`go env GOARCH`)
-GOBIN?=$(shell echo `go env GOPATH`/bin)
+# GOPATH may include multiple locations in colon separated format.
+GOBIN?=$(shell echo $$GOPATH | cut -d ":" -f 1)/bin
 
 MAIN_GO_MODULE:=$(shell go list -mod=readonly -m -f '{{ .Path }}')
 LOCAL_GO_MODULES:=$(shell go list -mod=readonly -m -f '{{ .Path }}' all | grep $(MAIN_GO_MODULE))
@@ -32,7 +33,7 @@ IMAGE_TAG:=$(shell ./docker/image-tag)
 VCS_REF:=$(shell git rev-parse HEAD)
 BUILD_DATE:=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-all: $(GOBIN)/bin/helm-operator build/.helm-operator.done
+all: $(GOBIN)/helm-operator build/.helm-operator.done
 
 clean:
 	go clean ./cmd/helm-operator
@@ -110,7 +111,7 @@ cache/%/helm-$(HELM3_VERSION): docker/helm3.version
 	tar -m -C ./cache -xzf cache/$*/helm-$(HELM3_VERSION).tar.gz $*/helm
 	mv cache/$*/helm $@
 
-$(GOBIN)/bin/helm-operator: $(HELM_OPERATOR_DEPS)
+$(GOBIN)/helm-operator: $(HELM_OPERATOR_DEPS)
 	go install ./cmd/helm-operator
 
 pkg/install/generated_templates.gogen.go: pkg/install/templates/*

@@ -1,3 +1,17 @@
+## 1.4.3 (2022-07-27)
+
+This release of Helm Operator has no internal changes; the Helm Operator has been rebuilt against a fresh base image and had its dependencies updated in order to mitigate upstream CVEs.
+
+### Maintenance
+
+- Release 1.4.3 [fluxcd/helm-operator#654][#654]
+
+> **Helm Operator and Flux v1 are in maintenance:**
+
+Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/docs/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/docs/migration/timetable/).
+
+[#654]: https://github.com/fluxcd/helm-operator/pull/654
+
 ## 1.4.2 (2021-12-17)
 
 This release of Helm Operator has no internal changes; the Helm Operator has been rebuilt against a fresh base image and a deployment manifest has been updated to match the updates to the operator in support of Kubernetes v1.22 and up, which no longer serves the `rbac.authorization.k8s.io/v1beta1` API.
