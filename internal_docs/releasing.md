@@ -68,7 +68,7 @@ change.
 
 8. [Create a release in GitHub](https://github.com/fluxcd/helm-operator/releases/new)
 
-    Use a tag name as explained above; semver (`1.2.3`).
+    Use a tag name as explained above; semver (`v1.2.3`).
 
     Copy and paste the changelog entry. You may need to remove newlines that have been inserted by your editor, so that it wraps nicely.
 
