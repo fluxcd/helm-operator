@@ -1,3 +1,4 @@
+//go:build tools
 // +build tools
 
 // This file just exists to ensure we download the tools we need for building
@@ -7,4 +8,5 @@ package helm_operator
 
 import (
 	_ "github.com/fluxcd/helm-operator/pkg/install"
+	_ "github.com/shurcooL/vfsgen"
 )
