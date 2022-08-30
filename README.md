@@ -3,7 +3,7 @@
 > :warning: **Notice**
 > The [Helm Operator is in maintenance mode](https://github.com/fluxcd/helm-operator/issues/546),
 > while we are investing into the future of GitOps by
-> [re-architecting our tooling from the ground up](https://toolkit.fluxcd.io).
+> [re-architecting our tooling from the ground up](https://fluxcd.io).
 
 [![CircleCI](https://circleci.com/gh/fluxcd/helm-operator.svg?style=svg)](https://circleci.com/gh/fluxcd/helm-operator)
 [![GoDoc](https://godoc.org/github.com/fluxcd/helm-operator?status.svg)](https://godoc.org/github.com/fluxcd/helm-operator)
