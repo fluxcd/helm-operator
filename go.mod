@@ -3,32 +3,25 @@ module github.com/fluxcd/helm-operator
 go 1.16
 
 require (
+	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d // indirect
-	github.com/bshuster-repo/logrus-logstash-hook v1.0.2 // indirect
-	github.com/bugsnag/panicwrap v1.2.0 // indirect
-	github.com/docker/go-metrics v0.0.1 // indirect
-	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
-	github.com/fatih/color v1.9.0 // indirect
+	github.com/bugsnag/bugsnag-go v2.1.2+incompatible // indirect
 	github.com/fluxcd/flux v1.17.2-0.20200121140732-3903cf8e71c3
-	github.com/fluxcd/helm-operator/pkg/install v0.0.0-00010101000000-000000000000
-	github.com/garyburd/redigo v1.6.0 // indirect
-	github.com/go-kit/kit v0.10.0
-	github.com/gofrs/uuid v3.2.0+incompatible // indirect
+	github.com/fluxcd/helm-operator/pkg/install v0.0.0-20220830141157-cb08fb7a3ec2
+	github.com/go-kit/kit v0.12.0
 	github.com/golang/protobuf v1.5.2
-	github.com/google/go-cmp v0.5.6
-	github.com/gorilla/mux v1.7.3
+	github.com/google/go-cmp v0.5.8
+	github.com/gorilla/handlers v1.5.1 // indirect
+	github.com/gorilla/mux v1.8.0
 	github.com/helm/helm-2to3 v0.8.2
-	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
-	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/ncabatoff/go-seq v0.0.0-20180805175032-b08ef85ed833
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.11.1
-	github.com/shurcooL/vfsgen v0.0.0-20181202132449-6a9ea43bcacd
+	github.com/prometheus/client_golang v1.12.2
+	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.7.0
-	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
-	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
-	google.golang.org/grpc v1.43.0
+	github.com/stretchr/testify v1.8.0
+	github.com/yvasiyarov/gorelic v0.0.7 // indirect
+	google.golang.org/grpc v1.47.0
 	helm.sh/helm/v3 v3.6.3
 	k8s.io/api v0.22.5
 	k8s.io/apiextensions-apiserver v0.21.14
@@ -39,6 +32,7 @@ require (
 	k8s.io/klog v1.0.0
 	k8s.io/kubectl v0.21.14
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed
+	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/yaml v1.2.0
 )
 
@@ -53,9 +47,9 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 )
 
-// Pin Flux to 1.18.0
+// Pin Flux to 1.25.4
 replace (
-	github.com/fluxcd/flux => github.com/fluxcd/flux v1.18.0
+	github.com/fluxcd/flux => github.com/fluxcd/flux v1.25.4
 	github.com/fluxcd/flux/pkg/install => github.com/fluxcd/flux/pkg/install v0.0.0-20200206191601-8b676b003ab0
 )
 
