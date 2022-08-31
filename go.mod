@@ -3,36 +3,30 @@ module github.com/fluxcd/helm-operator
 go 1.16
 
 require (
-	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
-	github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d // indirect
-	github.com/bugsnag/bugsnag-go v2.1.2+incompatible // indirect
 	github.com/fluxcd/flux v1.17.2-0.20200121140732-3903cf8e71c3
-	github.com/fluxcd/helm-operator/pkg/install v0.0.0-20220830141157-cb08fb7a3ec2
+	github.com/fluxcd/helm-operator/pkg/install v0.0.0-00010101000000-000000000000
 	github.com/go-kit/kit v0.12.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.8
-	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/helm/helm-2to3 v0.8.2
 	github.com/ncabatoff/go-seq v0.0.0-20180805175032-b08ef85ed833
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.12.2
-	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
+	github.com/shurcooL/vfsgen v0.0.0-20181202132449-6a9ea43bcacd
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.0
-	github.com/yvasiyarov/gorelic v0.0.7 // indirect
 	google.golang.org/grpc v1.47.0
 	helm.sh/helm/v3 v3.6.3
 	k8s.io/api v0.22.5
-	k8s.io/apiextensions-apiserver v0.21.14
+	k8s.io/apiextensions-apiserver v0.22.1
 	k8s.io/apimachinery v0.22.5
-	k8s.io/cli-runtime v0.21.14
+	k8s.io/cli-runtime v0.22.1
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/helm v2.17.0+incompatible
 	k8s.io/klog v1.0.0
-	k8s.io/kubectl v0.21.14
+	k8s.io/kubectl v0.22.1
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed
-	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/yaml v1.2.0
 )
 
@@ -47,7 +41,7 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 )
 
-// Pin Flux to 1.25.4
+// Pin Flux to 1.18.0
 replace (
 	github.com/fluxcd/flux => github.com/fluxcd/flux v1.25.4
 	github.com/fluxcd/flux/pkg/install => github.com/fluxcd/flux/pkg/install v0.0.0-20200206191601-8b676b003ab0
@@ -59,7 +53,7 @@ replace (
 //     +-> helm.sh/helm/v3@v3.1.2
 //     +-> helm.sh/helm@v2.16.1
 replace (
-	helm.sh/helm/v3 => helm.sh/helm/v3 v3.6.3
+	helm.sh/helm/v3 => helm.sh/helm/v3 v3.7.0
 	k8s.io/helm => k8s.io/helm v2.17.0+incompatible
 )
 
@@ -68,8 +62,8 @@ replace (
 //   CVE-2022-29162, CVE-2021-30465 and CVE-2016-9962.
 replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.2
 
-// Mitigating: CVE-2022-31030
-replace github.com/containerd/containerd => github.com/containerd/containerd v1.5.13
+// Mitigating: GHSA-crp2-qrr5-8pq7, CVE-2022-31030
+replace github.com/containerd/containerd => github.com/containerd/containerd v1.6.6
 
 // Mitigating: GHSA-77vh-xpmg-72qh
 replace github.com/opencontainers/image-spec => github.com/opencontainers/image-spec v1.0.2
@@ -81,16 +75,19 @@ replace github.com/docker/cli => github.com/docker/cli v20.10.9+incompatible
 replace github.com/Masterminds/vcs => github.com/Masterminds/vcs v1.13.3
 
 // Mitigating: CVE-2022-21698
-replace github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.12.2
+replace github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.11.1
 
 // Pin kubernetes dependencies to 1.21.*
 replace (
 	k8s.io/api => k8s.io/api v0.21.14
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.14
 	k8s.io/apimachinery => k8s.io/apimachinery v0.21.14
+	k8s.io/apiserver => k8s.io/apiserver v0.21.14
 	k8s.io/cli-runtime => k8s.io/cli-runtime v0.21.14
 	k8s.io/client-go => k8s.io/client-go v0.21.14
 	k8s.io/code-generator => k8s.io/code-generator v0.21.14
+	k8s.io/component-base => k8s.io/component-base v0.21.14
+	k8s.io/cri-api => k8s.io/cri-api v0.21.14
 	k8s.io/kubectl => k8s.io/kubectl v0.21.14
 )
 
