@@ -68,8 +68,8 @@ replace (
 //   CVE-2022-29162, CVE-2021-30465 and CVE-2016-9962.
 replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.2
 
-// Mitigating: GHSA-crp2-qrr5-8pq7
-replace github.com/containerd/containerd => github.com/containerd/containerd v1.4.13
+// Mitigating: CVE-2022-31030
+replace github.com/containerd/containerd => github.com/containerd/containerd v1.5.13
 
 // Mitigating: GHSA-77vh-xpmg-72qh
 replace github.com/opencontainers/image-spec => github.com/opencontainers/image-spec v1.0.2
@@ -80,7 +80,8 @@ replace github.com/docker/cli => github.com/docker/cli v20.10.9+incompatible
 // Mitigating: CVE-2022-21235
 replace github.com/Masterminds/vcs => github.com/Masterminds/vcs v1.13.3
 
-replace github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.7.1
+// Mitigating: CVE-2022-21698
+replace github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.12.2
 
 // Pin kubernetes dependencies to 1.21.*
 replace (
