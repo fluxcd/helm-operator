@@ -1,3 +1,23 @@
+## 1.4.4 (2022-09-01)
+
+This release of Helm Operator removes the telemetry collection in accordance
+with the CNCF's published policies against default telemetry. Some deprecation
+notices are now emitted by the installer, please upgrade to Flux v2 or open an
+issue if you are blocked.
+
+The Helm Operator has been rebuilt against a fresh base image and had its
+dependencies updated in order to mitigate upstream CVEs.
+
+### Maintenance
+
+- Release 1.4.4 [fluxcd/helm-operator#661][#661]
+
+> **Helm Operator and Flux v1 are in maintenance:**
+
+Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/flux/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/flux/migration/timetable/).
+
+[#661]: https://github.com/fluxcd/helm-operator/pull/661
+
 ## 1.4.3 (2022-07-27)
 
 This release of Helm Operator has no internal changes; the Helm Operator has been rebuilt against a fresh base image and had its dependencies updated in order to mitigate upstream CVEs.
