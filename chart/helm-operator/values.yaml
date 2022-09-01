@@ -5,7 +5,7 @@ fullnameOverride: ""
 
 image:
   repository: docker.io/fluxcd/helm-operator
-  tag: 1.4.3
+  tag: 1.4.4
   pullPolicy: IfNotPresent
   pullSecret:
 
