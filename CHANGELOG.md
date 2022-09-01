@@ -1,3 +1,23 @@
+## 1.4.4 (2022-09-01)
+
+This release of Helm Operator removes the telemetry collection in accordance
+with the CNCF's published policies against default telemetry. Some deprecation
+notices are now emitted by the installer, please upgrade to Flux v2 or open an
+issue if you are blocked.
+
+The Helm Operator has been rebuilt against a fresh base image and had its
+dependencies updated in order to mitigate upstream CVEs.
+
+### Maintenance
+
+- Release 1.4.4 [fluxcd/helm-operator#661][#661]
+
+> **Helm Operator and Flux v1 are in maintenance:**
+
+Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/flux/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/flux/migration/timetable/).
+
+[#661]: https://github.com/fluxcd/helm-operator/pull/661
+
 ## 1.4.3 (2022-07-27)
 
 This release of Helm Operator has no internal changes; the Helm Operator has been rebuilt against a fresh base image and had its dependencies updated in order to mitigate upstream CVEs.
@@ -8,7 +28,7 @@ This release of Helm Operator has no internal changes; the Helm Operator has bee
 
 > **Helm Operator and Flux v1 are in maintenance:**
 
-Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/docs/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/docs/migration/timetable/).
+Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/flux/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/flux/migration/timetable/).
 
 [#654]: https://github.com/fluxcd/helm-operator/pull/654
 
@@ -26,7 +46,7 @@ This release of Helm Operator has no internal changes; the Helm Operator has bee
 
 > **Helm Operator and Flux v1 are in maintenance:**
 
-Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/docs/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/docs/migration/timetable/).
+Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/flux/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/flux/migration/timetable/).
 
 [#642]: https://github.com/fluxcd/helm-operator/pull/642
 [#645]: https://github.com/fluxcd/helm-operator/pull/645
@@ -41,7 +61,7 @@ This release of Helm Operator has no code changes, only base image and dependenc
 
 > **Helm Operator and Flux v1 are in maintenance:**
 
-Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/docs/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/docs/migration/timetable/).
+Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/flux/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/flux/migration/timetable/).
 
 [#639]: https://github.com/fluxcd/helm-operator/pull/639
 
@@ -54,15 +74,15 @@ This release of Helm Operator will break compatibility with older releases of Ku
 The `v1beta1` release of `CustomResourceDefinition` as well as `Role`, `ClusterRole`, and role bindings, have been replaced by their `v1` counterparts, and will finally be removed.
 
 > **Helm Operator and Flux are in maintenance:**
-> Efforts have been focused on the next generation of Flux, also called the [GitOps Toolkit](https://toolkit.fluxcd.io), which has crossed the feature-parity milestone, and is already recommended for production use in many cases. The [helm-controller](https://toolkit.fluxcd.io/components/helm/controller/) is the replacement for Helm Operator. The roadmap for Flux v2 development including Helm Controller can be found [here](https://fluxcd.io/docs/roadmap/).
+> Efforts have been focused on the next generation of Flux, also called the [GitOps Toolkit](https://fluxcd.io), which has crossed the feature-parity milestone, and is already recommended for production use in many cases. The [helm-controller](https://fluxcd.io/flux/components/helm/) is the replacement for Helm Operator. The roadmap for Flux v2 development including Helm Controller can be found [here](https://fluxcd.io/roadmap/).
 >
-> We are eager to hear [feedback, suggestions, and/or feature requests](https://github.com/fluxcd/toolkit/discussions) for the helm-controller and other Toolkit components. The [migration timetable](https://fluxcd.io/docs/migration/timetable/) will be kept updated with developments regarding the ongoing support of Helm Operator.
+> We are eager to hear [feedback, suggestions, and/or feature requests](https://github.com/fluxcd/toolkit/discussions) for the helm-controller and other Toolkit components. The [migration timetable](https://fluxcd.io/flux/migration/timetable/) will be kept updated with developments regarding the ongoing support of Helm Operator.
 >
 > Users of Helm Operator should be planning or executing their migrations, and report any blocking issues so that they can be addressed as early as possible.
 
 NOTE: Make sure to update the CRD when upgrading from a previous version as they have been changed since the prior release.
 
-Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/docs/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/docs/migration/timetable/).
+Please note, while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/flux/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/flux/migration/timetable/).
 
 ### Maintenance
 
@@ -75,9 +95,9 @@ Please note, while we continue the Helm Operator support, there are some known i
 ## 1.3.0 (2021-07-07)
 
 > **Helm Operator and Flux are in maintenance:**
-> Efforts have been focused on the next generation of Flux, also called the [GitOps Toolkit](https://toolkit.fluxcd.io), which has crossed the feature-parity milestone, and is already recommended for production use in many cases. The [helm-controller](https://toolkit.fluxcd.io/components/helm/controller/) is the replacement for Helm Operator. The roadmap for Flux v2 development including Helm Controller can be found [here](https://fluxcd.io/docs/roadmap/).
+> Efforts have been focused on the next generation of Flux, also called the [GitOps Toolkit](https://fluxcd.io), which has crossed the feature-parity milestone, and is already recommended for production use in many cases. The [helm-controller](https://fluxcd.io/flux/components/helm/) is the replacement for Helm Operator. The roadmap for Flux v2 development including Helm Controller can be found [here](https://fluxcd.io/roadmap/).
 >
-> We are eager to hear [feedback, suggestions, and/or feature requests](https://github.com/fluxcd/toolkit/discussions) for the helm-controller and other Toolkit components. The [migration timetable](https://fluxcd.io/docs/migration/timetable/) will be kept updated with developments regarding the ongoing support of Helm Operator.
+> We are eager to hear [feedback, suggestions, and/or feature requests](https://github.com/fluxcd/toolkit/discussions) for the helm-controller and other Toolkit components. The [migration timetable](https://fluxcd.io/flux/migration/timetable/) will be kept updated with developments regarding the ongoing support of Helm Operator.
 >
 > Users of Helm Operator should be planning their migrations, and report any blocking issues so that they can be addressed as early as possible.
 
@@ -89,7 +109,7 @@ The next MINOR (1.4.0) release of Helm Operator will break compatibility with ol
 
 ([fluxcd/helm-operator#599][#599] and [fluxcd/helm-operator#618][#618] describe the breaking changes that are upcoming in Helm Operator 1.4.0.)
 
-Please note, this is a security update and while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/docs/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/docs/migration/timetable/).
+Please note, this is a security update and while we continue the Helm Operator support, there are some known issues in Helm Operator that cannot be addressed. Users are advised strongly to plan their infrastructure upgrades and [migrate to Flux v2 and Helm Controller](https://fluxcd.io/flux/migration/helm-operator-migration/) as soon as possible, as Helm Operator will soon [no longer be maintained](https://fluxcd.io/flux/migration/timetable/).
 
 ### Maintenance
 
@@ -174,10 +194,10 @@ Thanks to @Carles-Figuerola, @amit-handda, @bmalynovytch, @coultenholt, @dholbac
 
 > **Note on the future of the Helm Operator and Flux:**
 > We are working on a next generation Flux assembled from components
-> as part of a bigger [GitOps Toolkit](https://toolkit.fluxcd.io) project.
-> One of the components is the [helm-controller](https://toolkit.fluxcd.io/components/helm/controller/)
+> as part of a bigger [GitOps Toolkit](https://fluxcd.io) project.
+> One of the components is the [helm-controller](https://fluxcd.io/flux/components/helm/)
 > which eventually will replace the Helm Operator. The roadmap for this
-> can be found [here](https://toolkit.fluxcd.io/roadmap/#the-road-to-helm-operator-v2).
+> can be found [here](https://fluxcd.io/roadmap/#the-road-to-helm-operator-v2).
 >
 > We are eager to hear [feedback, suggestions, and/or feature requests](https://github.com/fluxcd/toolkit/discussions)
 > for the helm-controller and other Toolkit components.

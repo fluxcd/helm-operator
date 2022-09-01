@@ -285,7 +285,7 @@ func (c *GitChartSync) sync(hr *v1.HelmRelease, mirrorName string, repo *git.Rep
 		// Check if the mirror has seen commits in paths we are interested in for
 		// this release.
 		ctx, cancel = context.WithTimeout(context.Background(), c.config.GitTimeout)
-		commits, err := repo.CommitsBetween(ctx, s.head, head, source.Path)
+		commits, err := repo.CommitsBetween(ctx, s.head, head, false, source.Path)
 		cancel()
 		if err != nil {
 			return sourceRef{}, false, ChartUnavailableError{err}
