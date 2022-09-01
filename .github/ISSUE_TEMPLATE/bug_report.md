@@ -17,7 +17,7 @@ please review <https://github.com/fluxcd/flux2/discussions/413>.
 
 As it will take longer until we get around to issues and PRs in
 Helm Operator v1, we strongly recommend that you start
-familiarising yourself with Flux v2: <https://toolkit.fluxcd.io/>
+familiarising yourself with Flux v2: <https://fluxcd.io/>
 
 This means that new features will only be added after very careful
 consideration, if at all. Refer to the links above for more detail.
