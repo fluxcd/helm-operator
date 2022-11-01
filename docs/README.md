@@ -11,7 +11,7 @@ Custom Resource named `HelmRelease`. Based on the creation, mutation or
 removal of a `HelmRelease` resource in the cluster, Helm actions are
 performed by the operator.
 
-![Helm Operator](/img/fluxcd-helm-operator-diagram.png)
+![Helm Operator](../docs/_files/fluxcd-helm-operator-diagram.png)
 
 ## Features
 
@@ -28,7 +28,7 @@ performed by the operator.
 * Automated purging on release install failures
 * Automated (optional) rollback on upgrade failures
 * Automated (optional) helm test gating of installs and upgrades.
-* Automated image upgrades [using Flux](/legacy/flux/references/helm-operator-integration)
+* Automated image upgrades [using Flux](https://github.com/fluxcd/flux/blob/master/docs/references/helm-operator-integration.md)
 * Automated (configurable) chart dependency updates for Helm charts
   from Git sources on install or upgrade
 * Detection and recovery from Helm storage mutations

@@ -5,7 +5,7 @@ misconceptions about (non-existent) automation features of the Helm Operator.
 
 ## Image updates
 
-Because the Helm Operator is a [Flux umbrella project](/),
+Because the Helm Operator is a [Flux umbrella project](https://fluxcd.io),
 occasionally people assume it is capable of updating image references in
 the `HelmRelease` and/or associated charts. This feature is however baked
 in to [Flux](https://github.com/fluxcd/flux), and not the Helm Operator
@@ -13,7 +13,7 @@ itself due to it having no knowledge of available images or the origin of the
 `HelmRelease`.
 
 For more details about this Flux feature, please refer to the [documentation
-for the `HelmRelease` integration](/legacy/flux/references/helm-operator-integration).
+for the `HelmRelease` integration](https://github.com/fluxcd/flux/blob/master/docs/references/helm-operator-integration.md).
 
 ## Helm repository chart updates
 

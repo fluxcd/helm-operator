@@ -150,4 +150,4 @@ You did it! you made your first change to the HelmRelease CRD, built, deployed a
 
 You should now hopefully be more comfortable with making changes and running the Helm Operator locally, and be ready to tackle your [first issue](https://github.com/fluxcd/helm-operator/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).
 
-To find out more about the Helm Operator community and our contribution workflow have a look at the [contributing guide](introduction.md).
+To find out more about the Helm Operator community and our contribution workflow have a look at the [contributing guide](../introduction.md).
