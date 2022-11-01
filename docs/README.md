@@ -1,8 +1,4 @@
----
-title: Helm Operator
-weight: 20
----
-
+# Helm Operator
 
 The Helm Operator is a [Kubernetes operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/),
 allowing one to declaratively manage Helm chart releases. Combined with

@@ -1,7 +1,4 @@
----
-title: Introduction
-weight: 10
----
+# Introduction
 
 The intention of this guide is to give you more detailed information on various
 elements of the `HelmRelease` Custom Resource. You can follow it in one take,

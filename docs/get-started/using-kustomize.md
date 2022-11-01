@@ -1,8 +1,4 @@
----
-title: Get started using Kustomize
-linkTitle: Using Kustomize
-weight: 40
----
+# Get started using Kustomize
 
 This guide walks you through setting up the Helm Operator using
 [Kustomize](https://kustomize.io).

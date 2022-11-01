@@ -1,7 +1,4 @@
----
-weight: 60
-title: Rollbacks
----
+# Rollbacks
 
 From time to time a release made by the Helm Operator may fail, this section
 of the guide will explain how you can recover from a failed release by enabling

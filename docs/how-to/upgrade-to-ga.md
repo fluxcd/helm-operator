@@ -1,8 +1,4 @@
----
-weight: 10
-title: Upgrade from beta (>=0.5.0) to stable (>=1.0.0)
-linkTitle: Upgrade to GA
----
+# Upgrade from beta (>=0.5.0) to stable (>=1.0.0)
 
 Due to the Flux project joining the CNCF Sandbox and the API
 becoming stable, the Helm Operator has undergone changes that

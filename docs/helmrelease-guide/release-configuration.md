@@ -1,7 +1,4 @@
----
-title: Release configuration
-weight: 40
----
+# Release configuration
 
 When making use of the `helm` binary you can pass along various flags while
 making a release that influence how a release is performed. Most of these flags

@@ -1,7 +1,4 @@
----
-title: Building
-weight: 20
----
+# Building
 
 You'll need a working `go` environment version >= 1.11 (official releases are built against `1.14.x`).
 It's also expected that you have a Docker daemon for building images.

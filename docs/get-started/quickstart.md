@@ -1,7 +1,4 @@
----
-title: Quickstart
-weight: 20
----
+# Quickstart
 
 This guide walks you through to all steps required to quickly get
 started with the Helm Operator.

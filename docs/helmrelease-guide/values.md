@@ -1,7 +1,4 @@
----
-title: Values
-weight: 30
----
+# Values
 
 Now that we have a good understanding of where we can get our charts from and
 what they have to offer, it is time to examine how you can supply

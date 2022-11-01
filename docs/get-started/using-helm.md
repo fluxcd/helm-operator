@@ -1,8 +1,4 @@
----
-title: Get started using Helm
-linkTitle: Using Helm
-weight: 30
----
+# Get started using Helm
 
 This guide walks you through setting up the Helm Operator using the
 available [Helm chart](https://github.com/fluxcd/helm-operator/tree/master/chart/helm-operator).

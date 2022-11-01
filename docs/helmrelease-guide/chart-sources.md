@@ -1,7 +1,4 @@
----
-title: Chart sources
-weight: 20
----
+# Chart sources
 
 In the introduction we created a simple `HelmRelease` that made use of a chart
 from a Helm repository, but the Helm Operator does support multiple chart

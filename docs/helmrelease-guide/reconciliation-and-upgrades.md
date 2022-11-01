@@ -1,7 +1,4 @@
----
-weight: 50
-title: Reconciliation and upgrades
----
+# Reconciliation and upgrades
 
 Now that you know the ins and outs of configuring a release, we are going to
 have a better look at how the Helm Operator performs the actual Helm release.
